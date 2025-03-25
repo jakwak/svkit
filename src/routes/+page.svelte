@@ -1,36 +1,21 @@
 <script lang="ts">
   import { onDestroy, onMount } from 'svelte'
-	  import { appState } from '$lib/app_state.svelte'
+	import { appState, wsStore } from '$lib'
   
-		let socket: WebSocket
-	let status = $state("Disconnected");
 
-	let cur_user = appState.username
 
 	onMount(() => {
-		socket = new WebSocket('ws://localhost:8000/ws/' + cur_user)
-
-		socket.onopen = () => {
-			status = "Connected"
-		}
-		
-		socket.onmessage = (event) => {
-			status = event.data
-		}
-
-		socket.onclose = () => {
-			status = "Disconnected"
-		}
+		if (appState.username !== "Guest")
+			wsStore.connect()
 	})
 
 	onDestroy(() => {
-		if (socket) {
-			socket.close()
-		}
+		wsStore.close()
 	})
 </script>
 
-<h1 class="text-2xl text-blue-500">{status}</h1>
+<h1 class="text-3xl"> Home </h1>
+<h1 class="text-xl text-blue-500">{wsStore.open ? "Connected" : "Disconnected"}</h1>
 
 
 <!-- <script>

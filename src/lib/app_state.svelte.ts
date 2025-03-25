@@ -1,4 +1,4 @@
-export class AppState {
+class AppState {
   username = $state() as string;
   isLoggedIn = $state() as boolean;
 
@@ -20,22 +20,30 @@ export class AppState {
 
 export const appState = new AppState();
 
-export class WebSocketStore {
+class WebSocketStore {
   messages = $state() as string[];
   socket: WebSocket | null = null;
+  open = $state() as boolean;
   
+  constructor() {
+    this.messages = [];
+    this.open = false;
+  }
+
   connect() {
-    this.socket = new WebSocket("ws://localhost:8000/ws" + appState.username);
+    this.socket = new WebSocket("ws://localhost:8000/ws/" + appState.username);
     
     this.socket.onmessage = (event) => {
       this.messages = [...this.messages, event.data];  // 새로운 메시지를 배열에 추가
     };
 
     this.socket.onopen = () => {
+      this.open = true;
       console.log("✅ WebSocket Connected");
     };
 
     this.socket.onclose = () => {
+      this.open = false;
       console.log("❌ WebSocket Disconnected");
     };
   }
@@ -43,6 +51,12 @@ export class WebSocketStore {
   sendMessage(message: string) {
     if (this.socket && this.socket.readyState === WebSocket.OPEN) {
       this.socket.send(message);
+    }
+  }
+
+  close() {
+    if (this.socket) {
+      this.socket.close();
     }
   }
 }

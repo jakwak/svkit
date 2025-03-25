@@ -4,7 +4,7 @@ export const load: LayoutServerLoad = async ( { fetch} ) => {
   const res = await fetch('/api/me').then(res => res.json());
   
   return {
-    cur_user: res.username,
+    cur_user: res.username || "Guest"
   };
 };
 

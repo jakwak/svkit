@@ -2,6 +2,6 @@ import { appState } from '$lib/app_state.svelte'
 import type { LayoutLoad } from './$types';
 
 export const load: LayoutLoad = ({ data }) => {
-  data.cur_user ? appState.login(data.cur_user) : undefined
-  // return data;
+  if(data.cur_user) appState.login(data.cur_user)
+  return data
 };                                                                       

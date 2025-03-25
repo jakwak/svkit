@@ -21,6 +21,7 @@ export const load: PageServerLoad = async ({ params, fetch }) => {
     };
   } else {
     return {
+      cur_user: "Guest",
       result: 'error',
     };
   }
