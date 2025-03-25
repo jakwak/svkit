@@ -13,12 +13,10 @@ export const load: PageServerLoad = async ({ params, fetch }) => {
       body: JSON.stringify({ username, password: '900606Aa' }),
     }
   )
-
-  console.log(await res.json());
-
   
   if (res.ok) {
     return {
+      cur_user: username,
       result: 'success',
     };
   } else {

@@ -1,7 +1,6 @@
 import { appState } from '$lib/app_state.svelte'
-import type { LayoutLoad } from './$types';
+import type { PageLoad } from './$types';
 
-export const load: LayoutLoad = ({ data }) => {
+export const load: PageLoad = ({ data }) => {
   data.cur_user ? appState.login(data.cur_user) : undefined
-  // return data;
 };                                                                       
