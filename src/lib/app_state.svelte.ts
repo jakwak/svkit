@@ -27,14 +27,13 @@ type Message = {
 
 
 class WebSocketStore {
-  messages = $state() as Message[];
+  users = $state() as string[];
   socket: WebSocket | null = null;
   open = $state() as boolean;
-  users = $state(new Set()) as Set<string>;
   
   constructor() {
     this.open = false;
-    this.messages = [];
+    this.users = [];
   }
 
   connect() {
@@ -42,22 +41,22 @@ class WebSocketStore {
     
     this.socket.onmessage = (event) => {
       const data = JSON.parse(event.data);      
-      this.messages = [...this.messages, event.data as Message];  // 새로운 메시지를 배열에 추가
+      if(data.users) this.users = data.users
       
-      if (data.message === "Connected") {
-        this.users.add(data.sender);   
-        console.log("users: ", $state.snapshot(this.users));           
-      } else if (data.message === "Disconnected") {
-        this.users.delete(data.sender);            
-        console.log("users: ", this.users);
-      }
-      console.log("messages:", $state.snapshot(this.messages));
+      console.log(data);      
       
+      // if (data.message === "Connected") {
+      //   this.users.add(data.sender);   
+      //   console.log("users: ", $state.snapshot(this.users));           
+      // } else if (data.message === "Disconnected") {
+      //   this.users.delete(data.sender);            
+      //   console.log("users: ", this.users);
+      // }
+      // console.log("messages:", $state.snapshot(this.messages));
     };
 
     this.socket.onopen = () => {
       this.open = true;      
-      this.sendMessage({sender: appState.username, message: "Connected"});
       console.log("✅ WebSocket Connected");
     };
 
@@ -74,8 +73,8 @@ class WebSocketStore {
   }
 
   close() {
-    if (this.socket) {
-      this.socket.close();
+    if (this.socket && this.socket.readyState === WebSocket.OPEN) {
+      this.socket.close(1000, "Normal Closure");
     }
   }
 }
