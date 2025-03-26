@@ -1,8 +1,9 @@
 <script lang="ts">
   import { onDestroy, onMount } from 'svelte'
 	import { appState, wsStore } from '$lib'
+  import type { PageProps } from './$types'
   
-
+  let { data }: PageProps = $props()
 
 	onMount(() => {
 		if (appState.username !== "Guest")
@@ -14,9 +15,24 @@
 	})
 </script>
 
-<h1 class="text-3xl"> Home </h1>
+<svelte:head>
+	<title>Users List</title>
+</svelte:head>
+
+<h1 class="text-3xl"> Home ({data.cur_user}) </h1>
 <h1 class="text-xl text-blue-500">{wsStore.open ? "Connected" : "Disconnected"}</h1>
 
+<div class="flex items-center justify-center max-w-2xl mx-auto">
+  <div class="container mx-auto">    
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+      {#each [...data.users].sort((a, b) => a.username.localeCompare(b.username)) as user (user.id)}
+        <button class="btn">
+          {user.username}
+        </button>
+      {/each}
+    </div>
+  </div>
+</div>
 
 <!-- <script>
   import { wsStore } from "$lib/websocket.ts";

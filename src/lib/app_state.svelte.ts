@@ -20,25 +20,44 @@ class AppState {
 
 export const appState = new AppState();
 
+type Message = {
+  sender: string;
+  message: string;
+};
+
+
 class WebSocketStore {
-  messages = $state() as string[];
+  messages = $state() as Message[];
   socket: WebSocket | null = null;
   open = $state() as boolean;
+  users = $state(new Set()) as Set<string>;
   
   constructor() {
-    this.messages = [];
     this.open = false;
+    this.messages = [];
   }
 
   connect() {
     this.socket = new WebSocket("ws://localhost:8000/ws/" + appState.username);
     
     this.socket.onmessage = (event) => {
-      this.messages = [...this.messages, event.data];  // 새로운 메시지를 배열에 추가
+      const data = JSON.parse(event.data);      
+      this.messages = [...this.messages, event.data as Message];  // 새로운 메시지를 배열에 추가
+      
+      if (data.message === "Connected") {
+        this.users.add(data.sender);   
+        console.log("users: ", $state.snapshot(this.users));           
+      } else if (data.message === "Disconnected") {
+        this.users.delete(data.sender);            
+        console.log("users: ", this.users);
+      }
+      console.log("messages:", $state.snapshot(this.messages));
+      
     };
 
     this.socket.onopen = () => {
-      this.open = true;
+      this.open = true;      
+      this.sendMessage({sender: appState.username, message: "Connected"});
       console.log("✅ WebSocket Connected");
     };
 
@@ -48,9 +67,9 @@ class WebSocketStore {
     };
   }
 
-  sendMessage(message: string) {
+  sendMessage(message: Message) {    
     if (this.socket && this.socket.readyState === WebSocket.OPEN) {
-      this.socket.send(message);
+      this.socket.send(JSON.stringify(message));
     }
   }
 

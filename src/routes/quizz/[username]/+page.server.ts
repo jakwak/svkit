@@ -1,9 +1,10 @@
+import { redirect } from '@sveltejs/kit'
 import type { PageServerLoad, Actions } from './$types';
 
 export const load: PageServerLoad = async ({ params, fetch }) => {
   const username = params.username
   const res = await fetch(
-    `/api/login2`,
+    `/api/login`,
     {
       method: 'POST',
       credentials: 'include',
@@ -15,10 +16,11 @@ export const load: PageServerLoad = async ({ params, fetch }) => {
   )
   
   if (res.ok) {
-    return {
-      cur_user: username,
-      result: 'success',
-    };
+    redirect(303, '/')
+    // return {
+    //   cur_user: username,
+    //   result: 'success',
+    // };
   } else {
     return {
       cur_user: "Guest",

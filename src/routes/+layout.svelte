@@ -2,13 +2,15 @@
 	import { appState } from '$lib'
   import type { LayoutProps } from "./$types";
 
-  let { data, children }: LayoutProps = $props()
+  let { children }: LayoutProps = $props()
 
 </script>
 
-<header class="p-4 border border-zinc-700">
-  <h1>User: {appState.username}</h1>
-  <p>data: {JSON.stringify(data)}</p>
+
+<header class="flex justify-between gap-4 border-b-1 border-primary px-4">
+  <div class="text-sm">User: {appState.username} </div>
+  <div>???</div>
+  <div>???</div>
 </header>
 <main class="p-5">
 	{@render children()}
