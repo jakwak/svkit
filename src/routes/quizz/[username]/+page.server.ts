@@ -16,11 +16,10 @@ export const load: PageServerLoad = async ({ params, fetch }) => {
   )
   
   if (res.ok) {
-    redirect(303, '/')
-    // return {
-    //   cur_user: username,
-    //   result: 'success',
-    // };
+    return {
+      cur_user: username,
+      result: 'success',
+    };
   } else {
     return {
       cur_user: "Guest",

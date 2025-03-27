@@ -6,3 +6,10 @@ export const load: PageServerLoad = async ({ fetch }) => {
     users,
   };
 };
+
+export const actions = {
+	default: async ({ request }) => {
+		const data = await request.formData();
+		console.log("form data: ", data);    
+	}
+};
