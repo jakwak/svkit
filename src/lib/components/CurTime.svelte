@@ -17,6 +17,6 @@
   });
 </script>
 
-<div class="text-sm">
+<div class="text-xs whitespace-nowrap">
   {time}
 </div>
