@@ -4,6 +4,7 @@
   import type { PageProps } from './$types'
   import Users from '$lib/components/Users.svelte'
   import QInput from '$lib/components/QInput.svelte'
+
   
   let { data }: PageProps = $props()
 
@@ -20,5 +21,6 @@
 <svelte:head>
 	<title>Users List</title>
 </svelte:head>
+
 
 <Users users={data.users} online_users={wsStore.users}/>
