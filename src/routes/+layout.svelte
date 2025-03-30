@@ -9,11 +9,11 @@
 
 </script>
 
-<div class={["text-xs whitespace-nowrap text-right mx-auto  absolute top-8 right-7 h-5", wsStore.open ? 'text-primary-content' : 'text-zinc-500']}>
+<div class={["text-xs whitespace-nowrap text-right mx-auto  absolute top-9 right-9", wsStore.open ? 'text-primary-content' : 'text-zinc-500']}>
   {#if appState.username === "Guest"}
     <LoginModal/>
   {:else}
-    <div> User: {appState.username}</div>
+    <div> {appState.username}</div>
   {/if}
 </div>
 

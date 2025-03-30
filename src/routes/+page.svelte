@@ -21,6 +21,5 @@
 <svelte:head>
 	<title>Users List</title>
 </svelte:head>
-
-
+<QInput/>
 <Users users={data.users} online_users={wsStore.users}/>

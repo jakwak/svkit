@@ -1,7 +1,7 @@
 class AppState {
   username = $state() as string;
   isLoggedIn = $state() as boolean;
-
+  
   constructor() {
     this.username = "Guest";
     this.isLoggedIn = false;
@@ -44,15 +44,6 @@ class WebSocketStore {
       if(data.users) this.users = data.users
       
       console.log(data);      
-      
-      // if (data.message === "Connected") {
-      //   this.users.add(data.sender);   
-      //   console.log("users: ", $state.snapshot(this.users));           
-      // } else if (data.message === "Disconnected") {
-      //   this.users.delete(data.sender);            
-      //   console.log("users: ", this.users);
-      // }
-      // console.log("messages:", $state.snapshot(this.messages));
     };
 
     this.socket.onopen = () => {
