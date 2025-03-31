@@ -2,9 +2,9 @@
   import "../style.css";
   import { page } from '$app/state'
 	import { appState, wsStore } from '$lib'
-  import CurTime from '$lib/components/CurTime.svelte'
   import type { LayoutProps } from "./$types";
-  import LoginModal from '$lib/components/LoginModal.svelte'
+  import {LoginModal} from '$lib'
+
   let { children }: LayoutProps = $props()
 
 </script>

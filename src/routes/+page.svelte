@@ -2,11 +2,14 @@
   import { onDestroy, onMount } from 'svelte'
 	import { appState, wsStore } from '$lib'
   import type { PageProps } from './$types'
-  import Users from '$lib/components/Users.svelte'
-  import QInput from '$lib/components/QInput.svelte'
+  import { Users } from '$lib'
+  import { QInput } from '$lib'
 
   
-  let { data }: PageProps = $props()
+  let { data, form }: PageProps = $props()
+
+	console.log('form: ', form);
+	
 
 	onMount(() => {
 		if (appState.username !== "Guest")

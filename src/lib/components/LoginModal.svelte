@@ -28,7 +28,7 @@
 >
 
 <Modal {modal_open} onClose={()=>(modal_open=false)}>
-  <label class="input w-full border border-secondary">
+  <label class="input w-full border-2 border-secondary">
     <svg
       class="h-[1em] opacity-50"
       xmlns="http://www.w3.org/2000/svg"

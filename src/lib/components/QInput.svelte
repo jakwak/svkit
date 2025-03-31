@@ -27,13 +27,13 @@
   onclick={() => (modal_open = true)}>문제 만들기</button
 >
 
-<Modal {modal_open} onClose={() => (modal_open = false)} bgColor="bg-zinc-900">
-  <form method="POST" use:enhance>
+<Modal {modal_open} onClose={() => (modal_open = false)} bgColor="bg-zinc-850">
+  <form method="POST" use:enhance class="border-2 border-primary p-4 rounded-lg">    
     <div
       class="max-w-2xl mx-auto p-2 rounded-lg shadow-md grid grid-cols-1 gap-2"
     >
       <h2 class="text-xl font-semibold mb-4 text-center">문제 만들기</h2>
-      <div class="flex gap-4 mb-2">
+      <div class="flex gap-4 mb-2 items-end">
         <!-- 과목 -->
         <label class="form-control w-1/4">
           <span class="label-text text-xs">과목</span>
@@ -76,6 +76,8 @@
             {/each}
           </select>
         </label>
+
+        <button class="btn btn-secondary" type="submit" name="ai_question">AI 출제</button>
       </div>
       <!-- 문제 -->
       <label class="form-control w-full mb-2">
