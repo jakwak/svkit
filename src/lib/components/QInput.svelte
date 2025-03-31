@@ -2,14 +2,14 @@
   import { enhance } from '$app/forms'
   import Modal from './Modal.svelte'
 
-  const quiz = $state<QuizQuestion>({
-    subject: '국어',
+  let {quiz = {
+    subject: '초등 4학년 국어',
     topic: '',
     question: '',
     correctAnswer: '',
     wrongAnswers: ['', '', ''],
-    difficulty: 3,
-  })
+    difficulty: 3
+  }, loading = false} = $props()
 
   const difficultyOptions = [
     { value: 5, label: '매우 어려움' },
@@ -27,6 +27,7 @@
   onclick={() => (modal_open = true)}>문제 만들기</button
 >
 
+
 <Modal {modal_open} onClose={() => (modal_open = false)} bgColor="bg-zinc-850">
   <form method="POST" use:enhance class="border-2 border-primary p-4 rounded-lg">    
     <div
@@ -39,15 +40,15 @@
           <span class="label-text text-xs">과목</span>
           <select
             name="subject"
-            bind:value={quiz.subject}
+            value={quiz.subject}
             class="select w-full"
           >
-            <option value="국어">국어</option>
-            <option value="수학">수학</option>
-            <option value="사회">사회</option>
-            <option value="과학">과학</option>
-            <option value="영어">영어</option>
-            <option value="상식">상식</option>
+            <option value="초등 4학년 국어">국어</option>
+            <option value="초등 4학년 수학">수학</option>
+            <option value="초등 4학년 사회">사회</option>
+            <option value="초등 4학년 과학">과학</option>
+            <option value="초등 4학년 영어">영어</option>
+            <option value="초등 4학년 상식">상식</option>
           </select>
         </label>
 
@@ -57,7 +58,7 @@
           <input
             name="topic"
             type="text"
-            bind:value={quiz.topic}
+            value={quiz.topic}
             placeholder="주제 입력"
             class="input input-bordered w-full"
           />
@@ -68,27 +69,27 @@
           <span class="label-text text-xs">난이도</span>
           <select
             name="difficulty"
-            bind:value={quiz.difficulty}
+            value={quiz.difficulty}
             class="select select-bordered w-full"
           >
             {#each difficultyOptions as option}
-              <option value={option.value}>{option.label}</option>
+              <option value={option.value} selected={option.value === quiz.difficulty}>{option.label}</option>
             {/each}
           </select>
         </label>
-
-        <button class="btn btn-secondary" type="submit" name="ai_question">AI 출제</button>
+        <button class="btn btn-secondary" type="submit" name="ai_question" onclick={() => (loading = true)}>AI 출제</button>
       </div>
       <!-- 문제 -->
-      <label class="form-control w-full mb-2">
+      <label class="form-control w-full mb-2 flex flex-col">
         <span class="label-text text-xs">문제</span>
-        <input
+        <!-- <input
           name="question"
           type="text"
-          bind:value={quiz.question}
+          value={quiz.question}
           placeholder="문제 입력"
           class="input input-bordered w-full"
-        />
+        /> -->
+        <textarea name="question" class="textarea w-full" placeholder="문제">{quiz.question}</textarea>
       </label>
 
       <!-- 정답 -->
@@ -97,7 +98,7 @@
         <input
           name="correctAnswer"
           type="text"
-          bind:value={quiz.correctAnswer}
+          value={quiz.correctAnswer}
           placeholder="정답 입력"
           class="input input-bordered w-full"
         />
@@ -109,7 +110,7 @@
           <input
             name="wrongAnswer{index + 1}"
             type="text"
-            bind:value={quiz.wrongAnswers[index]}
+            value={quiz.wrongAnswers[index]}
             placeholder="오답 {index + 1} 입력"
             class="input input-bordered w-full"
           />
@@ -120,8 +121,12 @@
       <button
         class="btn btn-primary w-full"
         onclick={() => (modal_open = false)}
-        type="submit">제출</button
+        type="submit">문제 출제</button
       >
     </div>
   </form>
+</Modal>
+
+<Modal modal_open={loading}  clickOutsidable={false} modal_top={false}>
+  <span class="loading loading-spinner loading-xl"></span>
 </Modal>
