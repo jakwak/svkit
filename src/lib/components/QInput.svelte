@@ -2,14 +2,17 @@
   import { enhance } from '$app/forms'
   import Modal from './Modal.svelte'
 
-  let {quiz = {
-    subject: '초등 4학년 국어',
-    topic: '',
-    question: '',
-    correctAnswer: '',
-    wrongAnswers: ['', '', ''],
-    difficulty: 3
-  }, loading = false} = $props()
+  let {
+    quiz = {
+      subject: '초등 4학년 국어',
+      topic: '',
+      question: '',
+      correctAnswer: '',
+      wrongAnswers: ['', '', ''],
+      difficulty: 3,
+    },
+    loading = false,
+  } = $props()
 
   const difficultyOptions = [
     { value: 5, label: '매우 어려움' },
@@ -20,6 +23,12 @@
   ]
 
   let modal_open = $state(false)
+  let topic = $state()
+
+  $effect(() => {
+    topic = quiz.topic
+  })
+
 </script>
 
 <button
@@ -27,22 +36,21 @@
   onclick={() => (modal_open = true)}>문제 만들기</button
 >
 
-
 <Modal {modal_open} onClose={() => (modal_open = false)} bgColor="bg-zinc-850">
-  <form method="POST" use:enhance class="border-2 border-primary p-4 rounded-lg">    
+  <form
+    method="POST"
+    use:enhance
+    class="border-2 border-primary p-4 rounded-lg"
+  >
     <div
-      class="max-w-2xl mx-auto p-2 rounded-lg shadow-md grid grid-cols-1 gap-2"
+      class="max-w-2xl mx-auto p-2 rounded-lg shadow-md grid grid-cols-1 gap-1"
     >
       <h2 class="text-xl font-semibold mb-4 text-center">문제 만들기</h2>
-      <div class="flex gap-4 mb-2 items-end">
+      <div class="flex gap-2 mb-2 items-end">
         <!-- 과목 -->
-        <label class="form-control w-1/4">
+        <label class="form-control w-1/3">
           <span class="label-text text-xs">과목</span>
-          <select
-            name="subject"
-            value={quiz.subject}
-            class="select w-full"
-          >
+          <select name="subject" value={quiz.subject} class="select w-full text-xs">
             <option value="초등 4학년 국어">국어</option>
             <option value="초등 4학년 수학">수학</option>
             <option value="초등 4학년 사회">사회</option>
@@ -55,41 +63,71 @@
         <!-- 주제 -->
         <label class="form-control w-full">
           <span class="label-text text-xs">주제</span>
-          <input
-            name="topic"
-            type="text"
-            value={quiz.topic}
-            placeholder="주제 입력"
-            class="input input-bordered w-full"
-          />
+          <div class="relative">
+            <input
+              name="topic"
+              type="text"
+              bind:value={topic}
+              placeholder="주제 입력"
+              class="input input-bordered w-full text-xs"
+            />
+            {#if topic}
+              <button
+                type="button"
+                class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                aria-label="Close"
+                onclick={() => (topic = '')}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke-width="2"
+                  stroke="currentColor"
+                  class="w-5 h-5"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            {/if}
+          </div>
         </label>
 
         <!-- 난이도 선택 -->
-        <label class="form-control w-1/4">
+        <label class="form-control w-1/3">
           <span class="label-text text-xs">난이도</span>
           <select
             name="difficulty"
             value={quiz.difficulty}
-            class="select select-bordered w-full"
+            class="select select-bordered w-full text-xs"
           >
             {#each difficultyOptions as option}
-              <option value={option.value} selected={option.value === quiz.difficulty}>{option.label}</option>
+              <option
+                value={option.value}
+                selected={option.value === quiz.difficulty}
+                >{option.label}</option
+              >
             {/each}
           </select>
         </label>
-        <button class="btn btn-secondary" type="submit" name="ai_question" onclick={() => (loading = true)}>AI 출제</button>
+
+        <button
+          class="btn btn-secondary"
+          type="submit"
+          name="ai_question"
+          onclick={() => (loading = true)}>AI 출제</button
+        >
       </div>
       <!-- 문제 -->
       <label class="form-control w-full mb-2 flex flex-col">
         <span class="label-text text-xs">문제</span>
-        <!-- <input
-          name="question"
-          type="text"
-          value={quiz.question}
-          placeholder="문제 입력"
-          class="input input-bordered w-full"
-        /> -->
-        <textarea name="question" class="textarea w-full" placeholder="문제">{quiz.question}</textarea>
+        <textarea name="question" class="textarea w-full" placeholder="문제"
+          >{quiz.question}</textarea
+        >
       </label>
 
       <!-- 정답 -->
@@ -127,6 +165,31 @@
   </form>
 </Modal>
 
-<Modal modal_open={loading}  clickOutsidable={false} modal_top={false}>
+{#if quiz.detail}
+  <Modal autoClose={true}>
+    <div class="alert alert-success shadow-lg">
+      <div>
+        <div class="flex gap-3">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            class="w-16 h-16 stroke-current"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+            ></path>
+          </svg>
+          {JSON.stringify(quiz, null, 2)}
+        </div>
+      </div>
+    </div>
+  </Modal>
+{/if}
+
+<Modal modal_open={loading} clickOutsidable={false} modal_top={false}>
   <span class="loading loading-spinner loading-xl"></span>
 </Modal>
