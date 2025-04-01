@@ -7,6 +7,7 @@
     bgColor?: string
     clickOutsidable?: boolean
     autoClose?: boolean
+    width?: string
     onClose?: () => void
     children?: any
   }
@@ -18,6 +19,7 @@
     clickOutsidable = true,
     autoClose = false,
     onClose = () => {},
+    width = 'w-auto',
     children,
   }: Props = $props()
 
@@ -39,7 +41,7 @@
   ]}
 >
   <div
-    class={['modal-box max-w-2xl w-auto mx-auto p-5', bgColor]}
+    class={['modal-box max-w-5xl mx-auto p-5', width, bgColor]}
     use:clickOutside={() => {modal_open && clickOutsidable && onClose()}}
   >
     {@render children?.()}

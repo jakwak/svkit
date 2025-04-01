@@ -84,7 +84,7 @@
                   viewBox="0 0 24 24"
                   stroke-width="2"
                   stroke="currentColor"
-                  class="w-5 h-5"
+                  class="w-4 h-4"
                 >
                   <path
                     stroke-linecap="round"
@@ -193,3 +193,5 @@
 <Modal modal_open={loading} clickOutsidable={false} modal_top={false}>
   <span class="loading loading-spinner loading-xl"></span>
 </Modal>
+
+

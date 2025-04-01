@@ -4,6 +4,7 @@
   import type { PageProps } from './$types'
   import { Users } from '$lib'
   import { QInput } from '$lib'
+  import QuizView from '$lib/components/QuizView.svelte'
  
   let { data, form }: PageProps = $props()
 
@@ -21,7 +22,8 @@
 	<title>Users List</title>
 </svelte:head>
 
-
 <QInput quiz={form?.quiz} loading={form?.loading}/>
+
+<QuizView />
 
 <Users users={data.users} online_users={wsStore.users}/>
