@@ -1,10 +1,8 @@
 <script lang="ts">
-  import { onDestroy, onMount } from 'svelte'
-	import { appState, Modal, wsStore } from '$lib'
-  import type { PageProps } from './$types'
-  import { Users } from '$lib'
-  import { QInput } from '$lib'
+  import { appState, QInput, Users, wsStore } from '$lib'
   import QuizView from '$lib/components/QuizView.svelte'
+  import { onDestroy, onMount } from 'svelte'
+  import type { PageProps } from './$types'
  
   let { data, form }: PageProps = $props()
 

@@ -1,9 +1,8 @@
 <script lang="ts">
-  import "../style.css";
   import { page } from '$app/state'
-	import { appState, wsStore } from '$lib'
-  import type { LayoutProps } from "./$types";
-  import {LoginModal} from '$lib'
+  import { appState, LoginModal, wsStore } from '$lib'
+  import "../style.css"
+  import type { LayoutProps } from "./$types"
 
   let { children }: LayoutProps = $props()
 

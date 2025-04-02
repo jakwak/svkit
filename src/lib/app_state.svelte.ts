@@ -12,9 +12,10 @@ class AppState {
     this.isLoggedIn = true;
   }
 
-  logout() {
+  async logout() {
     this.username = "Guest";
     this.isLoggedIn = false;
+    await fetch("/api/logout", { method: "POST" });
   }
 }
 

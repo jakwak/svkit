@@ -11,19 +11,19 @@
     // console.log('Blockquote 내용:', quote) // 🚀 디버깅
     // ✅ Bold 텍스트를 Underline로 변경
     const boldRegex = /\*\*([^*]+)\*\*/g
-    const underlineText = quote.text.replace(boldRegex, (_, text) => `<u>${text}</u>`)
+    const underlineText = quote.text.replace(boldRegex, (_, text) => `<u><b>${text}</b></u>`)
     const text = underlineText.replace(/\n/g, '<br>')
-    return `<blockquote class="border-1 bg-zinc-850 p-2 text-gray-300 text-md my-3 font-sans text-justify">${text}</blockquote>`
+    return `<blockquote class="border-1 bg-zinc-850 p-2 text-gray-300 my-3 mr-5">${text}</blockquote>`
   }
 
-  // marked.setOptions({
-  //   gfm: true, // GitHub Flavored Markdown 사용
-  //   breaks: true, // 🚀 줄바꿈 자동 변환
-  //   renderer,
-  // })
+  marked.setOptions({
+    gfm: true, // GitHub Flavored Markdown 사용
+    breaks: true, // 🚀 줄바꿈 자동 변환
+    renderer,
+  })
 
   // // 🚀 marked에 커스텀 렌더러 적용
-  marked.use({ renderer })
+  // marked.use({ renderer })
 
   // ✅ <u> 태그로 밑줄 처리 (==텍스트==)
   const underlineExtension = {
@@ -69,4 +69,4 @@
   `
 </script>
 
-<div>{@html marked.parse(content)}</div>
+<div>{@html marked(content)}</div>

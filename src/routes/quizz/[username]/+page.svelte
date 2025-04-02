@@ -1,10 +1,17 @@
 <script lang="ts">
-	import { appState } from '$lib'
+	import { appState, wsStore } from '$lib'
+  import { onMount } from 'svelte'
 	import type { PageProps } from './$types';
   
 	let { data }: PageProps = $props();
 
-	data.cur_user ? appState.login(data.cur_user) : undefined
+	onMount(() => {
+		wsStore.connect()
+		return () => {
+			wsStore.close()
+			appState.logout()
+		}
+	})
 </script>
 
 <h1>Quiz: {appState.username}</h1>

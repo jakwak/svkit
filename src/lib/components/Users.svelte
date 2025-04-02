@@ -1,4 +1,7 @@
 <script lang="ts" generics="User extends { id: number, username: string }">
+  import { goto } from '$app/navigation'
+  import { appState } from '$lib/app_state.svelte'
+
   interface Props {
     users: User[],
     online_users: string[]
@@ -8,13 +11,18 @@
 
 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 p-4 max-w-2xl mx-auto">
   {#each  [...users].sort((a, b) => a.username.localeCompare(b.username)) as user}
-    <div
+    <button
+      type="button"
       class={[
         "btn btn-soft btn-primary text-4xl h-15 font-medium border border-primary hover:border-secondary-content hover:border-1", 
         online_users.some(online_user => online_user === user.username) ? 'bg-secondary border-secondary text-white font-semibold' : ''
       ]}
+      onclick={() => {
+        if (appState.username !== "선생님")
+          goto(`/quizz/${user.username}`)
+      }}
     >
       {user.username}
-    </div>
+    </button>
   {/each}
 </div>
