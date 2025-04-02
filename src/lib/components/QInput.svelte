@@ -125,7 +125,7 @@
       <!-- 문제 -->
       <label class="form-control w-full mb-2 flex flex-col">
         <span class="label-text text-xs">문제</span>
-        <textarea name="question" class="textarea w-full" placeholder="문제"
+        <textarea name="question" class="textarea w-full" placeholder="문제" onchange={(e) => { quiz.question = (e.target as HTMLInputElement).value }}
           >{quiz.question}</textarea
         >
       </label>
@@ -139,6 +139,7 @@
           value={quiz.correctAnswer}
           placeholder="정답 입력"
           class="input input-bordered w-full"
+          onchange={(e) => { quiz.correctAnswer = (e.target as HTMLInputElement).value }}
         />
       </label>
 
@@ -151,6 +152,7 @@
             value={quiz.wrongAnswers[index]}
             placeholder="오답 {index + 1} 입력"
             class="input input-bordered w-full"
+            onchange={(e) => { quiz.wrongAnswers[index] = (e.target as HTMLInputElement).value }}
           />
         </label>
       {/each}

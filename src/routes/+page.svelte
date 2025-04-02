@@ -16,14 +16,22 @@
 	onDestroy(() => {
 		wsStore.close()
 	})
+
+	let quizState : QuizQuestion | undefined = $state()
+
+	$effect(() => {
+		quizState = form?.quiz
+	})
 </script>
 
 <svelte:head>
 	<title>Users List</title>
 </svelte:head>
 
-<QInput quiz={form?.quiz} loading={form?.loading}/>
+<QInput quiz={quizState} loading={form?.loading}/>
 
-<QuizView />
+
+<QuizView quiz={quizState}/>
+
 
 <Users users={data.users} online_users={wsStore.users}/>
