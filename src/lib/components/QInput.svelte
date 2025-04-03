@@ -1,6 +1,7 @@
 <script lang="ts">
   import { enhance } from '$app/forms'
   import Modal from './Modal.svelte'
+  import QuizView from './QuizView.svelte'
 
   let {
     quiz = {
@@ -32,7 +33,7 @@
 </script>
 
 <button
-  class="cursor-pointer hover:text-secondary"
+  class="btn btn-ghost hover:btn-primary"
   onclick={() => (modal_open = true)}>문제 만들기</button
 >
 
@@ -43,7 +44,7 @@
     class="border-2 border-primary p-4 rounded-lg"
   >
     <div
-      class="max-w-2xl mx-auto p-2 rounded-lg shadow-md grid grid-cols-1 gap-1"
+      class="max-w-2xl mx-auto p-2 rounded-lg shadow-md gap-1 flex flex-col space-y-2"
     >
       <h2 class="text-xl font-semibold mb-4 text-center">문제 만들기</h2>
       <div class="flex gap-2 mb-2 items-end">
@@ -160,8 +161,8 @@
       <!-- 제출 버튼 -->
       <button
         class="btn btn-primary w-full"
-        onclick={() => (modal_open = false)}
-        type="submit">문제 출제</button
+        onclick={() => {}}
+        type="button">미리 보기</button
       >
     </div>
   </form>

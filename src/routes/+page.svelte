@@ -26,7 +26,9 @@
 	<title>Users List</title>
 </svelte:head>
 
-<QInput quiz={quizState} loading={form?.loading}/>
+{#if appState.username === "선생님"}
+	<QInput quiz={quizState} loading={form?.loading}/>
+{/if}
 
 
 <QuizView quiz={quizState}/>
