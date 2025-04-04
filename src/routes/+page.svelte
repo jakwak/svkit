@@ -9,10 +9,10 @@
 	onMount(() => {
 		if (appState.username !== "Guest")
 			wsStore.connect()
-	})
-
-	onDestroy(() => {
-		wsStore.close()
+		return () => {
+			wsStore.close()
+			appState.logout()
+		}
 	})
 
 	let quizState : QuizQuestion | undefined = $state()

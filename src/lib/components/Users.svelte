@@ -14,7 +14,7 @@
     <button
       type="button"
       class={[
-        "btn btn-soft btn-primary text-4xl h-15 font-medium border border-primary hover:border-secondary-content hover:border-1", 
+        "btn btn-soft btn-primary text-4xl h-20 border-2 border-primary hover:border-secondary-content", 
         online_users.some(online_user => online_user === user.username) ? 'bg-secondary border-secondary text-white font-semibold' : ''
       ]}
       onclick={() => {

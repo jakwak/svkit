@@ -24,7 +24,7 @@
 
 <button
   class="cursor-pointer hover:text-secondary"
-  onclick={() => (modal_open = true)}>로그인</button
+  onclick={() => (modal_open = true)}>선생님 ???</button
 >
 
 <Modal {modal_open} onClose={()=>(modal_open=false)}>

@@ -13,6 +13,7 @@ class AppState {
   }
 
   async logout() {
+    if(this.username === "Guest") return    
     this.username = "Guest";
     this.isLoggedIn = false;
     await fetch("/api/logout", { method: "POST" });
