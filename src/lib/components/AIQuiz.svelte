@@ -3,6 +3,8 @@
   import { difficultyOptions } from '$lib/globals'
 
   let { enhanced } = $props()
+
+  let topic = $state('')
 </script>
 
 <form
@@ -27,12 +29,14 @@
         type="text"
         placeholder="주제 입력"
         class="input input-bordered w-full text-xs border-primary"
+        bind:value={topic}
       />
-      <!-- {#if topic} -->
+      {#if topic}
       <button
         type="submit"
         class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
         aria-label="Close"
+        onclick={() => (topic = '')}
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -49,7 +53,7 @@
           />
         </svg>
       </button>
-      <!-- {/if} -->
+      {/if}
     </div>
 
     <select name="difficulty" class="select select-bordered w-fit text-xs  border-primary" value="3">

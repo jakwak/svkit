@@ -14,7 +14,7 @@
   //     // }
   //   }
   // })
-
+ 
   let loading = $state(false)
 
   function deleteQuiz(id: string) {
