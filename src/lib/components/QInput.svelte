@@ -1,43 +1,22 @@
 <script lang="ts">
   import { enhance } from '$app/forms'
+  import { difficultyOptions } from '$lib/globals'
   import Modal from './Modal.svelte'
-  import QuizView from './QuizView.svelte'
 
   let {
-    quiz = {
-      subject: '초등 4학년 국어',
-      topic: '',
-      question: '',
-      correctAnswer: '',
-      wrongAnswers: ['', '', ''],
-      difficulty: 3,
-    },
-    loading = false,
+    quiz = $bindable({}),
+    onClose = () => {},
+    modal_open = false,
   } = $props()
-
-  const difficultyOptions = [
-    { value: 5, label: '매우 어려움' },
-    { value: 4, label: '어려움' },
-    { value: 3, label: '보통' },
-    { value: 2, label: '쉬움' },
-    { value: 1, label: '매우 쉬움' },
-  ]
-
-  let modal_open = $state(false)
-  let topic = $state()
-
-  $effect(() => {
-    topic = quiz.topic
-  })
 
 </script>
 
-<button
-  class="btn btn-ghost hover:btn-primary"
-  onclick={() => (modal_open = true)}>문제 만들기</button
->
+<!-- <button
+  class="cursor-pointer hover:text-secondary hover:font-bold font-light"
+  onclick={() => (modal_open = true)}>출제</button
+> -->
 
-<Modal {modal_open} onClose={() => (modal_open = false)} bgColor="bg-zinc-850">
+<Modal {modal_open} onClose={()=>onClose()} bgColor="bg-zinc-850">
   <form
     method="POST"
     use:enhance
@@ -46,12 +25,12 @@
     <div
       class="max-w-2xl mx-auto p-2 rounded-lg shadow-md gap-1 flex flex-col space-y-2"
     >
-      <h2 class="text-xl font-semibold mb-4 text-center">문제 만들기</h2>
+      <h2 class="text-xl font-semibold mb-4 text-center">고치기</h2>
       <div class="flex gap-2 mb-2 items-end">
         <!-- 과목 -->
         <label class="form-control w-1/3">
           <span class="label-text text-xs">과목</span>
-          <select name="subject" value={quiz.subject} class="select w-full text-xs">
+          <select name="subject" bind:value={quiz.subject} class="select w-fit text-xs">
             <option value="초등 4학년 국어">국어</option>
             <option value="초등 4학년 수학">수학</option>
             <option value="초등 4학년 사회">사회</option>
@@ -68,16 +47,16 @@
             <input
               name="topic"
               type="text"
-              bind:value={topic}
+              bind:value={quiz.topic}
               placeholder="주제 입력"
               class="input input-bordered w-full text-xs"
             />
-            {#if topic}
+            {#if quiz.topic}
               <button
                 type="button"
                 class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
                 aria-label="Close"
-                onclick={() => (topic = '')}
+                onclick={() => (quiz.topic = '')}
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -103,8 +82,8 @@
           <span class="label-text text-xs">난이도</span>
           <select
             name="difficulty"
-            value={quiz.difficulty}
-            class="select select-bordered w-full text-xs"
+            bind:value={quiz.difficulty}
+            class="select select-bordered w-fit text-xs"
           >
             {#each difficultyOptions as option}
               <option
@@ -115,13 +94,6 @@
             {/each}
           </select>
         </label>
-
-        <button
-          class="btn btn-secondary"
-          type="submit"
-          name="ai_question"
-          onclick={() => (loading = true)}>AI 출제</button
-        >
       </div>
       <!-- 문제 -->
       <label class="form-control w-full mb-2 flex flex-col">
@@ -161,14 +133,14 @@
       <!-- 제출 버튼 -->
       <button
         class="btn btn-primary w-full"
-        onclick={() => {}}
-        type="button">미리 보기</button
+        onclick={() => { onClose() }}
+        type="button">닫 기</button
       >
     </div>
   </form>
 </Modal>
 
-{#if quiz.detail}
+<!-- {#if quiz.detail}
   <Modal autoClose={true}>
     <div class="alert alert-success shadow-lg">
       <div>
@@ -191,10 +163,10 @@
       </div>
     </div>
   </Modal>
-{/if}
+{/if} -->
 
+<!-- 
 <Modal modal_open={loading} clickOutsidable={false} modal_top={false}>
   <span class="loading loading-spinner loading-xl"></span>
 </Modal>
-
-
+ -->

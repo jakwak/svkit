@@ -45,7 +45,7 @@ class WebSocketStore {
       const data = JSON.parse(event.data);      
       if(data.users) this.users = data.users
       
-      console.log(data);      
+      console.log('received: ', data);      
     };
 
     this.socket.onopen = () => {

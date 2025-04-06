@@ -6,7 +6,8 @@
 	let { data }: PageProps = $props();
 
 	onMount(() => {
-		wsStore.connect()
+		appState.login(data.cur_user)
+		wsStore.connect()		
 		return () => {
 			wsStore.close()
 			appState.logout()

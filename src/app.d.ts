@@ -6,6 +6,7 @@ declare global {
 
   // 퀴즈 문제 인터페이스
   interface QuizQuestion {
+    id: string
     subject: string
     topic: string
     question: string
@@ -26,7 +27,7 @@ declare global {
     'quiz:created': CustomEvent<QuizQuestion>
     'quiz:updated': CustomEvent<{ id: string; changes: Partial<QuizQuestion> }>
   }
-
+  
   // Svelte 이벤트 핸들러 확장
   interface Document {
     addEventListener<K extends keyof CustomEventMap>(
