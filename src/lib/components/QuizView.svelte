@@ -64,7 +64,7 @@
         <li
           class={[
             'p-1 pl-5 rounded-lg cursor-pointer text-left flex font-light hover:bg-zinc-800',
-            item.answer === quiz.correctAnswer && 'text-secondary',
+            item.answer === quiz.correctAnswer && 'text-secondary font-medium',
           ]}
         >
           {#if item.num === 1}①&nbsp;{/if}

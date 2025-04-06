@@ -18,7 +18,6 @@
   let loading = $state(false)
 
   function deleteQuiz(id: string) {
-    console.log('deleteQuiz: ', id);   
     quizList = quizList.filter((item) => item.id !== id)
   }
 
