@@ -22,6 +22,15 @@ declare global {
     createdAt: Date
   }
 
+  interface UserInfo {
+    id: string
+    username: string
+    score: {
+      total_score: number
+      today_score: number
+    }
+  }
+
   // 사용자 정의 이벤트 타입
   interface CustomEventMap {
     'quiz:created': CustomEvent<QuizQuestion>

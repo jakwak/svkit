@@ -37,18 +37,17 @@
       checked={true}
     />
     <div class="tab-content border-primary bg-base-100 p-5 rounded-md space-y-4">
-      <!-- <QInput quiz={quizState} loading={form?.loading} /> -->
 			<QuizList />
     </div>
 
     <input type="radio" name="my_tabs_2" class="tab hover:text-secondary" aria-label="학생" />
-    <div class="tab-content border-zinc-700 bg-base-100 p-5 rounded-md">
+    <div class="tab-content border-primary bg-base-100 p-5 rounded-md">
       <Users users={data.users} online_users={wsStore.users} />
     </div>
 
     <input type="radio" name="my_tabs_2" class="tab hover:text-secondary" aria-label="점수" />
-    <div class="tab-content border-zinc-700 bg-base-100 p-5 rounded-md">
-      Tab content 3
+    <div class="tab-content border-primary bg-base-100 p-5 rounded-md">
+      <Users users={data.users} online_users={wsStore.users} show_score={true} />
     </div>
   </div>
 <!-- {:else}

@@ -1,7 +1,7 @@
 import type { Actions, PageServerLoad } from './$types'
 
 export const load: PageServerLoad = async ({ fetch }) => {
-  const users = await fetch('/api/users').then((res) => res.json())
+  const users = await fetch('/api/users').then((res) => res.json()) 
   return {
     users,
   }
