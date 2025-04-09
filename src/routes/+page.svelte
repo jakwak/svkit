@@ -24,7 +24,7 @@
 </script>
 
 <svelte:head>
-  <title>Users List</title>
+  <title>ㅎjㅎ HOME</title>
 </svelte:head>
 
 <!-- {#if appState.username === '선생님'} -->
