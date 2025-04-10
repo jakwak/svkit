@@ -97,7 +97,7 @@
         </div>
 
         <!-- 버튼 리스트: 유저 박스 하단에 마우스 호버 시 표시 -->
-        <div
+        <!-- <div
           class="absolute left-1/2 -translate-x-1/2 top-[-20%] mt-2 hidden group-hover:flex join z-10"
         >
           {#each scores as score, i}
@@ -111,7 +111,9 @@
               {score > 0 ? `+${score}` : score}
             </button>
           {/each}
-        </div>
+        </div> -->
+
+        
       </div>
     {/each}
   </div>

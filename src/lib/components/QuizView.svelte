@@ -90,6 +90,13 @@
         }}
         type="button">지우기</button
       >
+      <button
+      class="btn btn-primary btn-xs btn-ghost"
+      onclick={() => {
+        
+      }}
+      type="button">저장하기</button
+    >
     </div>
   </div>
 
