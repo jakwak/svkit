@@ -5,6 +5,7 @@
   import { enhance } from '$app/forms'
   import type { ActionResult } from '@sveltejs/kit'
   import { invalidateAll } from '$app/navigation'
+  import { appState, wsStore } from '$lib/app_state.svelte'
 
   let { quiz = $bindable({}), deleteQuiz } = $props()
 
@@ -114,6 +115,14 @@
             disabled={quiz.save === 'saved'}>저장하기</button
           >
         </form>
+        <button
+        class="btn btn-primary btn-xs btn-ghost"
+        onclick={() => {
+          const payload = JSON.stringify(quiz)
+          wsStore.sendMessage({sender: appState.username, message: "quiz", payload})
+        }}
+        type="button">보내기</button
+      >
       </div>
     {/if}
   </div>

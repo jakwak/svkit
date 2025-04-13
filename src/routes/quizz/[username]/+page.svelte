@@ -7,13 +7,9 @@
 
 	onMount(() => {
 		appState.login(data.cur_user)
-		wsStore.connect()		
 		return () => {
-			wsStore.close()
 			appState.logout()
 		}
 	})
-</script>
 
-<h1>Quiz: {appState.username}</h1>
-<p>data: {JSON.stringify(data)}</p>
+</script>

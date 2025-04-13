@@ -1,10 +1,11 @@
+import { Guest } from '$lib'
 import type { LayoutServerLoad } from './$types';
 
-export const load: LayoutServerLoad = async ( { fetch} ) => {
+export const load: LayoutServerLoad = async ( { fetch, url } ) => {
   const res = await fetch('/api/me').then(res => res.json());
   
   return {
-    cur_user: res.username || "Guest"
+    cur_user: res.username || Guest
   };
 };
 

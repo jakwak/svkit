@@ -1,5 +1,6 @@
 <script lang="ts">
   import { goto } from '$app/navigation'
+  import { AdminUser } from '$lib'
   import { appState } from '$lib/app_state.svelte'
   import Triangle from './Triangle.svelte'
 
@@ -62,7 +63,7 @@
             : '',
         ]}
         onclick={() => {
-          if (appState.username !== '선생님') goto(`/quizz/${user.username}`)
+          if (appState.username !== AdminUser) goto(`/quizz/${user.username}`)
         }}
       >
         {user.username}

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { appState, wsStore } from '$lib'
+  import { AdminUser, appState, wsStore } from '$lib'
   import Modal from './Modal.svelte'
 
   let modal_open = $state(false)
@@ -9,12 +9,12 @@
       const response = await fetch('/api/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: '선생님', password }),
+        body: JSON.stringify({ username: AdminUser, password }),
       })
 
       if (response.ok) {
-        appState.login('선생님')
-        wsStore.connect()
+        appState.login(AdminUser)
+        // wsStore.connect()
       }
     } catch (error) {
       console.error('로그인 실패:', error)
@@ -24,7 +24,7 @@
 
 <button
   class="cursor-pointer hover:text-secondary"
-  onclick={() => (modal_open = true)}>선생님 ???</button
+  onclick={() => (modal_open = true)}>{AdminUser} ?</button
 >
 
 <Modal {modal_open} onClose={()=>(modal_open=false)}>

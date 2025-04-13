@@ -4,22 +4,6 @@
   import type { PageProps } from './$types'
 
   let { data, form }: PageProps = $props()
-  
-  onMount(() => {
-    if (appState.username !== 'Guest') wsStore.connect()
-    return () => {
-      wsStore.close()
-      appState.logout()
-    }
-  })
-
-  // let quizState: QuizQuestion | undefined = $state()
-
-  // $effect(() => {
-  //   quizState = form?.quiz
-  // })
-
-	// $inspect({quizState, form})
 </script>
 
 <svelte:head>

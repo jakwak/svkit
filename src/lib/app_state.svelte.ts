@@ -1,9 +1,11 @@
+import { Guest } from "$lib"
+
 class AppState {
   username = $state() as string;
   isLoggedIn = $state() as boolean;
   
   constructor() {
-    this.username = "Guest";
+    this.username = 'Guest';
     this.isLoggedIn = false;
   }
 
@@ -13,8 +15,8 @@ class AppState {
   }
 
   async logout() {
-    if(this.username === "Guest") return    
-    this.username = "Guest";
+    if(this.username === Guest) return    
+    this.username = Guest;
     this.isLoggedIn = false;
     await fetch("/api/logout", { method: "POST" });
   }
@@ -22,9 +24,10 @@ class AppState {
 
 export const appState = new AppState();
 
-type Message = {
+interface Message  {
   sender: string;
   message: string;
+  payload?: {} | null;
 };
 
 
@@ -32,6 +35,7 @@ class WebSocketStore {
   users = $state() as string[];
   socket: WebSocket | null = null;
   open = $state() as boolean;
+  quiz = $state() as QuizQuestion;
   
   constructor() {
     this.open = false;
@@ -45,7 +49,7 @@ class WebSocketStore {
       const data = JSON.parse(event.data);      
       if(data.users) this.users = data.users
       
-      console.log('received: ', data);      
+      console.log('received: ', data) //typeof data.message === 'string' ? data.message : JSON.parse(data.message));      
     };
 
     this.socket.onopen = () => {

@@ -13,3 +13,4 @@ export enum TagSave {
 }
 
 export const AdminUser = '선생님'
+export const Guest = 'Guest'
