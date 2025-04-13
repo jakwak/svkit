@@ -8,11 +8,13 @@
 
   // ✅ BlockQuote 스타일 변경 (외곽선 추가)
   renderer.blockquote = (quote) => {
-    // console.log('Blockquote 내용:', quote) // 🚀 디버깅
-    // ✅ Bold 텍스트를 Underline로 변경
     const boldRegex = /\*\*([^*]+)\*\*/g
-    const underlineText = quote.text.replace(boldRegex, (_, text) => `<u><b>${text}</b></u>`)
+    const boldText = quote.text.replace(boldRegex, (_, text) => `<u><b>${text}</b></u>`)
+    const underlineRegex = /\=\=([^*]+)\=\=/g
+    const underlineText = boldText.replace(underlineRegex, (_, text) => `<u><b>${text}</b></u>`)
+
     const text = underlineText.replace(/\n/g, '<br>')
+
     return `<blockquote class="border-1 bg-zinc-850 p-2 text-gray-300 my-3 mr-5">${text}</blockquote>`
   }
 

@@ -6,13 +6,15 @@ declare global {
 
   // 퀴즈 문제 인터페이스
   interface QuizQuestion {
-    id: string
+    id?: string
     subject: string
     topic: string
     question: string
     correctAnswer: string
     wrongAnswers: [string, string, string] // 정확히 3개의 오답
     difficulty: DifficultyLevel
+    createdAt?: Date
+    save?: TagSave
   }
 
   interface QuizSet {

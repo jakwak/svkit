@@ -1,24 +1,57 @@
 <script lang="ts">
   import { Modal } from '$lib'
+  import { onMount } from 'svelte'
   import AiQuiz from './AIQuiz.svelte'
   import QuizView from './QuizView.svelte'
-  import type { ActionResult } from '@sveltejs/kit';
+  import { type ActionResult } from '@sveltejs/kit';
+  import { goto } from '$app/navigation'
+  import { TagSave } from '$lib/globals'
 
   let quizList = $state<QuizQuestion[]>([])
 
-  // $effect(() => {
-  //   if (quiz) {
-  //     quizList = [...quizList, quiz]      
-  //     // return () => {
-  //     //   quizList = quizList.filter((item) => item !== quiz)
-  //     // }
-  //   }
-  // })
- 
+  interface QuizData {
+    id: string
+    subject: string
+    topic: string
+    question: string
+    correct_answer: string
+    wrong_answer1: string
+    wrong_answer2: string
+    wrong_answer3: string
+    difficulty: string
+  }
+  interface QuizzesData {
+    items: QuizData[]
+    page: number
+    pages: number
+    size: number
+    total: number
+  }
+
+  let { items, page, pages, size, total }: QuizzesData = $props()
+
+  onMount(() => {
+    quizList = items.map((item) => ({
+      id: item.id,
+      subject: item.subject,
+      topic: item.topic,
+      question: item.question,
+      correctAnswer: item.correct_answer,
+      wrongAnswers: [item.wrong_answer1, item.wrong_answer2, item.wrong_answer3],
+      difficulty: Number(item.difficulty) as DifficultyLevel,
+      save: TagSave.SAVED
+    }))
+  })
+  
   let loading = $state(false)
 
-  function deleteQuiz(id: string) {
-    quizList = quizList.filter((item) => item.id !== id)
+  function deleteQuiz(quiz: QuizQuestion) {
+    quizList = quizList.filter((item) => item.id !== quiz.id)
+
+    if(quiz.save !== TagSave.NOT_SAVED) {
+      document.cookie = `redirectTo=${encodeURIComponent(window.location.href)}; path=/`;
+      goto('/?del=true&id=' + quiz.id)
+    }
   }
 
 </script>
@@ -29,7 +62,11 @@
     // await update()
     loading = false
     if (result.type === 'success') {
-      quizList = [result.data?.quiz as QuizQuestion, ...quizList]
+      if (result.data?.quiz) {
+        result.data.quiz.id = Math.random().toString(36).slice(2)
+        result.data.quiz.save = "not saved"
+        quizList = [result.data?.quiz as QuizQuestion, ...quizList]
+      }       
     }
   }
 }} />
@@ -37,6 +74,8 @@
 <Modal modal_open={loading} clickOutsidable={false} modal_top={false}>
   <span class="loading loading-spinner loading-xl"></span>
 </Modal>
+
+<div class='text-xs text-right pr-3.5 mb-1'>page: {page}/{pages}, size: {size}/{total}</div>
 
 <div class="columns-1 sm:columns-2 gap-4">
   {#each quizList as quiz, i}

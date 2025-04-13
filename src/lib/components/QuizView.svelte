@@ -1,8 +1,10 @@
 <script lang="ts">
   import { difficultyOptions } from '$lib/globals'
-  import { fade, fly, slide } from 'svelte/transition'
   import Markdown from './Markdown.svelte'
   import QInput from './QInput.svelte'
+  import { enhance } from '$app/forms'
+  import type { ActionResult } from '@sveltejs/kit'
+  import { invalidateAll } from '$app/navigation'
 
   let { quiz = $bindable({}), deleteQuiz } = $props()
 
@@ -25,7 +27,6 @@
   }
 
   let edit = $state(false)
-  // let quiz = $state<QuizQuestion | undefined>(undefined)
 </script>
 
 {#if quiz}
@@ -47,7 +48,7 @@
       &nbsp;-&nbsp;
       <span class="text-zinc-400 text-xs underline"
         >{quiz.topic}({difficultyOptions[quiz.difficulty - 1].label})
-      </span>
+      </span>&nbsp;{quiz.id ? `#${quiz.id}` : ''}
     </div>
     <div class="text-sm text-justify mt-5 flex font-thin">
       문.&nbsp; <Markdown content={quiz.question} />
@@ -55,7 +56,7 @@
     <ul
       class={[
         'text-sm',
-        sumOfAllAnswerLengths(quiz.correctAnswer, quiz.wrongAnswers) > 20
+        sumOfAllAnswerLengths(quiz.correctAnswer, quiz.wrongAnswers) > 15
           ? 'flex flex-col'
           : 'flex flex-wrap justify-evenly gap-2',
       ]}
@@ -75,29 +76,46 @@
         </li>
       {/each}
     </ul>
-    <div class="flex-col">
-      <button
-        class="btn btn-primary btn-xs btn-ghost"
-        onclick={() => {
-          edit = true
-        }}
-        type="button">고치기</button
-      >
-      <button
-        class="btn btn-primary btn-xs btn-ghost"
-        onclick={() => {
-          deleteQuiz(quiz.id)
-        }}
-        type="button">지우기</button
-      >
-      <button
-      class="btn btn-primary btn-xs btn-ghost"
-      onclick={() => {
-        
-      }}
-      type="button">저장하기</button
-    >
-    </div>
+    {#if !edit}
+      <div class="flex justify-center items-baseline">
+        <button
+          class="btn btn-primary btn-xs btn-ghost"
+          onclick={() => {
+            edit = true
+          }}
+          type="button">고치기</button
+        >
+        <button
+          class="btn btn-primary btn-xs btn-ghost"
+          onclick={() => {
+            deleteQuiz(quiz)
+          }}
+          type="button">지우기</button
+        >
+        <form
+          method="POST"
+          action="?/saveQuiz"
+          use:enhance={( ) => {
+            return async ({ result }: { result: ActionResult }) => {              
+              if (result.type === 'success') {
+                if (result.data?.save) {
+                  quiz.id = result.data.quiz.id                  
+                }
+                quiz.save = "saved"
+                invalidateAll()
+              }
+            }
+          }}
+        >
+          <input type="hidden" name="quiz" value={JSON.stringify(quiz)} />
+          <button
+            type="submit"
+            class="btn btn-primary btn-xs btn-ghost {quiz.save === 'saved' ? '' : 'text-info'}"
+            disabled={quiz.save === 'saved'}>저장하기</button
+          >
+        </form>
+      </div>
+    {/if}
   </div>
 
   {#if edit}

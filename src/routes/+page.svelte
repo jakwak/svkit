@@ -1,11 +1,10 @@
 <script lang="ts">
-  import { appState, QInput, Users, wsStore } from '$lib'
+  import { appState, wsStore, Users, QuizList, AdminUser } from '$lib'
   import { onMount } from 'svelte'
   import type { PageProps } from './$types'
-  import QuizList from '$lib/components/QuizList.svelte'
 
   let { data, form }: PageProps = $props()
-
+  
   onMount(() => {
     if (appState.username !== 'Guest') wsStore.connect()
     return () => {
@@ -27,7 +26,7 @@
   <title>ㅎjㅎ HOME</title>
 </svelte:head>
 
-<!-- {#if appState.username === '선생님'} -->
+{#if appState.username === AdminUser}
   <div class="tabs tabs-border flex justify-center max-w-5xl mx-auto">
     <input
       type="radio"
@@ -37,7 +36,7 @@
       checked={true}
     />
     <div class="tab-content border-primary bg-base-100 p-5 rounded-md space-y-4">
-			<QuizList />
+			<QuizList {...data.quizzes}/>
     </div>
 
     <input type="radio" name="my_tabs_2" class="tab hover:text-secondary" aria-label="학생" />
@@ -50,6 +49,6 @@
       <Users users={data.users} online_users={wsStore.users} show_score={true} />
     </div>
   </div>
-<!-- {:else}
+{:else}
   <Users users={data.users} online_users={wsStore.users} />
-{/if} -->
+{/if}

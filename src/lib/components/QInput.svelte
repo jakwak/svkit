@@ -1,6 +1,6 @@
 <script lang="ts">
   import { enhance } from '$app/forms'
-  import { difficultyOptions } from '$lib/globals'
+  import { difficultyOptions, TagSave } from '$lib'
   import Modal from './Modal.svelte'
 
   let {
@@ -9,6 +9,11 @@
     modal_open = false,
   } = $props()
 
+  const tag_save = () => {
+    if (quiz.save === TagSave.SAVED) {
+      quiz.save = TagSave.NOT_UPDATED
+    }
+  }
 </script>
 
 <!-- <button
@@ -30,7 +35,7 @@
         <!-- 과목 -->
         <label class="form-control w-1/3">
           <span class="label-text text-xs">과목</span>
-          <select name="subject" bind:value={quiz.subject} class="select w-fit text-xs">
+          <select name="subject" bind:value={quiz.subject} class="select w-fit text-xs" onchange={tag_save}>
             <option value="초등 4학년 국어">국어</option>
             <option value="초등 4학년 수학">수학</option>
             <option value="초등 4학년 사회">사회</option>
@@ -50,6 +55,7 @@
               bind:value={quiz.topic}
               placeholder="주제 입력"
               class="input input-bordered w-full text-xs"
+              onchange={tag_save}
             />
             {#if quiz.topic}
               <button
@@ -84,6 +90,7 @@
             name="difficulty"
             bind:value={quiz.difficulty}
             class="select select-bordered w-fit text-xs"
+            onchange={tag_save}
           >
             {#each difficultyOptions as option}
               <option
@@ -98,7 +105,7 @@
       <!-- 문제 -->
       <label class="form-control w-full mb-2 flex flex-col">
         <span class="label-text text-xs">문제</span>
-        <textarea name="question" class="textarea w-full" placeholder="문제" onchange={(e) => { quiz.question = (e.target as HTMLInputElement).value }}
+        <textarea name="question" class="textarea w-full" placeholder="문제" bind:value={quiz.question} onchange={tag_save}
           >{quiz.question}</textarea
         >
       </label>
@@ -109,10 +116,10 @@
         <input
           name="correctAnswer"
           type="text"
-          value={quiz.correctAnswer}
+          bind:value={quiz.correctAnswer}
           placeholder="정답 입력"
           class="input input-bordered w-full"
-          onchange={(e) => { quiz.correctAnswer = (e.target as HTMLInputElement).value }}
+          onchange={tag_save}
         />
       </label>
 
@@ -122,10 +129,10 @@
           <input
             name="wrongAnswer{index + 1}"
             type="text"
-            value={quiz.wrongAnswers[index]}
+            bind:value={quiz.wrongAnswers[index]}
             placeholder="오답 {index + 1} 입력"
             class="input input-bordered w-full"
-            onchange={(e) => { quiz.wrongAnswers[index] = (e.target as HTMLInputElement).value }}
+            onchange={tag_save}
           />
         </label>
       {/each}
