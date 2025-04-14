@@ -13,3 +13,5 @@
 	})
 
 </script>
+
+{JSON.stringify(wsStore.quiz)}

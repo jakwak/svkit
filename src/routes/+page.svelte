@@ -2,8 +2,9 @@
   import { appState, wsStore, Users, QuizList, AdminUser } from '$lib'
   import { onMount } from 'svelte'
   import type { PageProps } from './$types'
+  import { invalidateAll } from '$app/navigation'
 
-  let { data, form }: PageProps = $props()
+  let { data }: PageProps = $props()
 </script>
 
 <svelte:head>
@@ -25,14 +26,16 @@
 
     <input type="radio" name="my_tabs_2" class="tab hover:text-secondary" aria-label="학생" />
     <div class="tab-content border-primary bg-base-100 p-5 rounded-md">
-      <Users users={data.users} online_users={wsStore.users} />
+      <Users users={data.users} />
     </div>
 
     <input type="radio" name="my_tabs_2" class="tab hover:text-secondary" aria-label="점수" />
     <div class="tab-content border-primary bg-base-100 p-5 rounded-md">
-      <Users users={data.users} online_users={wsStore.users} show_score={true} />
+      <Users users={data.users} show_score={true} />
     </div>
   </div>
 {:else}
-  <Users users={data.users} online_users={wsStore.users} />
+  <div class="max-w-5xl mx-auto">
+    <Users users={data.users}/>
+  </div>
 {/if}

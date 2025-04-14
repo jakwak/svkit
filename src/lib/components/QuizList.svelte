@@ -30,7 +30,7 @@
 
   let { items, page, pages, size, total }: QuizzesData = $props()
 
-  onMount(() => {
+  $effect(() => {
     quizList = items.map((item) => ({
       id: item.id,
       subject: item.subject,
@@ -75,6 +75,10 @@
   <span class="loading loading-spinner loading-xl"></span>
 </Modal>
 
+<div class='text-sm text-center mb-[-3px]'>
+  <a href='{page > 1 ? `/?page=${page - 1}` : ''}'>◀</a> . . .
+  <a href='{page < pages ? `/?page=${page + 1}` : ''}'>▶</a>
+</div>
 <div class='text-xs text-right pr-3.5 mb-1'>page: {page}/{pages}, size: {size}/{total}</div>
 
 <div class="columns-1 sm:columns-2 gap-4">

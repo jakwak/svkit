@@ -1,15 +1,14 @@
 <script lang="ts">
   import { goto } from '$app/navigation'
-  import { AdminUser } from '$lib'
+  import { AdminUser, wsStore } from '$lib'
   import { appState } from '$lib/app_state.svelte'
   import Triangle from './Triangle.svelte'
 
   interface Props {
     users: UserInfo[]
-    online_users: string[]
     show_score?: boolean
   }
-  let { users, online_users, show_score = false }: Props = $props()
+  let { users, show_score = false }: Props = $props()
 
   let usersState = $state(users)
 
@@ -58,7 +57,7 @@
         type="button"
         class={[
           'btn btn-soft btn-primary text-5xl h-30 border-2 border-primary hover:border-secondary-content',
-          online_users.some((online_user) => online_user === user.username)
+          wsStore.users.some((online_user) => online_user === user.username)
             ? 'bg-secondary border-secondary text-white font-semibold'
             : '',
         ]}

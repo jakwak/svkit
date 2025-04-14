@@ -48,7 +48,7 @@ class WebSocketStore {
     this.socket.onmessage = (event) => {
       const data = JSON.parse(event.data);      
       if(data.users) this.users = data.users
-      
+      if(data.message === 'quiz') this.quiz = JSON.parse(data.payload)
       console.log('received: ', data) //typeof data.message === 'string' ? data.message : JSON.parse(data.message));      
     };
 

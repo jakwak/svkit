@@ -24,7 +24,7 @@ export const load: PageServerLoad = async ({ fetch, url, cookies }) => {
 
   const users = await fetch('/api/users').then((res) => res.json())
   const quizzes = await fetch('/api/questions?page=' + page + '&size=' + size + '').then((res) => res.json())
-
+  
   return {
     users, quizzes
   }
