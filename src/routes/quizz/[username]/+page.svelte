@@ -2,6 +2,7 @@
 	import { appState, wsStore } from '$lib'
   import { onMount } from 'svelte'
 	import type { PageProps } from './$types';
+  import QuizShow from '$lib/components/QuizShow.svelte'
   
 	let { data }: PageProps = $props();
 
@@ -14,4 +15,6 @@
 
 </script>
 
-{JSON.stringify(wsStore.quiz)}
+{#if wsStore.quiz}
+	<QuizShow quiz={wsStore.quiz} />
+{/if}

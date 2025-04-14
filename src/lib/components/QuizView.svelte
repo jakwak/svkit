@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { difficultyOptions } from '$lib/globals'
+  import { difficultyOptions, shuffleAnswers, sumOfAllAnswerLengths } from '$lib'
   import Markdown from './Markdown.svelte'
   import QInput from './QInput.svelte'
   import { enhance } from '$app/forms'
@@ -7,25 +7,7 @@
   import { invalidateAll } from '$app/navigation'
   import { appState, wsStore } from '$lib/app_state.svelte'
 
-  let { quiz = $bindable({}), deleteQuiz } = $props()
-
-  // 정답과 오답을 랜덤으로 섞는 함수
-  function shuffleAnswers(correctAnswer: string, wrongAnswers: string[]) {
-    return [correctAnswer, ...wrongAnswers]
-      .map((answer) => ({ answer, sort: Math.random() }))
-      .sort((a, b) => a.sort - b.sort)
-      .map((item, index) => ({ num: index + 1, answer: item.answer }))
-  }
-  // correctAnswer와 wrongAnswers의 모든 길이의 합을 구하는 함수
-  function sumOfAllAnswerLengths(
-    correctAnswer: string,
-    wrongAnswers: string[]
-  ) {
-    return (
-      correctAnswer.length +
-      wrongAnswers.reduce((acc, cur) => acc + cur.length, 0)
-    )
-  }
+  let { quiz = $bindable({}), deleteQuiz = () => {} } = $props()
 
   let edit = $state(false)
 </script>
@@ -49,10 +31,10 @@
       &nbsp;-&nbsp;
       <span class="text-zinc-400 text-xs underline"
         >{quiz.topic}({difficultyOptions[quiz.difficulty - 1].label})
-      </span>&nbsp;{quiz.id ? `#${quiz.id}` : ''}
+      </span>
     </div>
-    <div class="text-sm text-justify mt-5 flex font-thin">
-      문.&nbsp; <Markdown content={quiz.question} />
+    <div class="text-sm text-justify mt-5 flex font-thin items-baseline">
+      <span class='text-lg font-semibold'>{quiz.id ? `#${quiz.id}` : ''}.</span>&nbsp; <Markdown content={quiz.question} />
     </div>
     <ul
       class={[

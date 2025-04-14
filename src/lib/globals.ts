@@ -14,3 +14,20 @@ export enum TagSave {
 
 export const AdminUser = '선생님'
 export const Guest = 'Guest'
+
+export function shuffleAnswers(correctAnswer: string, wrongAnswers: string[]) {
+  return [correctAnswer, ...wrongAnswers]
+    .map((answer) => ({ answer, sort: Math.random() }))
+    .sort((a, b) => a.sort - b.sort)
+    .map((item, index) => ({ num: index + 1, answer: item.answer }))
+}
+
+export function sumOfAllAnswerLengths(
+  correctAnswer: string,
+  wrongAnswers: string[]
+) {
+  return (
+    correctAnswer.length +
+    wrongAnswers.reduce((acc, cur) => acc + cur.length, 0)
+  )
+}

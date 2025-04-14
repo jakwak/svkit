@@ -4,7 +4,7 @@
   import AiQuiz from './AIQuiz.svelte'
   import QuizView from './QuizView.svelte'
   import { type ActionResult } from '@sveltejs/kit';
-  import { goto } from '$app/navigation'
+  import { goto, invalidate, invalidateAll } from '$app/navigation'
   import { TagSave } from '$lib/globals'
 
   let quizList = $state<QuizQuestion[]>([])
@@ -51,6 +51,7 @@
     if(quiz.save !== TagSave.NOT_SAVED) {
       document.cookie = `redirectTo=${encodeURIComponent(window.location.href)}; path=/`;
       goto('/?del=true&id=' + quiz.id)
+      invalidateAll()
     }
   }
 
