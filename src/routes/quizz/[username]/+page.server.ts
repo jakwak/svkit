@@ -13,17 +13,28 @@ export const load: PageServerLoad = async ({ params, fetch }) => {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({ username, password: '900606Aa' }),
-  })
+  }).then(res => res.json());
 
-  if (res.ok) {
-    return {
-      cur_user: username,
-    }
-  } else {
-    return {
-      cur_user: Guest,
-    }
+  if (!res.username) {
+    throw redirect(303, '/')
   }
+
+  return {
+    cur_user: res.username,
+    cur_user_id: res.id
+  }
+
+  // if (res.ok) {
+  //   const user = await res.json()
+  //   return {
+  //     cur_user: username,
+  //     cur_user_id: user.id
+  //   }
+  // } else {
+  //   return {
+  //     cur_user: Guest,
+  //   }
+  // }
 }
 
 export const actions = {

@@ -18,8 +18,8 @@ class AppState {
     if(this.username === Guest) return    
     this.username = Guest;
     this.isLoggedIn = false;
-    await fetch("/api/logout", { method: "POST" });
     wsStore.users = [];
+    await fetch("/api/logout", { method: "POST" });
   }
 }
 
