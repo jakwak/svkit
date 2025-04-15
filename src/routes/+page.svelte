@@ -13,24 +13,27 @@
 
 {#if appState.username === AdminUser}
   <div class="tabs tabs-border flex justify-center max-w-5xl mx-auto">
+    <!-- 문제 탭 -->
     <input
       type="radio"
-      name="my_tabs_2"
+      name="my_tabs"
       class="tab hover:text-secondary"
       aria-label="문제"
       checked={true}
     />
-    <div class="tab-content border-primary bg-base-100 p-5 rounded-md space-y-4">
+    <div class="tab-content border-primary border-3 bg-base-100 p-5 rounded-md space-y-4">
 			<QuizList {...data.quizzes}/>
     </div>
 
-    <input type="radio" name="my_tabs_2" class="tab hover:text-secondary" aria-label="학생" />
-    <div class="tab-content border-primary bg-base-100 p-5 rounded-md">
+    <!-- 학생 탭 -->
+    <input type="radio" name="my_tabs" class="tab hover:text-secondary" aria-label="학생" />
+    <div class="tab-content border-primary border-3 bg-base-100 p-5 rounded-md">
       <Users users={data.users} />
     </div>
 
-    <input type="radio" name="my_tabs_2" class="tab hover:text-secondary" aria-label="점수" />
-    <div class="tab-content border-primary bg-base-100 p-5 rounded-md">
+    <!-- 점수 탭 -->
+    <input type="radio" name="my_tabs" class="tab hover:text-secondary" aria-label="점수" />
+    <div class="tab-content border-primary border-3 bg-base-100 p-5 rounded-md">
       <Users users={data.users} show_score={true} />
     </div>
   </div>

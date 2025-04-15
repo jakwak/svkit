@@ -101,7 +101,7 @@
         class="btn btn-primary btn-xs btn-ghost"
         onclick={() => {
           const payload = JSON.stringify(quiz)
-          wsStore.sendMessage({sender: appState.username, message: "quiz", payload})
+          wsStore.sendMessage({message: "quiz", payload})
         }}
         type="button">보내기</button
       >

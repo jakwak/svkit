@@ -26,7 +26,6 @@ class AppState {
 export const appState = new AppState();
 
 interface Message  {
-  sender: string;
   message: string;
   payload?: {} | null;
 };
