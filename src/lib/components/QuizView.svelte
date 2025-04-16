@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { difficultyOptions, shuffleAnswers, sumOfAllAnswerLengths } from '$lib'
+  import { difficultyOptions, shuffleAnswers, sumOfAllAnswerLengths, TagSave } from '$lib'
   import Markdown from './Markdown.svelte'
   import QInput from './QInput.svelte'
   import { enhance } from '$app/forms'
@@ -34,7 +34,7 @@
       </span>
     </div>
     <div class="text-sm text-justify mt-5 flex font-thin items-baseline">
-      <span class='text-lg font-semibold'>{quiz.id ? `#${quiz.id}` : ''}.</span>&nbsp; <Markdown content={quiz.question} />
+      <span class='text-lg font-semibold'>{quiz.id ? `#${Number.isInteger(quiz.id) ? quiz.id : '?'}` : ''}.</span>&nbsp; <Markdown content={quiz.question} />
     </div>
     <ul
       class={[
@@ -84,7 +84,7 @@
                 if (result.data?.save) {
                   quiz.id = result.data.quiz.id                  
                 }
-                quiz.save = "saved"
+                quiz.save = TagSave.SAVED
                 invalidateAll()
               }
             }
@@ -93,8 +93,8 @@
           <input type="hidden" name="quiz" value={JSON.stringify(quiz)} />
           <button
             type="submit"
-            class="btn btn-primary btn-xs btn-ghost {quiz.save === 'saved' ? '' : 'text-info'}"
-            disabled={quiz.save === 'saved'}>저장하기</button
+            class="btn btn-primary btn-xs btn-ghost {quiz.save === TagSave.SAVED ? '' : 'text-info'}"
+            disabled={quiz.save === TagSave.SAVED }>저장하기</button
           >
         </form>
         <button

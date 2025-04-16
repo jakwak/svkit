@@ -1,6 +1,5 @@
 import { redirect } from '@sveltejs/kit'
 import type { PageServerLoad, Actions } from './$types'
-import { Guest } from '$lib'
 
 export const load: PageServerLoad = async ({ params, fetch }) => {
   await fetch('/api/logout', { method: 'POST' })

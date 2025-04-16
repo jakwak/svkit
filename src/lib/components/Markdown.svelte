@@ -1,7 +1,7 @@
 <script lang="ts">
   import { marked } from 'marked'
 
-  export let content = ''
+  let {content, cls="border-1 bg-zinc-850 p-2 text-gray-300 my-3 mr-5 flex justify-center"} = $props()
 
   // 🚀 Custom Renderer 생성
   const renderer = new marked.Renderer()
@@ -11,11 +11,11 @@
     const boldRegex = /\*\*([^*]+)\*\*/g
     const boldText = quote.text.replace(boldRegex, (_, text) => `<u><b>${text}</b></u>`)
     const underlineRegex = /\=\=([^*]+)\=\=/g
-    const underlineText = boldText.replace(underlineRegex, (_, text) => `<u><b>${text}</b></u>`)
+    const underlineText = boldText.replace(underlineRegex, (_, text) => `&nbsp;<u><b>${text}</b></u>&nbsp;`)
 
     const text = underlineText.replace(/\n/g, '<br>')
 
-    return `<blockquote class="border-1 bg-zinc-850 p-2 text-gray-300 my-3 mr-5">${text}</blockquote>`
+    return `<blockquote class="${cls}">${text}</blockquote>`
   }
 
   marked.setOptions({
@@ -71,4 +71,4 @@
   `
 </script>
 
-<div>{@html marked(content)}</div>
+<div class="w-full">{@html marked(content)}</div>
