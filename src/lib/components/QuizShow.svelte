@@ -3,12 +3,15 @@
   import Markdown from './Markdown.svelte'
 
   interface Props {
-    quiz: QuizQuestion
+    quiz: QuizQuestion,
+    user_id: number
   }
 
-  let { quiz }: Props = $props()
+  let { quiz, user_id }: Props = $props()
 
   async function saveAnswer(answer: string) {
+    console.log('user_id: ', user_id);
+    
     const res = await fetch('/api/answers/', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -16,13 +19,13 @@
         result: true,
         selected_answer: answer,
         question_id: quiz.id,
-        user_id: 1
+        user_id
       })
     })
 
     if (res.ok) {
-      alert('저장완료')
       console.log("result: ",await res.json());      
+      alert('저장 완료 !!!')
     }
   }
 </script>

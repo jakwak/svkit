@@ -6,7 +6,7 @@ declare global {
 
   // 퀴즈 문제 인터페이스
   interface QuizQuestion {
-    id?: string
+    id?: string | number
     subject: string
     topic: string
     question: string

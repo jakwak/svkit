@@ -16,5 +16,5 @@
 </script>
 
 {#if wsStore.quiz}
-	<QuizShow quiz={wsStore.quiz} />
+	<QuizShow quiz={wsStore.quiz} user_id={data.cur_user_id}/>
 {/if}
