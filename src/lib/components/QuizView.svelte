@@ -51,18 +51,18 @@
           : 'flex flex-wrap justify-evenly gap-2',
       ]}
     >
-      {#each shuffleAnswers(quiz.correctAnswer, quiz.wrongAnswers) as item}
+      {#each [quiz.correctAnswer, ...quiz.wrongAnswers] as item, index}
         <li
           class={[
-            'p-1 pl-5 rounded-lg cursor-pointer text-left flex font-light hover:bg-zinc-800',
-            item.answer === quiz.correctAnswer && 'text-secondary font-medium',
+            'p-1 pl-5 rounded-lg text-left flex font-light',
+            item === quiz.correctAnswer && 'text-secondary font-medium',
           ]}
         >
-          {#if item.num === 1}①&nbsp;{/if}
-          {#if item.num === 2}②&nbsp;{/if}
-          {#if item.num === 3}③&nbsp;{/if}
-          {#if item.num === 4}④&nbsp;{/if}
-          <Markdown content={item.answer} />
+          {#if index === 0}①&nbsp;{/if}
+          {#if index === 1}②&nbsp;{/if}
+          {#if index === 2}③&nbsp;{/if}
+          {#if index === 3}④&nbsp;{/if}
+          <Markdown content={item} />
         </li>
       {/each}
     </ul>

@@ -1,7 +1,7 @@
 <script lang="ts">
   import { marked } from 'marked'
 
-  let {content, cls="border-1 bg-zinc-850 p-2 text-gray-300 my-3 mr-5 flex justify-center"} = $props()
+  let {content, block_cls="border-1 bg-zinc-850 p-2 text-gray-300 my-3 mr-5 flex justify-center items-center"} = $props()
 
   // 🚀 Custom Renderer 생성
   const renderer = new marked.Renderer()
@@ -15,7 +15,7 @@
 
     const text = underlineText.replace(/\n/g, '<br>')
 
-    return `<blockquote class="${cls}">${text}</blockquote>`
+    return `<blockquote class="${block_cls}">${text}</blockquote>`
   }
 
   marked.setOptions({
@@ -51,24 +51,6 @@
 
   // 🚀 marked에 확장 기능 등록
   marked.use({ extensions: [underlineExtension] })
-
-  let markdownText = `
-  # Custom Markdown  
-  - **Bold**  
-  - *Italic*  
-  - [Link](https://svelte.dev)  
-  - \`Inline Code\`  
-  - ==밑줄 추가==`
-
-  let markdownText2 = `
-  # Markdown 예제  
-
-  **일반 텍스트**  
-
-  > 이것은 인용문입니다.  
-  > 이것은 인용문입니다.
-  > fsfsfsfdfcfdfdfsdfsdfsdfsdfsdfsfsd
-  `
 </script>
 
 <div class="w-full">{@html marked(content)}</div>

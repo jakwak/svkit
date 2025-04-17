@@ -8,11 +8,27 @@
 
   let { quiz }: Props = $props()
 
-  let dialog = $state()
+  async function saveAnswer(answer: string) {
+    const res = await fetch('/api/answers/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        result: true,
+        selected_answer: answer,
+        question_id: quiz.id,
+        user_id: 1
+      })
+    })
+
+    if (res.ok) {
+      alert('저장완료')
+      console.log("result: ",await res.json());      
+    }
+  }
 </script>
 
 <div
-  class="card bg-base-100 shadow-2xl border border-zinc-500 max-w-3xl mx-auto"
+  class="card bg-base-100 shadow-2xl border-2 border-primary max-w-3xl mx-auto mt-10"
 >
   <div class="card-body">
     <h2 class="card-title text-2xl font-light items-baseline">
@@ -29,15 +45,19 @@
       {#each shuffleAnswers(quiz.correctAnswer, quiz.wrongAnswers) as item}
         <button
           class={[
-            'p-1 rounded-lg cursor-pointer text-left flex font-thin hover:underline hover:underline-offset-5 w-fit',
+            'p-1 cursor-pointer flex font-thin',
           ]}
-          onclick={() => {}}
+          onclick={() => {saveAnswer(item.answer)}}
         >
-          {#if item.num === 1}①&nbsp;{/if}
-          {#if item.num === 2}②&nbsp;{/if}
-          {#if item.num === 3}③&nbsp;{/if}
-          {#if item.num === 4}④&nbsp;{/if}
-          <Markdown content={item.answer} />
+          <div class="text-xl">
+            {#if item.num === 1}①&nbsp;{/if}
+            {#if item.num === 2}②&nbsp;{/if}
+            {#if item.num === 3}③&nbsp;{/if}
+            {#if item.num === 4}④&nbsp;{/if}
+          </div>
+          <div class="hover:underline hover:underline-offset-5 w-fit">
+            <Markdown content={item.answer} />
+          </div>
         </button>
       {/each}
     </ul>
