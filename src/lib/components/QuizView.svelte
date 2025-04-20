@@ -1,5 +1,6 @@
 <script lang="ts">
   import {
+  appStore,
     difficultyOptions,
     shuffleAnswers,
     sumOfAllAnswerLengths,
@@ -10,7 +11,6 @@
   import { enhance } from '$app/forms'
   import type { ActionResult } from '@sveltejs/kit'
   import { invalidateAll } from '$app/navigation'
-  import { appState, wsStore } from '$lib/app_state.svelte'
 
   let { quiz = $bindable({}), deleteQuiz = () => {} } = $props()
 
@@ -109,10 +109,10 @@
         <button
           class="btn btn-primary btn-xs btn-ghost"
           onclick={() => {
-            const payload = JSON.stringify(quiz)
-            wsStore.sendMessage({ message: 'quiz', payload })
+            // const payload = JSON.stringify(quiz)
+            appStore.sendQuiz(quiz as QuizQuestion)
           }}          
-          disabled={wsStore.users.length === 0}
+          disabled={appStore.users.length === 0}
           type="button">보내기</button
         >
       </div>

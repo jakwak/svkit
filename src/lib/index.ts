@@ -1,7 +1,6 @@
-export { appState, wsStore } from "./app_state.svelte"
-
 export * from "./globals"
 export * from "./clickOutside"
+export * from "./appstore.svelte"
 
 export { default as Users } from "./components/Users.svelte";
 export { default as LoginModal } from "./components/LoginModal.svelte";

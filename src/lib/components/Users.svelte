@@ -1,11 +1,10 @@
 <script lang="ts">
   import { goto } from '$app/navigation'
-  import { AdminUser, wsStore } from '$lib'
-  import { appState } from '$lib/app_state.svelte'
+  import { AdminUser, appStore } from '$lib'
   import Triangle from './Triangle.svelte'
 
   interface Props {
-    users: UserInfo[]
+    users: User[]
     show_score?: boolean
   }
   let { users, show_score = false }: Props = $props()
@@ -42,7 +41,7 @@
     if (!result.ok) {
       console.log('Error:', result.status, result.statusText)
       usersState.forEach((user) => {
-        if (user.username === username) {
+        if (user.username === username && user.score) {
           user.score.total_score = prevScore
         }
       })
@@ -57,12 +56,12 @@
         type="button"
         class={[
           'btn btn-soft btn-primary text-5xl h-30 border-2 border-primary hover:border-secondary-content',
-          wsStore.users.some((online_user) => online_user === user.username)
+          appStore.users.some((online_user) => online_user === user.username)
             ? 'bg-secondary border-secondary text-white font-semibold'
             : '',
         ]}
         onclick={() => {
-          if (appState.username !== AdminUser) goto(`/quizz/${user.username}`)
+          if (!appStore.isAdmin) goto(`/quizz/${user.username}`)
         }}
       >
         {user.username}

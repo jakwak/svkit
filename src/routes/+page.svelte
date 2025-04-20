@@ -1,17 +1,36 @@
 <script lang="ts">
-  import { appState, wsStore, Users, QuizList, AdminUser } from '$lib'
+  import { Users, QuizList, AdminUser, appStore } from '$lib'
   import { onMount } from 'svelte'
   import type { PageProps } from './$types'
-  import { invalidateAll } from '$app/navigation'
+  import { io } from 'socket.io-client'
 
   let { data }: PageProps = $props()
+
+  let socket;
+  let username = '';
+  let message = '';
+  let messages: { sender: string; message: string }[] = [];
+
+  // onMount(() => {
+  //   socket = io("http://localhost:8000", {
+  //     path: "/ws2/socket.io",
+  //   });
+
+  //   socket.on('connect', () => {
+  //     console.log('✅ Connected to server');
+  //   });
+
+  //   socket.on("message", (data) => {
+  //     messages = [...messages, data];
+  //   });
+  // })
 </script>
 
 <svelte:head>
   <title>ㅎjㅎ HOME</title>
 </svelte:head>
 
-{#if appState.username === AdminUser}
+{#if appStore.isAdmin}
   <div class="tabs tabs-border flex justify-center max-w-5xl mx-auto">
     <!-- 문제 탭 -->
     <input

@@ -1,28 +1,29 @@
 <script lang="ts">
-  import { invalidateAll } from '$app/navigation'
+  import { goto, invalidateAll } from '$app/navigation'
   import { page } from '$app/state'
-  import { AdminUser, appState, Guest, LoginModal, wsStore } from '$lib'
+  import { AdminUser, appStore, Guest, LoginModal } from '$lib'
+  import { onMount } from 'svelte'
   import "../style.css"
   import type { LayoutProps } from "./$types"
 
-  let { children }: LayoutProps = $props()
+  let { data, children }: LayoutProps = $props()
 
-  $effect(() => {
-    if (appState.username === Guest) {
-      wsStore.close()
-    } else {
-      if (wsStore.open) return
-      wsStore.connect()
+  onMount(() => {
+    console.log('cur_user: ', data.cur_user);
+    if (data.cur_user.id)
+      appStore.connect(data.cur_user);
+    return () => {
+      appStore.logout()
     }
   })
 </script>
 
-<div class={["flex text-xs whitespace-nowrap text-right mx-auto  absolute top-9 right-9", wsStore.open ? 'text-primary-content' : 'text-zinc-500']}>
-  {#if appState.username === Guest}
+<div class={["flex text-xs whitespace-nowrap text-right mx-auto  absolute top-9 right-9", appStore.isAuthenticated ? 'text-primary-content' : 'text-zinc-500']}>
+  {#if !appStore.isAuthenticated}
     <LoginModal/>
   {:else}
-    <div> {appState.username}</div>
-    {#if appState.username === AdminUser}<button type="button" onclick={() => {appState.logout(); invalidateAll();}} class="text-zinc-500 hover:cursor-pointer"> &nbsp;> </button>{/if}
+    <div> {appStore.username}</div>
+    <button type="button" onclick={() => {appStore.logout(); goto('/');}} class="text-zinc-500 hover:cursor-pointer"> &nbsp;>>> </button>
   {/if}
 </div>
 

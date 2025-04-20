@@ -1,20 +1,20 @@
 <script lang="ts">
-  import { AdminUser, appState, wsStore } from '$lib'
+  import { appStore, AdminUser } from '$lib'
   import Modal from './Modal.svelte'
 
   let modal_open = $state(false)
   
   async function login(password: string) {
     try {
-      const response = await fetch('/api/login', {
+      const res = await fetch('/api/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username: AdminUser, password }),
       })
 
-      if (response.ok) {
-        appState.login(AdminUser)
-        // wsStore.connect()
+      if (res.ok) {
+        const user = await res.json()
+        appStore.connect({username: user.username, id: user.id})
       }
     } catch (error) {
       console.error('로그인 실패:', error)

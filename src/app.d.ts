@@ -4,6 +4,11 @@ declare global {
   // 난이도 레벨 타입
   type DifficultyLevel = 1 | 2 | 3 | 4 | 5
 
+  interface Message  {
+    message: string;
+    payload?: {} | null;
+  };
+
   // 퀴즈 문제 인터페이스
   interface QuizQuestion {
     id?: string | number
@@ -24,10 +29,10 @@ declare global {
     createdAt: Date
   }
 
-  interface UserInfo {
-    id: string
+  interface User {
+    id?: string
     username: string
-    score: {
+    score?: {
       total_score: number
       today_score: number
     }

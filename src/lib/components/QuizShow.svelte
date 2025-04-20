@@ -10,8 +10,6 @@
   let { quiz, user_id }: Props = $props()
 
   async function saveAnswer(answer: string) {
-    console.log('user_id: ', user_id);
-    
     const res = await fetch('/api/answers/', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

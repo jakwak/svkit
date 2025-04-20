@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { appState, wsStore } from '$lib'
+	import { appStore } from '$lib'
   import { onMount } from 'svelte'
 	import type { PageProps } from './$types';
   import QuizShow from '$lib/components/QuizShow.svelte'
@@ -7,14 +7,14 @@
 	let { data }: PageProps = $props();
 
 	onMount(() => {
-		appState.login(data.cur_user)
+		appStore.connect({username: data.cur_user, id: data.cur_user_id})
 		return () => {
-			appState.logout()
+			appStore.logout()
 		}
 	})
 
 </script>
 
-{#if wsStore.quiz}
-	<QuizShow quiz={wsStore.quiz} user_id={data.cur_user_id}/>
+{#if appStore.quiz}
+	<QuizShow quiz={appStore.quiz} user_id={data.cur_user_id}/>
 {/if}

@@ -45,13 +45,22 @@
   
   let loading = $state(false)
 
-  function deleteQuiz(quiz: QuizQuestion) {
+  async function deleteQuiz(quiz: QuizQuestion) {
     quizList = quizList.filter((item) => item.id !== quiz.id)
 
+    // db에 저장된 문제를 삭제하고, 새로 고침
     if(quiz.save !== TagSave.NOT_SAVED) {
-      document.cookie = `redirectTo=${encodeURIComponent(window.location.href)}; path=/`;
-      goto('/?del=true&id=' + quiz.id)
-      invalidateAll()
+      // document.cookie = `redirectTo=${encodeURIComponent(window.location.href)}; path=/`;
+      // goto('/?del=true&id=' + quiz.id)
+      // invalidateAll()
+      const res = await fetch('/api/questions/' + quiz.id, {
+        method: 'DELETE',
+      })
+
+      if (res.ok) {
+        console.log('result: ', await res.json());
+        invalidateAll()
+      }
     }
   }
 
