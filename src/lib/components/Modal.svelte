@@ -6,28 +6,28 @@
     modal_top?: boolean
     bgColor?: string
     clickOutsidable?: boolean
-    autoClose?: boolean
+    autoClose?: number
     width?: string
     onClose?: () => void
     children?: any
   }
 
   let {
-    modal_open = true,
+    modal_open = $bindable(false),
     modal_top = true,
     bgColor = 'bg-transparent',
     clickOutsidable = true,
-    autoClose = false,
+    autoClose = 0,
     onClose = () => {},
     width = 'w-auto',
     children,
   }: Props = $props()
 
   $effect(() => {
-    if (modal_open && autoClose) {
+    if (modal_open && autoClose > 0) {
       setTimeout(() => {
         modal_open = false        
-      }, 3000)
+      }, autoClose)
     }
   })
 </script>
@@ -41,7 +41,7 @@
   ]}
 >
   <div
-    class={['modal-box max-w-5xl mx-auto p-5', width, bgColor]}
+    class={['modal-box max-w-5xl mx-auto p-2 rounded-xl', width, bgColor]}
     use:clickOutside={() => {modal_open && clickOutsidable && onClose()}}
   >
     {@render children?.()}
