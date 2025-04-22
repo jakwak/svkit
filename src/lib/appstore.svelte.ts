@@ -43,6 +43,12 @@ class AppStore {
       this.quiz = JSON.parse(data.quiz);
     });
 
+    this.socket.on('answer', (data) => {
+      console.log('new_answer: ', data);
+      
+    });
+    
+
     this.socket.on('disconnect', () => {
       console.log("❌ Socket.IO Disconnected");
     });
