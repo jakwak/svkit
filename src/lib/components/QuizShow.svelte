@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { Modal, shuffleAnswers, sumOfAllAnswerLengths } from '$lib'
+  import { appStore, Modal, shuffleAnswers, sumOfAllAnswerLengths } from '$lib'
+  import { appState } from '$lib/app_state.svelte'
   import Markdown from './Markdown.svelte'
 
   interface Props {
@@ -7,7 +8,7 @@
     user_id: number
   }
 
-  let { quiz, user_id }: Props = $props()
+  let { quiz = $bindable(), user_id }: Props = $props()
 
   let save_ok = $state(false)
   let confirm_open = $state(false)
@@ -26,8 +27,9 @@
     })
 
     if (res.ok) {
+      appStore.quiz = null
       console.log('result: ', await res.json())
-      save_ok = true
+      save_ok = true            
     }
   }
 </script>
@@ -76,21 +78,21 @@
 </div>
 
 <Modal bind:modal_open={confirm_open} onClose={() => (confirm_open = false)} modal_top={false} bgColor="bg-zinc-800">
-  <div class="text-3xl text-center border-primary p-5 border-2">
-    {answer} OK ?
-    <br /><br />
-    <button class="btn btn-error text-xl" onclick={() => (confirm_open = false)}>
-      취소
-    </button>
-    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-    <button
-      class="btn btn-success text-xl"
-      onclick={() => {saveAnswer(answer); confirm_open = false}}
-    >
-      확인
-    </button>
-  </div>
-</Modal>
+  <div class="text-3xl text-center p-8 border-primary border-2 rounded-lg bg-base-200">
+    <div class="mb-6"><span class="underline font-bold">{answer}</span></div>
+    <div class="mb-6 text-5xl">맞나요 ?</div>
+    <div class="flex justify-center gap-6">
+      <button class="btn btn-error btn-outline text-xl hover:scale-105 transition-transform" onclick={() => (confirm_open = false)}>
+        취소
+      </button>
+      <button
+        class="btn btn-success btn-outline text-xl hover:scale-105 transition-transform"
+        onclick={() => {saveAnswer(answer); confirm_open = false}}
+      >
+        확인
+      </button>
+    </div>
+  </div></Modal>
 
 
 <Modal

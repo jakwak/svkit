@@ -77,7 +77,8 @@
       <div class="relative group">
         <!-- 유저 박스 -->
         <div
-          class="border-1 border-primary text-primary hover:text-secondary p-4 rounded-xl hover:border-secondary items-center flex flex-col space-y-3 select-none"
+          class="border-1 border-primary text-primary hover:text-secondary p-4 rounded-xl hover:border-secondary items-center flex flex-col space-y-3 select-none 
+          {appStore.users.some((online_user) => online_user === user.username) ? 'bg-secondary border-secondary text-white font-semibold': ''}"
         >
           <div class="flex items-end">
             <div class="hidden group-hover:block">

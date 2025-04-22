@@ -1,17 +1,17 @@
 import { io, type Socket } from 'socket.io-client';
-import { Guest } from './globals'
+import { AdminUser, Guest } from './globals'
 
 class AppStore {
-  cur_user = $state({username: 'Guest'}) as User;
+  cur_user = $state({username: Guest}) as User;
   users = $state([]) as string[];
   quiz = $state(null) as QuizQuestion | null;
   socket = $state(null) as Socket | null;
 
   get isAuthenticated() {
-    return this.cur_user.username !== 'Guest';
+    return this.cur_user.username !== Guest;
   }
   get isAdmin() {
-    return this.cur_user.username === '선생님'
+    return this.cur_user.username === AdminUser
   }
 
   get username() {
@@ -31,10 +31,13 @@ class AppStore {
       this.socket?.emit("join", { username: user.username });
     });
 
-    this.socket.on('message', (data) => {
-      console.log('📥 received:', data);
-      if (data.users) this.users = data.users;
+    this.socket.on('users', (data) => {
+      this.users = data.users;
     });
+
+    this.socket.on('message', (data) => {
+      console.log('📥 received:', data);      
+    });    
 
     this.socket.on('quiz', (data) => {
       this.quiz = JSON.parse(data.quiz);

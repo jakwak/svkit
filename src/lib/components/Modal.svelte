@@ -41,7 +41,7 @@
   ]}
 >
   <div
-    class={['modal-box max-w-5xl mx-auto p-2 rounded-xl', width, bgColor]}
+    class={['modal-box max-w-5xl mx-auto p-2 rounded-md', width, bgColor]}
     use:clickOutside={() => {modal_open && clickOutsidable && onClose()}}
   >
     {@render children?.()}

@@ -10,7 +10,6 @@
   let { data, children }: LayoutProps = $props()
 
   onMount(() => {
-    console.log('cur_user: ', data.cur_user)
     if (data.cur_user.id) appStore.connect(data.cur_user)
     return () => {
       appStore.logout()
