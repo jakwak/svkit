@@ -10,7 +10,11 @@
   let { data, children }: LayoutProps = $props()
 
   onMount(() => {
-    if (data.cur_user.id) appStore.connect(data.cur_user)
+    if (data.cur_user.id) {
+      appStore.connect(data.cur_user)
+      if (appStore.username !== AdminUser)
+        goto('/quizz/' + appStore.username)
+    }
     return () => {
       appStore.logout()
     }

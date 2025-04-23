@@ -1,6 +1,5 @@
 <script lang="ts">
   import { appStore, Modal, shuffleAnswers, sumOfAllAnswerLengths } from '$lib'
-  import { appState } from '$lib/app_state.svelte'
   import Markdown from './Markdown.svelte'
 
   interface Props {
@@ -51,7 +50,7 @@
     >
       {#each shuffleAnswers(quiz.correctAnswer, quiz.wrongAnswers) as item}
         <button
-          class={['p-1 cursor-pointer flex font-thin']}
+          class={['p-1 cursor-pointer flex font-thin w-fit']}
           onclick={() => {
             // saveAnswer(item.answer)
             answer = item.answer
@@ -68,7 +67,7 @@
             {#if item.num === 4}④ &nbsp;
             {/if}
           </div>
-          <div class="hover:underline hover:underline-offset-5 w-fit">
+          <div class="hover:underline hover:underline-offset-5">
             <Markdown content={item.answer} />
           </div>
         </button>
@@ -77,8 +76,8 @@
   </div>
 </div>
 
-<Modal bind:modal_open={confirm_open} onClose={() => (confirm_open = false)} modal_top={false} bgColor="bg-zinc-800">
-  <div class="text-3xl text-center p-8 border-primary border-2 rounded-lg bg-base-200">
+<Modal bind:modal_open={confirm_open} onClose={() => (confirm_open = false)} modal_top={false} bgColor="bg-zinc-700">
+  <div class="text-3xl text-center p-8 border-primary border-2 rounded-lg bg-zinc-900">
     <div class="mb-6"><span class="underline font-bold">{answer}</span></div>
     <div class="mb-6 text-5xl">맞나요 ?</div>
     <div class="flex justify-center gap-6">
@@ -92,7 +91,8 @@
         확인
       </button>
     </div>
-  </div></Modal>
+  </div>
+</Modal>
 
 
 <Modal
