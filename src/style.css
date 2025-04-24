@@ -2,3 +2,14 @@
 @plugin "daisyui"{
   exclude: rootscrollgutter;
 }
+
+/* 스크롤바 숨기기 */
+::-webkit-scrollbar {
+  display: none;
+}
+
+/* Firefox 등 다른 브라우저에서도 스크롤바 숨기기 */
+* {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}

@@ -58,14 +58,10 @@
           }}
         >
           <div class="text-xl">
-            {#if item.num === 1}① &nbsp;
-            {/if}
-            {#if item.num === 2}② &nbsp;
-            {/if}
-            {#if item.num === 3}③ &nbsp;
-            {/if}
-            {#if item.num === 4}④ &nbsp;
-            {/if}
+            {#if item.num === 1}① &nbsp;{/if}
+            {#if item.num === 2}② &nbsp;{/if}
+            {#if item.num === 3}③ &nbsp;{/if}
+            {#if item.num === 4}④ &nbsp;{/if}
           </div>
           <div class="hover:underline hover:underline-offset-5">
             <Markdown content={item.answer} />

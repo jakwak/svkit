@@ -3,6 +3,7 @@
   import Modal from './Modal.svelte'
 
   let modal_open = $state(false)
+  let passwordInput: HTMLInputElement
   
   async function login(password: string) {
     try {
@@ -20,6 +21,12 @@
       console.error('로그인 실패:', error)
     }
   }
+
+  $effect(() => {
+    if (modal_open && passwordInput) {
+      passwordInput.focus()
+    }
+  })
 </script>
 
 <button
@@ -47,6 +54,7 @@
       </g>
     </svg>
     <input
+      bind:this={passwordInput}
       type="password"
       required
       placeholder="비밀번호"
