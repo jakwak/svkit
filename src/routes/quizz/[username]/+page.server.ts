@@ -5,7 +5,7 @@ export const load: PageServerLoad = async ({ params, fetch }) => {
   await fetch('/api/logout', { method: 'POST' })
   
   const username = params.username  
-  const res = await fetch(`/api/login`, {
+  const res = await fetch(`http://localhost:8000/login`, {
     method: 'POST',
     credentials: 'include',
     headers: {

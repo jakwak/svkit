@@ -4,7 +4,11 @@ import { defineConfig } from 'vite';
 
 export default defineConfig({
 	plugins: [tailwindcss(), sveltekit()],
+  preview: {
+    allowedHosts: ['gxg.kro.kr'],
+  },
 	server: {
+    allowedHosts: ['gxg.kro.kr'],
     proxy: {
       '/api': {
         target: 'http://localhost:8000',
