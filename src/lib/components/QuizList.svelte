@@ -91,7 +91,7 @@
 </div>
 <div class='text-xs text-right pr-3.5 mb-1'>page: {page}/{pages}, size: {size}/{total}</div>
 
-<div class="columns-1 sm:columns-2 gap-4">
+<div class="columns-xs xl:columns-3 2xl:columns-4 3xl:columns-5 gap-4">
   {#each quizList as quiz, i}
     <div class="mb-4 break-inside-avoid rounded-lg">
     <QuizView bind:quiz={quizList[i]} {deleteQuiz} />

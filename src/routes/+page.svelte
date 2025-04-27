@@ -3,27 +3,9 @@
   import { onMount } from 'svelte'
   import type { PageProps } from './$types'
   import { io } from 'socket.io-client'
+  import Talk from '$lib/components/XYInputText.svelte'
 
   let { data }: PageProps = $props()
-
-  let socket;
-  let username = '';
-  let message = '';
-  let messages: { sender: string; message: string }[] = [];
-
-  // onMount(() => {
-  //   socket = io("http://localhost:8000", {
-  //     path: "/ws2/socket.io",
-  //   });
-
-  //   socket.on('connect', () => {
-  //     console.log('✅ Connected to server');
-  //   });
-
-  //   socket.on("message", (data) => {
-  //     messages = [...messages, data];
-  //   });
-  // })
 </script>
 
 <svelte:head>
@@ -31,7 +13,7 @@
 </svelte:head>
 
 {#if appStore.isAdmin}
-  <div class="tabs tabs-border flex justify-center max-w-5xl mx-auto">
+  <div class="tabs tabs-border flex justify-center mx-auto">
     <!-- 문제 탭 -->
     <input
       type="radio"
@@ -55,6 +37,12 @@
     <div class="tab-content border-primary border-3 bg-base-100 p-5 rounded-md">
       <Users users={data.users} show_score={true} />
     </div>
+
+    <!-- 톡 탭 -->
+    <input type="radio" name="my_tabs" class="tab hover:text-secondary" aria-label="톡" />
+    <div class="tab-content border-primary border-3 bg-base-100 p-5 rounded-md">
+      <Talk />
+    </div>    
   </div>
 {:else}
   <div class="max-w-5xl mx-auto">

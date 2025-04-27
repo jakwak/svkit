@@ -33,11 +33,12 @@ class AppStore {
 
     this.socket.on('users', (data) => {
       this.users = data.users;
+      console.log('👥 users:', data.users);
     });
 
-    this.socket.on('message', (data) => {
-      console.log('📥 received:', data);      
-    });    
+    // this.socket.on('message', (data) => {
+    //   console.log('📥 message received:', data);      
+    // });    
 
     this.socket.on('quiz', (data) => {
       this.quiz = JSON.parse(data.quiz);
@@ -45,18 +46,16 @@ class AppStore {
 
     this.socket.on('answer', (data) => {
       console.log('new_answer: ', data);
-      
     });
     
-
     this.socket.on('disconnect', () => {
       console.log("❌ Socket.IO Disconnected");
     });
   }
 
-  sendMessage(message: Message) {
+  sendMessage(msg: Message) {
     if (this.socket) {
-      this.socket.emit("send_message", message);
+      this.socket.emit("message", msg);
     }
   }
 

@@ -61,8 +61,10 @@
 <header
   class="flex justify-between gap-4 border-b-2 border-primary px-4 items-end"
 >
-  <div class="w-auto mx-auto text-center text-2xl text-primary border-primary">
-    {page.url.pathname === '/' ? 'Home' : 'Quiz'}
+  <div class="w-auto mx-auto text-center text-3xl text-primary border-primary">
+    {#if page.url.pathname === '/'}Home{/if}
+    {#if page.url.pathname.startsWith('/quizz')}Quiz{/if}
+    {#if page.url.pathname === '/chat'}Chat{/if}
   </div>
 </header>
 
