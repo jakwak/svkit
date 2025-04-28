@@ -1,6 +1,7 @@
 <script lang="ts">
   import { appStore } from '$lib'
   import { onMount } from 'svelte'
+  import { useImageSocket } from './useImageSocket'
 
   function handleFileChange(event: Event) {
     if (container === null) {
@@ -56,33 +57,9 @@
   // 이미지 수신
 
   $effect(() => {
-    appStore.socket?.on('broadcast_image', (data) => {
-      console.log('image received', data)
-      const { filename, data: imageData } = data
-
-      let img = new Image()
-
-      if (typeof imageData === 'string') {
-        // Base64로 받은 경우
-        img.src = imageData
-      } else if (imageData instanceof ArrayBuffer) {
-        // ArrayBuffer로 받은 경우
-        const blob = new Blob([imageData])
-        const url = URL.createObjectURL(blob)
-        img.src = url
-      }
-
-      // 🔥 여기가 핵심
-      if (container) {
-        container.appendChild(img);
-
-        setTimeout(() => {
-          img.remove()
-        }, 3000) // 5초 후에 이미지 제거
-      } else {
-        console.error('container가 아직 준비 안됨');
-      }
-    })
+    if (appStore.socket && container) {
+      useImageSocket({socket: appStore.socket, container})
+    }
   })
 </script>
 
