@@ -15,6 +15,7 @@ export function useImageSocket({ socket, container }: UseImageSocketOptions) {
     }
 
     const { filename, data: imageData } = data;
+    const wrapper = document.createElement('div'); // 감싸는 div (애니메이션용)
     const img = new Image();
 
     if (typeof imageData === 'string') {
@@ -32,7 +33,16 @@ export function useImageSocket({ socket, container }: UseImageSocketOptions) {
     img.style.display = 'block';
     img.style.marginBottom = '10px';
 
-    container.appendChild(img);
+    wrapper.appendChild(img);
+    wrapper.style.opacity = '0';
+    wrapper.style.transition = 'opacity 1s ease';
+
+    container.appendChild(wrapper);
+
+    // 약간 늦게 opacity 조정해서 부드럽게 등장
+    requestAnimationFrame(() => {
+      wrapper.style.opacity = '1';
+    });
   }
 
   onMount(() => {
