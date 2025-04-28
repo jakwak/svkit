@@ -63,6 +63,9 @@
         onclick={() => {
           if (!appStore.isAdmin) goto(`/quizz/${user.username}`)
         }}
+        ontouchend={() => {
+          if (!appStore.isAdmin) goto(`/quizz/${user.username}`)
+        }}
       >
         {user.username}
       </button>

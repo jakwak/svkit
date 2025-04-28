@@ -1,4 +1,4 @@
 <script>
-  import XyInputText from "$lib/components/XYInputText.svelte"
+  import UploadImage from "./UploadImage.svelte"
 </script>
-<XyInputText />
+<UploadImage/>

@@ -10,14 +10,14 @@
   let { data, children }: LayoutProps = $props()
 
   onMount(() => {
-    if (data.cur_user) {
+    if (data.cur_user && !appStore.isAuthenticated) {
       appStore.connect(data.cur_user)
       if (appStore.username !== AdminUser)
         goto('/quizz/' + appStore.username)
     }
-    return () => {
-      appStore.logout()
-    }
+    // return () => {
+    //   appStore.logout()
+    // }
   })
 
   const options = {
