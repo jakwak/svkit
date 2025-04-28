@@ -30,7 +30,7 @@ declare global {
   }
 
   interface User {
-    id?: string
+    id: string
     username: string
     score?: {
       total_score: number
@@ -54,7 +54,9 @@ declare global {
 
   namespace App {
     // interface Error {}
-    // interface Locals {}
+    interface Locals {
+      user: User | null
+    }
     // interface PageData {}
     // interface PageState {}
     // interface Platform {}

@@ -112,7 +112,7 @@
             // const payload = JSON.stringify(quiz)
             appStore.sendQuiz(quiz as QuizQuestion)
           }}          
-          disabled={appStore.users.length === 0}
+          disabled={appStore.users.length === 1}
           type="button">보내기</button
         >
       </div>
