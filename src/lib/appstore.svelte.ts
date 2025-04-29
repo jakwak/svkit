@@ -1,7 +1,8 @@
 import { io, type Socket } from 'socket.io-client';
 import { AdminUser, Guest } from './globals'
+import { dev } from '$app/environment';
 
-const isDev = import.meta.env.MODE === 'development';
+// const isDev = import.meta.env.MODE === 'development';
 
 class AppStore {
   cur_user = $state({username: Guest}) as User;
@@ -28,7 +29,7 @@ class AppStore {
     if(this.socket) this.socket.disconnect();
 
     this.cur_user = user;
-    this.socket = io(isDev ? "http://localhost:8000" : "https://gxg.kro.kr", {
+    this.socket = io(dev ? "http://localhost:8000" : "https://gxg.kro.kr", {
       path: "/ws2/socket.io", // socketio_path 설정과 맞춰줘야 함
       transports: ['websocket'], // polling 문제 방지
     });
