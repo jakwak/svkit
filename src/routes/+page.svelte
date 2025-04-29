@@ -6,6 +6,14 @@
   import Talk from '$lib/components/XYInputText.svelte'
 
   let { data }: PageProps = $props()
+  
+  onMount(() => {
+    if (data.cur_user) appStore.connect(data.cur_user)
+
+    return () => {
+      appStore.logout()
+    }
+  })
 </script>
 
 <svelte:head>

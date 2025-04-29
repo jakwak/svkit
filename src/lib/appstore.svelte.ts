@@ -10,14 +10,18 @@ class AppStore {
   socket = $state(null) as Socket | null;
 
   get isAuthenticated() {
-    return this.cur_user.username !== Guest;
+    return this.username !== Guest;
   }
   get isAdmin() {
-    return this.cur_user.username === AdminUser
+    return this.username === AdminUser
   }
 
   get username() {
     return this.cur_user.username;
+  }
+
+  get score() {
+    return this.cur_user.score;
   }
   
   connect(user: User) {
@@ -73,7 +77,7 @@ class AppStore {
     this.cur_user = {username: Guest, id: '0'};
     this.users = [];
     if(this.socket) this.socket.disconnect();
-    await fetch("/api/logout", { method: "POST" });    
+    await fetch("/api/logout", { method: "POST" });        
   }
   
 }

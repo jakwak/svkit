@@ -15,7 +15,7 @@
 
       if (res.ok) {
         const user = await res.json()
-        appStore.connect({username: user.username, id: user.id})
+        appStore.connect(user)
       }
     } catch (error) {
       console.error('로그인 실패:', error)

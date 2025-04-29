@@ -7,18 +7,7 @@
   import type { LayoutProps } from './$types'
   import { SvelteToast } from '@zerodevx/svelte-toast'
 
-  let { data, children }: LayoutProps = $props()
-
-  onMount(() => {
-    if (data.cur_user && !appStore.isAuthenticated) {
-      appStore.connect(data.cur_user)
-      if (appStore.username !== AdminUser)
-        goto('/quizz/' + appStore.username)
-    }
-    // return () => {
-    //   appStore.logout()
-    // }
-  })
+  let { children }: LayoutProps = $props()
 
   const options = {
     duration: 4000, // duration of progress bar tween to the `next` value
@@ -44,7 +33,7 @@
   {#if !appStore.isAuthenticated}
     <LoginModal />
   {:else}
-    <div>{appStore.username}</div>
+    <div>{appStore.username}{#if !appStore.isAdmin}({appStore.score?.total_score}){/if}</div>
     <button
       type="button"
       onclick={() => {

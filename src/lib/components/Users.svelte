@@ -17,16 +17,21 @@
 
   async function handleScoreClick(username: string, today_score: number) {
     let prevScore: number
+    let prevTodayScore: number
     usersState.forEach((user) => {
       if (user.username === username) {
-        if (!user.score) user.score = { total_score: 0, today_score: 0 }        
+        if (!user.score) 
+          user.score = { total_score: 0, today_score: 0 }        
         prevScore = user.score.total_score
+        prevTodayScore = user.score.today_score
         if (user.score.total_score + today_score > MAX_SCORE)
           user.score.total_score = MAX_SCORE
         else if (user.score.total_score + today_score < 0)
           user.score.total_score = 0
-        else
-          user.score.total_score += today_score        
+        else {
+          user.score.total_score += today_score
+          user.score.today_score += today_score
+        }
       }
     })
 
@@ -43,6 +48,7 @@
       usersState.forEach((user) => {
         if (user.username === username && user.score) {
           user.score.total_score = prevScore
+          user.score.today_score = prevTodayScore
         }
       })
     }
@@ -89,7 +95,7 @@
                 <Triangle size={32} color="violet" />
               </button>
             </div>
-            <div class="font-bold text-5xl">{user.score?.total_score || 0}</div>
+            <div class="font-bold text-5xl">{user.score?.total_score || 0}<span class='text-lg text-secondary'> {user.score?.today_score}</span></div>
             <div class="hidden group-hover:block">
               <button type="button" class="cursor-pointer" onclick={() => handleScoreClick(user.username, 1)}>
                 <Triangle size={32} left={false} color="violet" />

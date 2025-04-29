@@ -6,20 +6,6 @@ export const load: PageServerLoad = async ({ fetch, url, cookies }) => {
   const del = url.searchParams.get('del') || false
   const id = url.searchParams.get('id')
   
-  // const prev = cookies.get('redirectTo') || '/'
-  
-  // if (del) {
-  //   const result = await fetch('/api/questions/' + id, {
-  //     method: 'DELETE',
-  //   })
-  //   if (result.ok) {   
-  //     cookies.delete('redirectTo', { path: '/' });
-  //     redirect(303, prev)
-  //   } else {
-  //     console.log('error: ', await result.json());
-  //   }
-  // }
-
   const page =  url.searchParams.get('page') || '1';
   const size = url.searchParams.get('size') || '5';
 
