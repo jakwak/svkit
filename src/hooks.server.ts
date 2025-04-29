@@ -4,10 +4,7 @@ const handleAuth: Handle = async ({ event, resolve }) => {
   const res = await event.fetch('http://localhost:8000/me')
 
   if (res.ok) {
-    const user = await res.json()
-    event.locals.user = user
-    console.log('user ', user);
-    
+    event.locals.user = await res.json()
   } else {
     const currentPath = event.url.pathname
 

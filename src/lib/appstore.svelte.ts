@@ -25,8 +25,9 @@ class AppStore {
   }
   
   connect(user: User) {
-    this.cur_user = user;
+    if(this.socket) this.socket.disconnect();
 
+    this.cur_user = user;
     this.socket = io(isDev ? "http://localhost:8000" : "https://gxg.kro.kr", {
       path: "/ws2/socket.io", // socketio_path 설정과 맞춰줘야 함
       transports: ['websocket'], // polling 문제 방지
@@ -74,9 +75,8 @@ class AppStore {
   
   async logout() {
     if(!this.isAuthenticated) return    
-    this.cur_user = {username: Guest, id: '0'};
     this.users = [];
-    if(this.socket) this.socket.disconnect();
+    this.connect({username: Guest, id: '0'});
     await fetch("/api/logout", { method: "POST" });        
   }
   

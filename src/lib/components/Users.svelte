@@ -67,10 +67,10 @@
             : '',
         ]}
         onclick={() => {
-          if (!appStore.isAdmin) goto(`/quizz/${user.username}`)
+          if (!appStore.isAdmin && !appStore.users.some((online_user) => online_user === user.username)) goto(`/quizz/${user.username}`)
         }}
         ontouchend={() => {
-          if (!appStore.isAdmin) goto(`/quizz/${user.username}`)
+          if (!appStore.isAdmin && !appStore.users.some((online_user) => online_user === user.username)) goto(`/quizz/${user.username}`)
         }}
       >
         {user.username}

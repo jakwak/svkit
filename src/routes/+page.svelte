@@ -7,13 +7,13 @@
 
   let { data }: PageProps = $props()
   
-  onMount(() => {
-    if (data.cur_user) appStore.connect(data.cur_user)
+  // onMount(() => {
+  //   if (data.cur_user) appStore.connect(data.cur_user)
 
-    return () => {
-      appStore.logout()
-    }
-  })
+  //   return () => {
+  //     appStore.logout()
+  //   }
+  // })
 </script>
 
 <svelte:head>

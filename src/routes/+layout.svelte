@@ -7,7 +7,7 @@
   import type { LayoutProps } from './$types'
   import { SvelteToast } from '@zerodevx/svelte-toast'
 
-  let { children }: LayoutProps = $props()
+  let { children, data }: LayoutProps = $props()
 
   const options = {
     duration: 4000, // duration of progress bar tween to the `next` value
@@ -20,6 +20,17 @@
     theme: {}, // css var overrides
     classes: [], // user-defined classes
   }
+
+  onMount(() => {
+    if (data.cur_user) 
+      appStore.connect(data.cur_user) 
+    else 
+      appStore.connect({username: Guest, id: '0'})
+
+    return () => {
+      appStore.logout()
+    }
+  })
 </script>
 
 <SvelteToast {options} />
