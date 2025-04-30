@@ -27,9 +27,9 @@
     else 
       appStore.connect({username: Guest, id: '0'})
 
-    return () => {
-      appStore.logout()
-    }
+    // return () => {
+    //   appStore.logout()
+    // }
   })
 </script>
 
