@@ -4,6 +4,7 @@
   import type { PageProps } from './$types'
   import { io } from 'socket.io-client'
   import Talk from '$lib/components/XYInputText.svelte'
+  import AiQuizStream from '$lib/components/AIQuizStream.svelte'
 
   let { data }: PageProps = $props()
   
@@ -34,6 +35,12 @@
 			<QuizList {...data.quizzes}/>
     </div>
 
+    <!-- 문제리스트 탭 -->
+    <input type="radio" name="my_tabs" class="tab hover:text-secondary" aria-label="문제지" />
+    <div class="tab-content border-primary border-3 bg-base-100 p-5 rounded-md">
+      <AiQuizStream />
+    </div>   
+
     <!-- 학생 탭 -->
     <input type="radio" name="my_tabs" class="tab hover:text-secondary" aria-label="학생" />
     <div class="tab-content border-primary border-3 bg-base-100 p-5 rounded-md">
@@ -50,7 +57,7 @@
     <input type="radio" name="my_tabs" class="tab hover:text-secondary" aria-label="톡" />
     <div class="tab-content border-primary border-3 bg-base-100 p-5 rounded-md">
       <Talk />
-    </div>    
+    </div>     
   </div>
 {:else}
   <div class="max-w-5xl mx-auto">

@@ -40,7 +40,7 @@
     </div>
     <div class="text-sm text-justify mt-5 flex font-thin items-baseline">
       <span class="text-lg font-semibold"
-        >{quiz.id ? `#${Number.isInteger(quiz.id) ? quiz.id : '?'}` : ''}.</span
+        >{quiz.id ? `#${Number.isInteger(quiz.id) ? quiz.id : '?'}` : '#?'}.</span
       >&nbsp; <Markdown content={quiz.question} />
     </div>
     <ul

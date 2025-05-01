@@ -1,3 +1,6 @@
+import { marked } from "marked"
+import DOMPurify from 'dompurify'; // XSS 방지를 위한 라이브러리 (선택적)
+
 export const difficultyOptions = [
   { value: 1, label: '매우 쉬움' },
   { value: 2, label: '쉬움' },
@@ -31,3 +34,45 @@ export function sumOfAllAnswerLengths(
     wrongAnswers.reduce((acc, cur) => acc + cur.length, 0)
   )
 }
+
+
+  // 마크다운을 안전하게 HTML로 변환하는 함수
+  function markdownToHtml(markdown: string): string {
+    // if (!markdown) return '';
+    
+    // // 이미 HTML인지 확인 (간단한 방법)
+    // if (markdown.includes('<') && markdown.includes('>')) {
+    //   return markdown; // 이미 HTML이면 그대로 반환
+    // }
+
+    // DOMPurify가 설치되어 있다면 사용 (XSS 방지)
+    if (typeof DOMPurify !== 'undefined') {
+      return DOMPurify.sanitize(marked.parse(markdown, { async: false }));
+    }
+    // 아니면 그냥 변환
+    return marked.parse(markdown, { async: false });
+  }  
+
+    // 간단한 마크다운 처리 함수
+  export  function simpleMarkdown(text: string): string {
+    if (!text) return '';
+    
+    // 이미 HTML인지 확인
+    if (text.includes('<') && text.includes('>')) {
+      return text;
+    }
+    
+    // 볼드 처리 (**텍스트**)
+    text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    
+    // 이탤릭 처리 (*텍스트*)
+    text = text.replace(/\*(.*?)\*/g, '<em>$1</em>');
+    
+    // 코드 처리 (`텍스트`)
+    text = text.replace(/`(.*?)`/g, '<code>$1</code>');
+    
+    // 줄바꿈 처리
+    text = text.replace(/\n/g, '<br>');
+    
+    return markdownToHtml(text);
+  }

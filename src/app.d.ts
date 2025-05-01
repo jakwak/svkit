@@ -52,6 +52,10 @@ declare global {
     ): void
   }
 
+  interface Window {
+    MathJax: any;
+  }
+  
   namespace App {
     // interface Error {}
     interface Locals {

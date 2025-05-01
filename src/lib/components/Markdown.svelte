@@ -49,8 +49,30 @@
     },
   }
 
+  // ✅ <b> 태그로 강조 처리 (**텍스트**)
+  const boldExtension = {
+    name: 'bold',
+    level: 'inline', // 인라인 요소로 처리
+    start(src: string) {
+      return src.match(/\*\*([^*]+)\*\*/)?.index
+    },
+    tokenizer(src: string, tokens: any) {
+      const match = /^\*\*([^*]+)\*\*/.exec(src)
+      if (match) {
+        return {
+          type: 'bold',
+          raw: match[0],
+          text: match[1],
+        }
+      }
+    },
+    renderer(token: any) {
+      return `<b>${token.text}</b>`
+    },
+  }
+
   // 🚀 marked에 확장 기능 등록
-  marked.use({ extensions: [underlineExtension] })
+  marked.use({ extensions: [underlineExtension, boldExtension] })
 </script>
 
-<div class="w-full">{@html marked(content)}</div>
+<div class="w-full">{@html marked(content.replace(/^[①-⑳]\s*/, ''))}</div>
