@@ -1,7 +1,7 @@
 <script lang="ts">
   import { marked } from 'marked'
 
-  let {content, block_cls="border-1 bg-zinc-850 p-2 text-gray-300 my-3 mr-5 flex justify-center items-center"} = $props()
+  let {content, block_cls="border-1 bg-zinc-850 p-2 text-gray-300 my-3 mr-5"} = $props()
 
   // 🚀 Custom Renderer 생성
   const renderer = new marked.Renderer()
@@ -9,7 +9,7 @@
   // ✅ BlockQuote 스타일 변경 (외곽선 추가)
   renderer.blockquote = (quote) => {
     const boldRegex = /\*\*([^*]+)\*\*/g
-    const boldText = quote.text.replace(boldRegex, (_, text) => `<u><b>${text}</b></u>`)
+    const boldText = quote.text.replace(boldRegex, (_, text) => `&nbsp;<u><b>${text}</b></u>&nbsp;`)
     const underlineRegex = /\=\=([^*]+)\=\=/g
     const underlineText = boldText.replace(underlineRegex, (_, text) => `&nbsp;<u><b>${text}</b></u>&nbsp;`)
 

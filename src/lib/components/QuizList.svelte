@@ -94,7 +94,7 @@
 <div class="columns-xs xl:columns-3 2xl:columns-4 3xl:columns-5 gap-4">
   {#each quizList as quiz, i}
     <div class="mb-4 break-inside-avoid rounded-lg">
-    <QuizView bind:quiz={quizList[i]} {deleteQuiz} />
-  </div>
+      <QuizView bind:quiz={quizList[i]} {deleteQuiz} />
+    </div>
   {/each}
 </div>

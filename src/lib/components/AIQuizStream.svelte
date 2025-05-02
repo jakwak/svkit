@@ -100,7 +100,7 @@
 
 <svelte:head>
   <!-- MathJax 로드 (수학 표기법 렌더링을 위해) -->
-  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  <!-- <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script> -->
 </svelte:head>
 
 
@@ -182,7 +182,7 @@
     {/if}
     
     {#each questions as question, i}
-      <div class="bg-zinc-900 shadow-md rounded p-4 transition-all duration-500 font-thin" 
+      <div class="shadow-md rounded p-4 transition-all duration-500 font-thin" 
            style="animation: fadeInUp 0.5s ease-out forwards;">
         <!-- <h2 class="text-xl font-semibold mb-2">문제 {i + 1}</h2>
         <p class="mb-2"><strong>과목:</strong> {question.subject}</p>
