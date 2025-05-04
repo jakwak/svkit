@@ -12,7 +12,7 @@
   import type { ActionResult } from '@sveltejs/kit'
   import { invalidateAll } from '$app/navigation'
 
-  let { quiz = $bindable({}), deleteQuiz = () => {} } = $props()
+  let { quiz = $bindable({}), deleteQuiz = () => {}, saveable = true } = $props()
 
   let edit = $state(false)
 </script>
@@ -83,6 +83,7 @@
           type="button">지우기</button
         >
         <form
+          hidden={!saveable}
           method="POST"
           action="?/saveQuiz"
           use:enhance={() => {
@@ -92,7 +93,7 @@
                   quiz.id = result.data.quiz.id
                 }
                 quiz.save = TagSave.SAVED
-                invalidateAll()
+                // invalidateAll()
               }
             }
           }}
@@ -107,6 +108,7 @@
           >
         </form>
         <button
+          hidden={!saveable}
           class="btn btn-primary btn-xs btn-ghost"
           onclick={() => {
             // const payload = JSON.stringify(quiz)

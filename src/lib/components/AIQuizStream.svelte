@@ -1,101 +1,163 @@
 <script lang="ts">
   import { toast } from '@zerodevx/svelte-toast'
-  import { onMount } from 'svelte';
+  import { onMount } from 'svelte'
 
   import QuizView from './QuizView.svelte'
+  import { difficultyOptions, getCurDateTime, Modal, TagSave } from '$lib'
 
   let topic = $state('')
   let subject = $state('초등 4학년 국어')
   let count = $state('10')
-  
+  let difficulty = $state(3)
+
   // Svelte 5 runes를 사용한 상태 관리
-  let questions = $state<any[]>([]);
-  let loading = $state(false);
-  let error = $state<string | null>(null);
-  
+  let questions = $state<any[]>([])
+  let loading = $state(false)
+  let error = $state<string | null>(null)
+
   // 수학 표기법 처리를 위한 설정 (MathJax 또는 KaTeX 사용 시)
   onMount(() => {
     // MathJax가 전역으로 로드되어 있다면 수학 표기법 렌더링
     if (typeof window.MathJax !== 'undefined') {
-      window.MathJax.typeset();
+      window.MathJax.typeset()
     }
-  });
-  
+  })
+
   // 스트리밍 요청 함수
   async function fetchQuestions() {
     // topic = topic === '' ? '과목 전체' : topic;
-    
-    loading = true;
-    error = null;
+
+    loading = true
+    error = null
     // 기존 문제를 유지하지 않고 새로 시작
-    questions = [];
-    
+    // questions = [];
+
     try {
       const response = await fetch('/api/stream_questions', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ subject, topic, count })
-      });
-      
+        body: JSON.stringify({ subject, topic, count, difficulty }),
+      })
+
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        throw new Error(`HTTP error! status: ${response.status}`)
       }
-      
-      const reader = response.body!.getReader();
-      const decoder = new TextDecoder();
-      
+
+      const reader = response.body!.getReader()
+      const decoder = new TextDecoder()
+
       while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        
-        const text = decoder.decode(value);
-        const lines = text.split('\n').filter(line => line.trim());
-        
+        const { done, value } = await reader.read()
+        if (done) break
+
+        const text = decoder.decode(value)
+        const lines = text.split('\n').filter((line) => line.trim())
+
         for (const line of lines) {
           try {
-            const data = JSON.parse(line);
+            const data = JSON.parse(line)
             if (data.status === 'success') {
               // 각 문제를 받을 때마다 즉시 UI에 반영하기 위한 처리
-              const newQuestion = data.question;
-              
+              const newQuestion = data.question
+              newQuestion.id = Math.random().toString(36).substring(2, 10)
+              newQuestion.save = 'not saved'
+
               // 1. 각 문제를 개별적으로 추가하고 마이크로태스크 큐를 사용하여 렌더링 사이클 보장
-              await new Promise(resolve => setTimeout(resolve, 0));
-              questions = [...questions, newQuestion];
-              
+              await new Promise((resolve) => setTimeout(resolve, 0))
+              questions = [newQuestion, ...questions]
+
               // 2. 선택적으로 약간의 지연을 추가하여 사용자가 각 문제가 추가되는 것을 볼 수 있게 함
               // 너무 빠르게 추가되면 사용자가 인지하기 어려울 수 있음
-              await new Promise(resolve => setTimeout(resolve, 300));
-              
+              await new Promise((resolve) => setTimeout(resolve, 100))
+
               // 3. 수학 표기법 렌더링 (MathJax 사용 시)
               if (typeof window.MathJax !== 'undefined') {
                 setTimeout(() => {
-                  window.MathJax.typeset();
-                }, 100);
+                  window.MathJax.typeset()
+                }, 100)
               }
             } else if (data.status === 'processing') {
-              toast.push(data.message);
+              toast.push(data.message, { duration: 1000 })
             } else if (data.status === 'error') {
-              console.error('Error:', data.error);
-              error = data.error;
+              console.error('Error:', data.error)
+              error = data.error
             }
           } catch (e) {
-            console.error('Failed to parse JSON:', line, e);
+            console.error('Failed to parse JSON:', line, e)
           }
         }
       }
     } catch (e) {
-      error = e instanceof Error ? e.message : String(e);
+      error = e instanceof Error ? e.message : String(e)
     } finally {
-      loading = false;
+      loading = false
     }
   }
-  
-  // 컴포넌트 마운트 시 자동으로 문제 가져오기
-  // onMount(() => {
-  //   fetchQuestions('수학', '삼각함수', 10);
-  // });
+
+  async function deleteQuiz(quiz: QuizQuestion) {
+    questions = questions.filter((item) => item.id !== quiz.id)
+
+    // db에 저장된 문제를 삭제하고, 새로 고침
+    if (quiz.save && quiz.save !== TagSave.NOT_SAVED) {
+      const res = await fetch('/api/questions/' + quiz.id, {
+        method: 'DELETE',
+      })
+
+      if (res.ok) {
+        // console.log('result: ', await res.json());
+        toast.push('문제가 삭제되었습니다.')
+        // invalidateAll()
+      }
+    }
+  }
+
+  let modal_open = $state(false)
+
+  async function handleSubmit(
+    event: SubmitEvent & { currentTarget: EventTarget & HTMLFormElement }
+  ) {
+    event.preventDefault()
+    const formData = new FormData(event.currentTarget)
+    const title = formData.get('title')
+    const description = formData.get('description')
+
+    const quizzes = questions.map((quiz) => ({
+      subject: quiz.subject,
+      topic: quiz.topic,
+      question: quiz.question,
+      correct_answer: quiz.correctAnswer,
+      wrong_answer1: quiz.wrongAnswers[0],
+      wrong_answer2: quiz.wrongAnswers[1],
+      wrong_answer3: quiz.wrongAnswers[2],
+      difficulty: quiz.difficulty
+    }))
+
+    const data = {
+      title,
+      description,
+      questions: quizzes,
+    }
+    
+    const res = await fetch('/api/worksheets/with-questions/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    })
+
+    if (res.ok) {
+      const result = await res.json()
+      console.log('result: ', result)
+      toast.push('문제가 저장되었습니다.')
+      // invalidateAll()
+
+      modal_open = false
+    }
+  }
+
 </script>
 
 <svelte:head>
@@ -103,12 +165,13 @@
   <!-- <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script> -->
 </svelte:head>
 
-
-<div
-  class="w-full max-w-2xl mx-auto flex flex-col"
->
-  <div class="flex gap-2 mb-2 items-end">
-    <select name="subject" class="select w-fit text-xs border-primary" bind:value={subject}>
+<div class="w-full max-w-3xl mx-auto flex flex-col">
+  <div class="flex gap-2 mb-2 items-center">
+    <select
+      name="subject"
+      class="select w-fit text-xs border-primary"
+      bind:value={subject}
+    >
       <option value="초등 4학년 국어">국어</option>
       <option value="초등 4학년 수학">수학</option>
       <option value="초등 4학년 사회">사회</option>
@@ -126,31 +189,46 @@
         bind:value={topic}
       />
       {#if topic}
-      <button
-        type="button"
-        class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-        aria-label="Close"
-        onclick={() => (topic = '')}
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke-width="2"
-          stroke="currentColor"
-          class="w-4 h-4"
+        <button
+          type="button"
+          class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+          aria-label="Close"
+          onclick={() => (topic = '')}
         >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            d="M6 18L18 6M6 6l12 12"
-          />
-        </svg>
-      </button>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke-width="2"
+            stroke="currentColor"
+            class="w-4 h-4"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M6 18L18 6M6 6l12 12"
+            />
+          </svg>
+        </button>
       {/if}
     </div>
 
-    <select name="count" class="select select-bordered w-fit text-xs border-primary" bind:value={count}>
+    <select
+      name="difficulty"
+      class="select select-bordered w-fit text-xs border-primary"
+      bind:value={difficulty}
+    >
+      {#each difficultyOptions as option}
+        <option value={option.value}>{option.label}</option>
+      {/each}
+      <option value="0">골고루</option>
+    </select>
+
+    <select
+      name="count"
+      class="select select-bordered w-fit text-xs border-primary"
+      bind:value={count}
+    >
       <option value="1">1문제</option>
       <option value="3">3문제</option>
       <option value="5">5문제</option>
@@ -158,57 +236,79 @@
       <option value="10">10문제</option>
     </select>
 
+    <!-- <label class="label text-xs">
+      <input type="checkbox" checked class="checkbox" />
+      Remember me
+    </label> -->
+
     <button
-      class="btn btn-info text-lg"
+      class="btn btn-primary"
       type="submit"
       onclick={fetchQuestions}
       name="ai_question">AI 출제</button
     >
+
+    <button
+      class="btn btn-info"
+      type="button"
+      disabled={loading || questions.length === 0}
+      onclick={() => (modal_open = true)}
+      name="ai_question">저장</button
+    >
   </div>
 </div>
 
-<div class="container mx-auto p-4">  
+<div>
   {#if error}
-    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+    <div
+      class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4"
+    >
       <p>{error}</p>
     </div>
   {/if}
-  
-  <div class="space-y-4">
+
+  <div class="space-y-1">
     {#if loading && questions.length === 0}
       <div class="text-center p-4">
         <p>문제를 생성하는 중입니다...</p>
       </div>
     {/if}
-    
-    {#each questions as question, i}
-      <div class="shadow-md rounded p-4 transition-all duration-500 font-thin" 
-           style="animation: fadeInUp 0.5s ease-out forwards;">
-        <!-- <h2 class="text-xl font-semibold mb-2">문제 {i + 1}</h2>
-        <p class="mb-2"><strong>과목:</strong> {question.subject}</p>
-        <p class="mb-2"><strong>주제:</strong> {question.topic}</p>
-        <p class="mb-2"><strong>난이도:</strong> {question.difficulty}</p>
-        <div class="mb-2">
-          <strong>질문:</strong>
-          <div class="mt-1 markdown-content">{@html simpleMarkdown(question.question)}</div>
+
+    <div class="masonry-grid">
+      {#each questions as question, i}
+        <div
+          class="shadow-md rounded transition-all duration-500 font-thin masonry-item"
+          style="animation: fadeInUp 0.5s ease-out forwards;"
+        >
+          <QuizView bind:quiz={questions[i]} {deleteQuiz} saveable={false}/>
         </div>
-        <div class="mb-2">
-          <strong>정답:</strong>
-          <div class="mt-1 markdown-content">{@html simpleMarkdown(question.correctAnswer)}</div>
-        </div>
-        <div>
-          <strong>오답:</strong>
-          <ul class="list-disc pl-5 mt-1">
-            {#each question.wrongAnswers as wrongAnswer}
-              <li class="markdown-content">{@html simpleMarkdown(wrongAnswer)}</li>
-            {/each}
-          </ul>
-        </div> -->
-        <QuizView bind:quiz={questions[i]} />
-      </div>
-    {/each}
+      {/each}
+    </div>
   </div>
 </div>
+
+<Modal
+  {modal_open}
+  bgColor="bg-zinc-900 border-primary border-2"
+  modal_top={true}
+  onClose={() => (modal_open = false)}
+>
+  <form
+    method="POST"
+    onsubmit={handleSubmit}
+    class="flex flex-col gap-2 w-md"
+  >
+    <input
+      type="text"
+      name="title"
+      class="input w-full"
+      value={subject.replace(/\s+/g, '_') + '-' + getCurDateTime()}
+    />
+    <textarea name="description" class="textarea w-full" placeholder="설명"
+    ></textarea>
+    <button type="submit" class="btn btn-primary">저장</button>
+  </form>
+</Modal>
 
 <style>
   @keyframes fadeInUp {
@@ -220,5 +320,21 @@
       opacity: 1;
       transform: translateY(0);
     }
+  }
+
+  .masonry-grid {
+    column-count: 2;
+    column-gap: 1rem;
+  }
+
+  @media (max-width: 576px) {
+    .masonry-grid {
+      column-count: 1;
+    }
+  }
+
+  .masonry-item {
+    break-inside: avoid;
+    margin-bottom: 1rem;
   }
 </style>

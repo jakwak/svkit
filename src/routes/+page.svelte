@@ -5,8 +5,12 @@
   import { io } from 'socket.io-client'
   import Talk from '$lib/components/XYInputText.svelte'
   import AiQuizStream from '$lib/components/AIQuizStream.svelte'
+  import QuizList2 from '$lib/components/QuizList2.svelte'
+  import WorkSheet from '$lib/components/WorkSheet.svelte'
 
-  let { data }: PageProps = $props()
+  let { data, form }: PageProps = $props()
+  
+  console.log('form: ', form);
   
   // onMount(() => {
   //   if (data.cur_user) appStore.connect(data.cur_user)
@@ -32,13 +36,13 @@
       checked={true}
     />
     <div class="tab-content border-primary border-3 bg-base-100 p-5 rounded-md space-y-4">
-			<QuizList {...data.quizzes}/>
+			<QuizList2 />
     </div>
 
-    <!-- 문제리스트 탭 -->
+    <!-- 문제지 탭 -->
     <input type="radio" name="my_tabs" class="tab hover:text-secondary" aria-label="문제지" />
-    <div class="tab-content border-primary border-3 bg-base-100 p-5 rounded-md">
-      <AiQuizStream />
+    <div class="tab-content border-primary border-3 bg-base-100 p-5 rounded-md space-y-4">
+      <WorkSheet />
     </div>   
 
     <!-- 학생 탭 -->
