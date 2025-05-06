@@ -2,7 +2,6 @@
   import {
   appStore,
     difficultyOptions,
-    shuffleAnswers,
     sumOfAllAnswerLengths,
     TagSave,
   } from '$lib'
@@ -10,9 +9,8 @@
   import QInput from './QInput.svelte'
   import { enhance } from '$app/forms'
   import type { ActionResult } from '@sveltejs/kit'
-  import { invalidateAll } from '$app/navigation'
 
-  let { quiz = $bindable({}), deleteQuiz = () => {}, saveable = true } = $props()
+  let { quiz = $bindable({}), deleteQuiz = () => {}, wsNum = 0, wsID = null} = $props()
 
   let edit = $state(false)
 </script>
@@ -34,14 +32,19 @@
         ]}>{quiz.subject.replace('초등 4학년', '')}</span
       >
       &nbsp;-&nbsp;
-      <span class="text-zinc-400 text-xs underline"
-        >{quiz.topic}({difficultyOptions[quiz.difficulty - 1].label})
+      <span class="text-zinc-400 text-xs underline">
+        {quiz.topic}({difficultyOptions[quiz.difficulty - 1].label}) {wsNum > 0 ? `#${quiz.id}` : ''}
       </span>
     </div>
     <div class="text-sm text-justify mt-5 flex font-thin items-baseline">
-      <span class="text-lg font-semibold"
-        >{quiz.id ? `#${Number.isInteger(quiz.id) ? quiz.id : '?'}` : '#?'}.</span
-      >&nbsp; <Markdown content={quiz.question} />
+      <span class="text-lg font-semibold">
+      {#if wsNum === 0}
+        {quiz.id ? `#${Number.isInteger(quiz.id) ? quiz.id : '?'}` : '#?'}.
+      {:else}
+        {wsNum}.
+      {/if}
+      </span>
+      &nbsp; <Markdown content={quiz.question} />
     </div>
     <ul
       class={[
@@ -83,7 +86,6 @@
           type="button">지우기</button
         >
         <form
-          hidden={!saveable}
           method="POST"
           action="?/saveQuiz"
           use:enhance={() => {
@@ -99,6 +101,7 @@
           }}
         >
           <input type="hidden" name="quiz" value={JSON.stringify(quiz)} />
+          <input type="hidden" name="wsID" value={wsID} />
           <button
             type="submit"
             class="btn btn-primary btn-xs btn-ghost {quiz.save === TagSave.SAVED
@@ -108,7 +111,6 @@
           >
         </form>
         <button
-          hidden={!saveable}
           class="btn btn-primary btn-xs btn-ghost"
           onclick={() => {
             // const payload = JSON.stringify(quiz)

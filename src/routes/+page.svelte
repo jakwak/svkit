@@ -9,16 +9,6 @@
   import WorkSheet from '$lib/components/WorkSheet.svelte'
 
   let { data, form }: PageProps = $props()
-  
-  console.log('form: ', form);
-  
-  // onMount(() => {
-  //   if (data.cur_user) appStore.connect(data.cur_user)
-
-  //   return () => {
-  //     appStore.logout()
-  //   }
-  // })
 </script>
 
 <svelte:head>

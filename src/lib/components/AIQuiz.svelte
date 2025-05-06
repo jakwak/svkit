@@ -2,7 +2,7 @@
   import { enhance } from '$app/forms'
   import { difficultyOptions } from '$lib/globals'
 
-  let { enhanced } = $props()
+  let { enhanced, curSubject = $bindable('초등 4학년 전과목') } = $props()
 
   let topic = $state('')
 </script>
@@ -14,13 +14,14 @@
   class="w-full max-w-2xl mx-auto flex flex-col"
 >
   <div class="flex gap-2 mb-2 items-end">
-    <select name="subject" class="select w-fit text-xs border-primary">
+    <select name="subject" class="select w-fit text-xs border-primary" bind:value={curSubject}>
       <option value="초등 4학년 국어">국어</option>
       <option value="초등 4학년 수학">수학</option>
       <option value="초등 4학년 사회">사회</option>
       <option value="초등 4학년 과학">과학</option>
       <option value="초등 4학년 영어">영어</option>
       <option value="초등 4학년 상식">상식</option>
+      <option value="초등 4학년 전과목">전과목</option>
     </select>
 
     <div class="relative w-full">

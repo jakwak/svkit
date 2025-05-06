@@ -1,9 +1,11 @@
 <script lang="ts">
   import { toast } from '@zerodevx/svelte-toast'
-  import { onMount } from 'svelte'
+  import { getContext, onMount } from 'svelte'
 
   import QuizView from './QuizView.svelte'
   import { difficultyOptions, getCurDateTime, Modal, TagSave } from '$lib'
+
+  let { id = null, worksheets = $bindable([]), curWorksheet = $bindable(null) } = $props()
 
   let topic = $state('')
   let subject = $state('초등 4학년 국어')
@@ -22,15 +24,45 @@
       window.MathJax.typeset()
     }
   })
+  
+
+  $effect(() => {
+    if (id) {
+      fetchSavedQuestions()
+    }
+  })
+
+  async function fetchSavedQuestions() {
+    try {
+      loading = true
+      const response = await fetch(`/api/worksheets/${id}/questions`)
+
+      if (!response.ok) {
+        questions = []
+        throw new Error(`등록된 문제가 없습니다.`)
+      }
+
+      const data = await response.json()
+
+      questions = data.map((question: any) => ({
+        ...question,
+        correctAnswer: question.correct_answer,
+        wrongAnswers: [question.wrong_answer1, question.wrong_answer2, question.wrong_answer3],
+        save: 'saved',}
+      ))
+    } catch (err) {
+      error =
+        err instanceof Error ? err.message : '문제를 불러오는데 실패했습니다.'
+      toast.push(error, { theme: { '--toastBackground': '#F56565' } })
+    } finally {
+      loading = false
+    }
+  }
 
   // 스트리밍 요청 함수
   async function fetchQuestions() {
-    // topic = topic === '' ? '과목 전체' : topic;
-
     loading = true
     error = null
-    // 기존 문제를 유지하지 않고 새로 시작
-    // questions = [];
 
     try {
       const response = await fetch('/api/stream_questions', {
@@ -62,7 +94,7 @@
               // 각 문제를 받을 때마다 즉시 UI에 반영하기 위한 처리
               const newQuestion = data.question
               newQuestion.id = Math.random().toString(36).substring(2, 10)
-              newQuestion.save = 'not saved'
+              newQuestion.save = TagSave.NOT_SAVED
 
               // 1. 각 문제를 개별적으로 추가하고 마이크로태스크 큐를 사용하여 렌더링 사이클 보장
               await new Promise((resolve) => setTimeout(resolve, 0))
@@ -131,7 +163,7 @@
       wrong_answer1: quiz.wrongAnswers[0],
       wrong_answer2: quiz.wrongAnswers[1],
       wrong_answer3: quiz.wrongAnswers[2],
-      difficulty: quiz.difficulty
+      difficulty: quiz.difficulty,
     }))
 
     const data = {
@@ -139,8 +171,8 @@
       description,
       questions: quizzes,
     }
-    
-    const res = await fetch('/api/worksheets/with-questions/', {
+
+    const res = await fetch('/api/worksheets/with-questions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -149,15 +181,14 @@
     })
 
     if (res.ok) {
+      modal_open = false
       const result = await res.json()
       console.log('result: ', result)
       toast.push('문제가 저장되었습니다.')
-      // invalidateAll()
-
-      modal_open = false
+      worksheets = [result, ...worksheets]
+      curWorksheet = result
     }
   }
-
 </script>
 
 <svelte:head>
@@ -251,6 +282,7 @@
     <button
       class="btn btn-info"
       type="button"
+      hidden={id !== null}
       disabled={loading || questions.length === 0}
       onclick={() => (modal_open = true)}
       name="ai_question">저장</button
@@ -259,14 +291,6 @@
 </div>
 
 <div>
-  {#if error}
-    <div
-      class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4"
-    >
-      <p>{error}</p>
-    </div>
-  {/if}
-
   <div class="space-y-1">
     {#if loading && questions.length === 0}
       <div class="text-center p-4">
@@ -275,12 +299,12 @@
     {/if}
 
     <div class="masonry-grid">
-      {#each questions as question, i}
+      {#each questions as _, i}
         <div
           class="shadow-md rounded transition-all duration-500 font-thin masonry-item"
           style="animation: fadeInUp 0.5s ease-out forwards;"
         >
-          <QuizView bind:quiz={questions[i]} {deleteQuiz} saveable={false}/>
+          <QuizView bind:quiz={questions[i]} {deleteQuiz} wsNum={i + 1} wsID={id} />
         </div>
       {/each}
     </div>
@@ -293,11 +317,7 @@
   modal_top={true}
   onClose={() => (modal_open = false)}
 >
-  <form
-    method="POST"
-    onsubmit={handleSubmit}
-    class="flex flex-col gap-2 w-md"
-  >
+  <form method="POST" onsubmit={handleSubmit} class="flex flex-col gap-2 w-md">
     <input
       type="text"
       name="title"
@@ -308,6 +328,10 @@
     ></textarea>
     <button type="submit" class="btn btn-primary">저장</button>
   </form>
+</Modal>
+
+<Modal modal_open={loading} clickOutsidable={false} modal_top={false}>
+  <span class="loading loading-spinner loading-xl"></span>
 </Modal>
 
 <style>

@@ -13,6 +13,7 @@
   let totalPages: null | number = $state(null)
   let observer: IntersectionObserver
   let loadMoreTrigger: HTMLElement
+  let curSubject = $state('초등 4학년 전과목')
 
   $effect(() => {
     const eventSource = new EventSource('/api/questions_async?page=' + page)
@@ -34,7 +35,7 @@
           correctAnswer: data.correct_answer,
           wrongAnswers: data.wrong_answers,
           difficulty: data.difficulty,
-          save: 'saved',
+          save: TagSave.SAVED,
         }
         quizList = [...quizList, quiz]
       } catch (error) {
@@ -76,9 +77,6 @@
 
     // db에 저장된 문제를 삭제하고, 새로 고침
     if(quiz.save !== TagSave.NOT_SAVED) {
-      // document.cookie = `redirectTo=${encodeURIComponent(window.location.href)}; path=/`;
-      // goto('/?del=true&id=' + quiz.id)
-      // invalidateAll()
       const res = await fetch('/api/questions/' + quiz.id, {
         method: 'DELETE',
       })
@@ -95,15 +93,21 @@
   <span class="loading loading-spinner loading-xl"></span>
 </Modal>
 
-<AiQuiz enhanced={() => {
+<AiQuiz  bind:curSubject enhanced={({ formData }: { formData: FormData }) => {
+  if(formData.get('subject') === '초등 4학년 전과목') {
+    toast.push('과목을 선택하세요', { theme: { '--toastBackground': '#F56565' }})
+    return
+  }
+
   loading = true
   return async ({ result }: { result: ActionResult}) => {
+
     // await update()
     loading = false
     if (result.type === 'success') {
       if (result.data?.quiz) {
         result.data.quiz.id = Math.random().toString(36).substring(2, 10)
-        result.data.quiz.save = "not saved"
+        result.data.quiz.save = TagSave.NOT_SAVED
         quizList = [result.data?.quiz as QuizQuestion, ...quizList]
       }       
     }
@@ -112,9 +116,11 @@
 
 <div class="masonry-grid">
   {#each quizList as _, i}
-    <div class="masonry-item" in:fade={{ duration: 500 }}>
-      <QuizView bind:quiz={quizList[i]} {deleteQuiz} />
-    </div>
+    {#if curSubject === '초등 4학년 전과목' || curSubject === quizList[i].subject}
+      <div class="masonry-item" in:fade={{ duration: 500 }}>
+        <QuizView bind:quiz={quizList[i]} {deleteQuiz} />
+      </div>
+    {/if}
   {/each}
 </div>
 

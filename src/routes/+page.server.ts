@@ -39,10 +39,16 @@ export const actions = {
       })
     return { success: true, quiz: result }
   },
+  
   saveQuiz: async ({ request, fetch }) => {
     const formData = await request.formData()
     const quizJson = formData.get('quiz')
+    const wsID = formData.get('wsID')
+
+    console.log('wsID: ', wsID);
+    
     let quiz
+    
     if (typeof quizJson === 'string') {
       try {
         quiz = JSON.parse(quizJson)
@@ -69,6 +75,26 @@ export const actions = {
           difficulty: quiz.difficulty,
         }),
       })
+
+      if (result.ok) {
+        result = await result.json()
+        console.log('result.id: ', result.id);
+        
+        if(wsID) {
+          const addRes = await fetch(`/api/worksheets/${wsID}/questions`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({question_ids: [result.id]})
+          })
+          console.log('add to worksheet Ressult: ', addRes.ok);
+        }
+
+        return { quiz: result, save: quiz.save === TagSave.NOT_SAVED }
+      } else {
+        return { result }
+      }
     } else {
       result = await fetch(`/api/questions/${quiz.id}`, {
         method: 'PUT',
@@ -87,7 +113,8 @@ export const actions = {
     }
 
     if (result.ok) {
-      return { quiz: await result.json(), save: quiz.save === 'not saved' }
+      result = await result.json()
+      return { quiz: result, save: quiz.save ===  TagSave.NOT_SAVED }
     } else {
       return { result: await result.json() }
     }
