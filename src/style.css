@@ -96,3 +96,25 @@
 .markdown-content th {
   background-color: rgba(0, 0, 0, 0.1);
 }
+
+.masonry-grid {
+  column-count: 2;
+  column-gap: 1rem;
+}
+
+@media (max-width: 576px) {
+  .masonry-grid {
+    column-count: 1;
+  }
+}
+
+@media (min-width: 1300px) {
+  .masonry-grid {
+    column-count: 3;
+  }
+}  
+
+.masonry-item {
+  break-inside: avoid;
+  margin-bottom: 1rem;
+}

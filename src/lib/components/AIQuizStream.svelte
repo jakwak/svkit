@@ -345,20 +345,4 @@
       transform: translateY(0);
     }
   }
-
-  .masonry-grid {
-    column-count: 2;
-    column-gap: 1rem;
-  }
-
-  @media (max-width: 576px) {
-    .masonry-grid {
-      column-count: 1;
-    }
-  }
-
-  .masonry-item {
-    break-inside: avoid;
-    margin-bottom: 1rem;
-  }
 </style>

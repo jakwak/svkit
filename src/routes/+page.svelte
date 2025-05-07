@@ -7,6 +7,7 @@
   import AiQuizStream from '$lib/components/AIQuizStream.svelte'
   import QuizList2 from '$lib/components/QuizList2.svelte'
   import WorkSheet from '$lib/components/WorkSheet.svelte'
+  import TestMasonry from '$lib/components/TestMasonry.svelte'
 
   let { data, form }: PageProps = $props()
 </script>

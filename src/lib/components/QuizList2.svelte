@@ -98,10 +98,8 @@
     toast.push('과목을 선택하세요', { theme: { '--toastBackground': '#F56565' }})
     return
   }
-
   loading = true
   return async ({ result }: { result: ActionResult}) => {
-
     // await update()
     loading = false
     if (result.type === 'success') {
@@ -127,20 +125,3 @@
 <!-- 페이지 하단에 위치할 요소 -->
 <div bind:this={loadMoreTrigger}></div>
 
-<style>
-  .masonry-grid {
-    column-count: 2;
-    column-gap: 1rem;
-  }
-
-  @media (max-width: 576px) {
-    .masonry-grid {
-      column-count: 1;
-    }
-  }
-
-  .masonry-item {
-    break-inside: avoid;
-    margin-bottom: 1rem;
-  }
-</style>
