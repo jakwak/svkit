@@ -90,7 +90,7 @@
       aria-label={(curWorksheet as Worksheet).title}
       checked={true}
     />
-    <div class="tab-content bg-zinc-900 p-5 space-y-4">
+    <div class="tab-content bg-zinc-900 p-5 space-y-4 border-zinc-500 border-1">
       <AiQuizStream id={curWorksheet.id} />
     </div>
   {:else}
@@ -101,7 +101,7 @@
     aria-label="새 문제지"
     checked={!curWorksheet}
     />
-    <div class="tab-content bg-zinc-900 p-5 space-y-4">
+    <div class="tab-content bg-zinc-900 p-5 space-y-4 border-zinc-500 border-1">
       <AiQuizStream bind:worksheets bind:curWorksheet />
     </div>
   {/if}

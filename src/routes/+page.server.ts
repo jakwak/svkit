@@ -3,11 +3,11 @@ import type { Actions, PageServerLoad } from './$types'
 import { TagSave } from '$lib/globals'
 
 export const load: PageServerLoad = async ({ fetch, url, cookies }) => {
-  const del = url.searchParams.get('del') || false
-  const id = url.searchParams.get('id')
+  // const del = url.searchParams.get('del') || false
+  // const id = url.searchParams.get('id')
   
-  const page =  url.searchParams.get('page') || '1';
-  const size = url.searchParams.get('size') || '5';
+  // const page =  url.searchParams.get('page') || '1';
+  // const size = url.searchParams.get('size') || '5';
 
   const users = await fetch('/api/users').then((res) => res.json())
   // const quizzes = await fetch('/api/questions?page=' + page + '&size=' + size + '').then((res) => res.json())

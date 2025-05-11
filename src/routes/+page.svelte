@@ -1,13 +1,9 @@
 <script lang="ts">
-  import { Users, QuizList, AdminUser, appStore } from '$lib'
-  import { onMount } from 'svelte'
+  import { Users, appStore } from '$lib'
   import type { PageProps } from './$types'
-  import { io } from 'socket.io-client'
   import Talk from '$lib/components/XYInputText.svelte'
-  import AiQuizStream from '$lib/components/AIQuizStream.svelte'
   import QuizList2 from '$lib/components/QuizList2.svelte'
   import WorkSheet from '$lib/components/WorkSheet.svelte'
-  import TestMasonry from '$lib/components/TestMasonry.svelte'
 
   let { data, form }: PageProps = $props()
 </script>

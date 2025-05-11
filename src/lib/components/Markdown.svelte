@@ -22,10 +22,13 @@
       (_, text) => `&nbsp;<u><b>${text}</b></u>&nbsp;`
     )
 
+    const hasNewline = quote.text.includes('\n')
+    const textLength = quote.text.replace(/[*=\s]/g, '').length
+    const centerClass = !hasNewline && textLength <= 20 ? ' text-center' : ''
+
     const text = underlineText.replace(/\n/g, '<br>')
 
-    return `<blockquote class="${block_classs}">${text}</blockquote>`
-  }
+    return `<blockquote class="${block_classs}${centerClass}">${text}</blockquote>`  }
 
   marked.setOptions({
     gfm: true, // GitHub Flavored Markdown 사용
