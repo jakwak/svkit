@@ -1,0 +1,20 @@
+{
+  "project_git" : {
+    "sha1" : "0564697a6fc0854040a377d5aa13657db8c0e8f0",
+    "origin" : "https://github.com/jakwak/HelloDefold.git",
+    "branch" : "main"
+  },
+  "bob_arguments" : {
+    "sha1" : "d8e6e73a8efac6b9a72783027867e547b6a363e4",
+    "version" : "1.10.1",
+    "timestamp" : "2025-05-13 22:21:07"
+  },
+  "defold_sdk" : "d8e6e73a8efac6b9a72783027867e547b6a363e4",
+  "dependencies" : [ {
+    "link" : "https://github.com/defold/extension-websocket/archive/master.zip",
+    "md5" : "7D019D211FE4ADB3D885A47132FD1AB6"
+  }, {
+    "link" : "https://github.com/colyseus/colyseus-defold/archive/master.zip",
+    "md5" : "5CBB44723C83C5D2CBEBE0C108262CFA"
+  } ]
+}

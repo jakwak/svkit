@@ -4,6 +4,7 @@
   import type { PageProps } from './$types'
   import QuizShow from '$lib/components/QuizShow.svelte'
   import XyInputText from '$lib/components/XYInputText.svelte'
+  import GameFrame from '$lib/components/GameFrame.svelte'
 
   let { data }: PageProps = $props()
 
@@ -23,4 +24,6 @@
   />
 {:else if appStore.users.find((username) => username === AdminUser)}
   <XyInputText />
+{:else}
+  <GameFrame username={appStore.username} />
 {/if}

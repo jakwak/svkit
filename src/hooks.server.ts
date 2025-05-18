@@ -29,7 +29,7 @@ const handleAuth: Handle = async ({ event, resolve }) => {
 
   const user = event.locals.user
   const routeId = event.route.id
-  const protectedRoutes = ['/chat', '/profile', '/settings']
+  const protectedRoutes = ['/chat', '/profile', '/settings', '/game']
   const adminRoutes = ['/admin']
 
   // 로그인이 필요한 경로인데 로그인이 안 되어 있으면 로그인 페이지로 리다이렉트
