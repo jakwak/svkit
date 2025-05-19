@@ -4,8 +4,10 @@
   import Talk from '$lib/components/XYInputText.svelte'
   import QuizList2 from '$lib/components/QuizList2.svelte'
   import WorkSheet from '$lib/components/WorkSheet.svelte'
+  import GameFrame from '$lib/components/GameFrame.svelte'
 
   let { data, form }: PageProps = $props()
+
 </script>
 
 <svelte:head>
@@ -49,6 +51,12 @@
     <div class="tab-content border-primary border-3 bg-base-100 p-5 rounded-md">
       <Talk />
     </div>     
+
+    <input type="radio" name="my_tabs" class="tab hover:text-secondary" aria-label="게임" />
+    <div class="tab-content border-primary border-3 bg-base-100 p-5 rounded-md">
+      <GameFrame username={appStore.username}/>
+    </div>     
+
   </div>
 {:else}
   <div class="max-w-5xl mx-auto">

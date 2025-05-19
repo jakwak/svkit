@@ -219,6 +219,6 @@ fixed_update_frequency = 60
 max_time_step = 0.5
 
 [websocket]
-debug = 1
+debug = 0
 socket_timeout = 10000000
 

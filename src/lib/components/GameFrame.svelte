@@ -52,8 +52,21 @@
   ></iframe>
   
   <button 
+    class="home-button" 
+    onclick={() => {
+      window.location.href = "/";
+    }}
+    aria-label="홈으로 이동"
+  >
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+      <polyline points="9 22 9 12 15 12 15 22"></polyline>
+    </svg>
+  </button>
+
+  <button 
     class="fullscreen-button" 
-    on:click={toggleFullscreen}
+    onclick={toggleFullscreen}
     aria-label={isFullscreen ? "전체화면 종료" : "전체화면 시작"}
   >
     {#if isFullscreen}
@@ -105,6 +118,24 @@
     z-index: 1000;
   }
 
+  .home-button {
+    position: fixed;
+    bottom: 20px;
+    right: 60px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.5);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    transition: background-color 0.2s;
+    z-index: 1000;
+  }
+
   .fullscreen-button:hover {
     background: rgba(0, 0, 0, 0.8);
   }
@@ -114,9 +145,9 @@
     height: 24px;
   }
 
-  :global(body) {
+  /* :global(body) {
     margin: 0;
     padding: 0;
     overflow: hidden;
-  }
+  } */
 </style> 
