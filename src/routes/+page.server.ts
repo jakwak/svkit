@@ -10,6 +10,14 @@ export const load: PageServerLoad = async ({ fetch, url, cookies }) => {
   // const size = url.searchParams.get('size') || '5';
 
   const users = await fetch('/api/users').then((res) => res.json())
+  
+  // 선생님을 맨 뒤로 정렬
+  users.sort((a: { username: string }, b: { username: string }) => {
+    if (a.username === '선생님') return 1;
+    if (b.username === '선생님') return -1;
+    return a.username.localeCompare(b.username);
+  });
+
   // const quizzes = await fetch('/api/questions?page=' + page + '&size=' + size + '').then((res) => res.json())
   
   return {
