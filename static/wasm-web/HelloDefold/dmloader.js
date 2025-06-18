@@ -48,7 +48,7 @@ var CUSTOM_PARAMETERS = {
         return ("archive" + path + "");
     },
     engine_arguments: ["--verify-graphics-calls=false",],
-    custom_heap_size: 268435456,
+    custom_heap_size: 1073741824,
     full_screen_container: "#canvas-container",
     disable_context_menu: true,
     retry_time:1.0,
@@ -236,7 +236,7 @@ var EngineLoader = {
     asmjs_size: 4000000,
     wasm_instantiate_progress: 0,
 
-    stream_wasm: "false" === "true",
+    stream_wasm: "true" === "true",
 
     updateWasmInstantiateProgress: function(totalDownloadedSize) {
         EngineLoader.wasm_instantiate_progress = totalDownloadedSize * 0.1;
