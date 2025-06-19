@@ -89,7 +89,7 @@ var CUSTOM_PARAMETERS = {
         }
         prevInnerWidth = innerWidth;
         prevInnerHeight = innerHeight;
-        var width = 960;
+        var width = 1024;
         var height = 640;
         var targetRatio = width / height;
         var actualRatio = innerWidth / innerHeight;
@@ -225,7 +225,7 @@ var FileLoader = {
 var EngineLoader = {
     arc_sha1: "",
     wasm_sha1: "",
-    wasm_size: 3085132,
+    wasm_size: 2541820,
     wasmjs_sha1: "",
     wasmjs_size: 279074,
     wasm_pthread_sha1: "",
