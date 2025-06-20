@@ -9,7 +9,7 @@ developer = unnamed
 title_as_file_name = HelloDefold
 
 [display]
-width = 960
+width = 1024
 height = 640
 high_dpi = 0
 samples = 0
@@ -22,9 +22,9 @@ dynamic_orientation = 0
 display_device_info = 0
 
 [render]
-clear_color_red = 0
-clear_color_green = 0
-clear_color_blue = 0
+clear_color_red = 0.5
+clear_color_green = 0.7
+clear_color_blue = 1.0
 clear_color_alpha = 1
 
 [physics]
@@ -51,7 +51,7 @@ max_fixed_timesteps = 2
 
 [bootstrap]
 main_collection = /main/main.collectionc
-render = /orthographic/render/orthographic.renderc
+render = /.defold/assets/orthographic/render/orthographic.renderc
 
 [graphics]
 default_texture_min_filter = linear
@@ -123,7 +123,7 @@ max_count = 8
 max_count = 128
 
 [factory]
-max_count = 128
+max_count = 512
 
 [ios]
 launch_screen = /builtins/manifests/ios/LaunchScreen.storyboardc

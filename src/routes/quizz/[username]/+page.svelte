@@ -22,8 +22,8 @@
     quiz={appStore.quiz}
     user_id={Number.parseInt(appStore.cur_user.id)}
   />
-{:else if appStore.users.find((username) => username === AdminUser)}
-  <XyInputText />
+<!-- {:else if appStore.users.find((username) => username === AdminUser)}
+  <XyInputText /> -->
 {:else}
   <GameFrame username={appStore.username} />
 {/if}
