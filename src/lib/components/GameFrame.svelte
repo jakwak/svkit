@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { appStore } from "$lib/appstore.svelte"
   import { onMount } from "svelte";
 
   export let username: string;
@@ -54,6 +55,7 @@
   <button 
     class="home-button" 
     onclick={() => {
+      appStore.logout();
       window.location.href = "/";
     }}
     aria-label="홈으로 이동"

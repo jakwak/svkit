@@ -1,6 +1,7 @@
 {
   "project_git" : {
-    "sha1" : "fd9eb2fffb5e14f95893a5d70099bf49ca09e32a",
+    "sha1" : "d7f7e12762905d0a8b86fb9729d194c7df348a33",
+    "origin" : "git@github.com:jakwak/HelloDefold.git",
     "branch" : "main"
   },
   "bob_arguments" : {
@@ -11,7 +12,7 @@
   "defold_sdk" : "7a0e23b3fcab4c5db82f2b32f5d8ac5df9467c9d",
   "dependencies" : [ {
     "link" : "https://github.com/britzl/defold-orthographic/archive/master.zip",
-    "md5" : "038626AED85BE7598F2ABB0C6ABDA106"
+    "md5" : "7743A4E02C94BD4B0F3F757D2CB66AC8"
   }, {
     "link" : "https://github.com/defold/extension-websocket/archive/master.zip",
     "md5" : "7FB783B136E880BA3DD11B91E3E5BF61"
