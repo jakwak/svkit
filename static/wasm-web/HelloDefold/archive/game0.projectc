@@ -9,8 +9,8 @@ developer = unnamed
 title_as_file_name = HelloDefold
 
 [display]
-width = 1024
-height = 640
+width = 1920
+height = 1080
 high_dpi = 0
 samples = 0
 fullscreen = 0
