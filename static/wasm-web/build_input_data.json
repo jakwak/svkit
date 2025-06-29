@@ -1,6 +1,7 @@
 {
   "project_git" : {
-    "sha1" : "af26cdaa84a264d030459ca466e27b125df5a769",
+    "sha1" : "58fa3f36632792dc2efe2a80c90469d082028874",
+    "origin" : "git@github.com:jakwak/HelloDefold.git",
     "branch" : "main"
   },
   "bob_arguments" : {
