@@ -19,20 +19,26 @@
 
   async function handleScoreClick(username: string, today_score: number) {
     let prevScore: number
-    let prevTodayScore: number
+    let prevTodayGainedScore: number
+    let prevTodayLostScore: number
     usersState.forEach((user) => {
       if (user.username === username) {
         if (!user.score) 
-          user.score = { total_score: 0, today_score: 0 }        
+          user.score = { total_score: 0, today_gained_score: 0, today_lost_score: 0 }        
         prevScore = user.score.total_score
-        prevTodayScore = user.score.today_score
+        prevTodayGainedScore = user.score.today_gained_score
+        prevTodayLostScore = user.score.today_lost_score
         if (user.score.total_score + today_score > MAX_SCORE)
           user.score.total_score = MAX_SCORE
         else if (user.score.total_score + today_score < 0)
           user.score.total_score = 0
         else {
           user.score.total_score += today_score
-          user.score.today_score += today_score
+          if (today_score > 0) {
+            user.score.today_gained_score += today_score
+          } else {
+            user.score.today_lost_score += Math.abs(today_score)
+          }
         }
       }
     })
@@ -50,7 +56,8 @@
       usersState.forEach((user) => {
         if (user.username === username && user.score) {
           user.score.total_score = prevScore
-          user.score.today_score = prevTodayScore
+          user.score.today_gained_score = prevTodayGainedScore
+          user.score.today_lost_score = prevTodayLostScore
         }
       })
     }
@@ -91,13 +98,21 @@
           class="border-1 border-primary text-primary hover:text-secondary p-4 rounded-xl hover:border-secondary items-center flex flex-col space-y-3 select-none 
           {appStore.users.some((online_user) => online_user === user.username && user.username !== AdminUser) ? 'bg-secondary border-secondary text-white font-semibold': ''}"
         >
-          <div class="flex items-end">
+          <div class="flex items-center space-x-2">
             <div class="hidden group-hover:block">
               <button type="button" class="cursor-pointer" onclick={() => handleScoreClick(user.username, -1)}>
                 <Triangle size={32} color="violet" />
               </button>
             </div>
-            <div class="font-bold text-5xl">{user.score?.total_score || 0}<span class='text-lg text-secondary'> {user.score?.today_score}</span></div>
+            <div class="text-center">
+              <div class="flex items-center justify-center">
+                <div class="font-bold text-5xl">{user.score?.total_score || 0}</div>
+                <div class="flex flex-col ml-2 text-sm">
+                  <div class="text-green-500">+{user.score?.today_gained_score || 0}</div>
+                  <div class="text-red-500">-{user.score?.today_lost_score || 0}</div>
+                </div>
+              </div>
+            </div>
             <div class="hidden group-hover:block">
               <button type="button" class="cursor-pointer" onclick={() => handleScoreClick(user.username, 1)}>
                 <Triangle size={32} left={false} color="violet" />

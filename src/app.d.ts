@@ -34,7 +34,8 @@ declare global {
     username: string
     score?: {
       total_score: number
-      today_score: number
+      today_gained_score: number
+      today_lost_score: number
     }
   }
 
