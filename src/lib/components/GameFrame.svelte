@@ -2,10 +2,12 @@
   import { appStore } from "$lib/appstore.svelte"
   import { onMount } from "svelte";
 
-  export let username: string;
+  let { username, showGame = $bindable(false) } = $props();
   
   let iframeContainer: HTMLDivElement;
-  let isFullscreen = false;
+  let isFullscreen = $state(false);
+  let gameLoaded = $state(false);
+  let gameError = $state(false);
 
   onMount(() => {
     const updateSize = () => {
@@ -17,6 +19,24 @@
     const handleFullscreenChange = () => {
       isFullscreen = !!document.fullscreenElement;
     };
+
+    // WebGL 지원 확인
+    const checkWebGLSupport = () => {
+      try {
+        const canvas = document.createElement('canvas');
+        const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+        return !!gl;
+      } catch (e) {
+        return false;
+      }
+    };
+
+    if (!checkWebGLSupport()) {
+      console.error('WebGL is not supported in this browser');
+      alert('WebGL이 지원되지 않는 브라우저입니다. 게임을 실행할 수 없습니다.');
+      showGame = false;
+      return;
+    }
 
     document.addEventListener('fullscreenchange', handleFullscreenChange);
     window.addEventListener('resize', updateSize);
@@ -45,18 +65,48 @@
   bind:this={iframeContainer} 
   class="iframe-container"
 >
-  <iframe
-    id="defold-frame"
-    src="/wasm-web/HelloDefold/index.html?username={username}"
-    style="border: none;"
-    title="Defold Game"
-  ></iframe>
+  {#if gameError}
+    <div class="error-container">
+      <h2>게임 로딩 실패</h2>
+      <p>WebGL 오류가 발생했습니다. 다음을 확인해주세요:</p>
+      <ul>
+        <li>브라우저가 WebGL을 지원하는지 확인</li>
+        <li>하드웨어 가속이 활성화되어 있는지 확인</li>
+        <li>다른 탭을 닫고 다시 시도</li>
+      </ul>
+      <button onclick={() => { gameError = false; gameLoaded = false; }}>다시 시도</button>
+      <button onclick={() => { showGame = false; }}>닫기</button>
+    </div>
+  {:else}
+    {#if !gameLoaded}
+      <div class="loading-container">
+        <div class="loading-spinner"></div>
+        <p>게임을 로딩중입니다...</p>
+      </div>
+    {/if}
+    
+    <iframe
+      id="defold-frame"
+      src="/wasm-web/HelloDefold/index.html?username={username}"
+      style="border: none; {gameLoaded ? 'opacity: 1;' : 'opacity: 0;'}"
+      title="Defold Game"
+      onload={() => {
+        console.log('Game iframe loaded successfully');
+        gameLoaded = true;
+        gameError = false;
+      }}
+      onerror={() => {
+        console.error('Failed to load game iframe');
+        gameError = true;
+        gameLoaded = false;
+      }}
+    ></iframe>
+  {/if}
   
   <button 
     class="home-button" 
     onclick={() => {
-      appStore.logout();
-      window.location.href = "/";
+      showGame = false;
     }}
     aria-label="홈으로 이동"
   >
@@ -145,6 +195,73 @@
   .fullscreen-button svg {
     width: 24px;
     height: 24px;
+  }
+
+  .error-container {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.9);
+    color: white;
+    padding: 2rem;
+    border-radius: 10px;
+    text-align: center;
+    max-width: 500px;
+    z-index: 1000;
+  }
+
+  .error-container h2 {
+    color: #ff6b6b;
+    margin-bottom: 1rem;
+  }
+
+  .error-container ul {
+    text-align: left;
+    margin: 1rem 0;
+  }
+
+  .error-container button {
+    margin: 0.5rem;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+
+  .error-container button:first-of-type {
+    background: #4ecdc4;
+    color: white;
+  }
+
+  .error-container button:last-of-type {
+    background: #ff6b6b;
+    color: white;
+  }
+
+  .loading-container {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    color: white;
+    z-index: 999;
+  }
+
+  .loading-spinner {
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #3498db;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 1rem;
+  }
+
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
   }
 
   /* :global(body) {

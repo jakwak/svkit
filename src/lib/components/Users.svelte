@@ -69,12 +69,7 @@
     {#each [...usersState].filter(user => user.username !== '선생님') as user}
       <button
         type="button"
-        class={[
-          'btn btn-soft btn-primary text-5xl h-30 border-2 border-primary hover:border-secondary-content',
-          appStore.users.some((online_user) => online_user === user.username)
-            ? 'bg-secondary border-secondary text-white font-semibold'
-            : '',
-        ]}
+        class="btn btn-soft btn-primary text-5xl h-30 border-2 border-primary hover:border-secondary-content relative"
         onclick={() => {
           if (!appStore.isAdmin && !appStore.users.some((online_user) => online_user === user.username)) goto(`/quizz/${user.username}`)
         }}
@@ -83,6 +78,9 @@
         }}
       >
         {user.username}
+        {#if appStore.users.some((online_user) => online_user === user.username)}
+          <div class="online-badge"></div>
+        {/if}
       </button>
     {/each}
   </div>
@@ -95,9 +93,11 @@
       <div class="relative group">
         <!-- 유저 박스 -->
         <div
-          class="border-1 border-primary text-primary hover:text-secondary p-4 rounded-xl hover:border-secondary items-center flex flex-col space-y-3 select-none 
-          {appStore.users.some((online_user) => online_user === user.username && user.username !== AdminUser) ? 'bg-secondary border-secondary text-white font-semibold': ''}"
+          class="border-1 border-primary text-primary hover:text-secondary p-4 rounded-xl hover:border-secondary items-center flex flex-col space-y-3 select-none relative"
         >
+          {#if appStore.users.some((online_user) => online_user === user.username && user.username !== AdminUser)}
+            <div class="online-badge"></div>
+          {/if}
           <div class="flex items-center space-x-2">
             <div class="hidden group-hover:block">
               <button type="button" class="cursor-pointer" onclick={() => handleScoreClick(user.username, -1)}>
@@ -174,3 +174,16 @@
     </div>
   {/if}
 {/if}
+
+<style>
+  .online-badge {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    width: 10px;
+    height: 10px;
+    background-color: #ff6b6b;
+    border-radius: 50%;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  }
+</style>
