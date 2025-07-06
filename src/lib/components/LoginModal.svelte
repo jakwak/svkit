@@ -58,7 +58,7 @@
       type="password"
       required
       placeholder="비밀번호"
-      onkeydown={(e) => {
+      onkeydown={(e: KeyboardEvent) => {
         if (e.key === 'Enter') {
           login((e.target as HTMLInputElement).value)
           modal_open = false
