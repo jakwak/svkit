@@ -20,6 +20,11 @@
         console.log('수업 종료!', data)
         showClass = false
       })
+      // show_buttons 메시지 받기
+      appStore.socket?.on('show_buttons', (data) => {
+        console.log('버튼 표시!', data)
+        showButtons = true
+      })
     }
 
     return () => {
@@ -29,6 +34,7 @@
 
   let showGame = $state(false)
   let showClass = $state(false)
+  let showButtons = $state(false)
 
   function handleGameClick() {
     // 게임 버튼 클릭 시 처리
@@ -52,6 +58,15 @@
       <span class="char char4">주</span>
       <span class="char char5">세</span>
       <span class="char char6">요</span>
+    </div>
+  </div>
+{:else if showButtons}
+  <div class="buttons-container">
+    <div class="number-buttons">
+      <button class="number-button btn-1">1</button>
+      <button class="number-button btn-2">2</button>
+      <button class="number-button btn-3">3</button>
+      <button class="number-button btn-4">4</button>
     </div>
   </div>
 {:else}
@@ -82,10 +97,10 @@
   .container {
     display: flex;
     justify-content: center;
-    align-items: center;
     min-height: 100vh;
     padding: 20px;
-    margin-top: -100px;
+    margin-top: 100px;
+    align-items: flex-start;
   }
 
   .button-container {
@@ -238,6 +253,58 @@
     }
   }
 
+  .buttons-container {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+    padding: 0;
+    padding-top: 50px;
+  }
+
+  .number-buttons {
+    display: flex;
+    gap: 30px;
+    align-items: center;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .number-button {
+    width: 200px;
+    height: 200px;
+    border: none;
+    border-radius: 25px;
+    font-size: 120px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.2);
+    color: white;
+    text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.4);
+  }
+
+  .btn-1 {
+    background: linear-gradient(135deg, #fff2cc, #ffd966);
+  }
+
+  .btn-2 {
+    background: linear-gradient(135deg, #b3d9ff, #8ac4ff);
+  }
+
+  .btn-3 {
+    background: linear-gradient(135deg, #b3ffb3, #8aff8a);
+  }
+
+  .btn-4 {
+    background: linear-gradient(135deg, #ffb3ff, #ff8aff);
+  }
+
+  .number-button:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 18px 45px rgba(0, 0, 0, 0.3);
+  }
+
   @media (max-width: 768px) {
     .button-container {
       flex-direction: column;
@@ -252,6 +319,16 @@
 
     .waiting-text {
       font-size: 60px;
+    }
+
+    .number-buttons {
+      gap: 15px;
+    }
+
+    .number-button {
+      width: 120px;
+      height: 120px;
+      font-size: 72px;
     }
   }
 </style>
