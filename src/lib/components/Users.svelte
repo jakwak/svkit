@@ -78,7 +78,7 @@
         }}
       >
         {user.username}
-        {#if appStore.users.some((online_user) => online_user === user.username)}
+        {#if appStore.isOnline(user.username)}
           <div class="online-badge"></div>
         {/if}
       </button>

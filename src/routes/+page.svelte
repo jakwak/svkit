@@ -6,6 +6,7 @@
   import WorkSheet from '$lib/components/WorkSheet.svelte'
   import GameFrame from '$lib/components/GameFrame.svelte'
   import ClassButtons from '$lib/components/ClassButtons.svelte'
+  import UserStatusList from '$lib/components/UserStatusList.svelte'
 
   let { data, form }: PageProps = $props()
 
@@ -114,6 +115,7 @@
               수업 종료
             </button>
             
+            <!-- <UserStatusList users={data.users} /> -->
             <ClassButtons color={true} />
           </div>
         {/if}
@@ -206,11 +208,11 @@
 
 <style>
   .start-class-btn {
-    width: 220px;
-    height: 90px;
+    width: 400px;
+    height: 160px;
     border: none;
-    border-radius: 20px;
-    font-size: 28px;
+    border-radius: 30px;
+    font-size: 64px;
     font-weight: bold;
     cursor: pointer;
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
@@ -221,13 +223,13 @@
     overflow: hidden;
     background: linear-gradient(135deg, #667eea, #764ba2);
     color: white;
-    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+    box-shadow: 0 15px 40px rgba(102, 126, 234, 0.3);
     animation: pulse-glow 3s ease-in-out infinite;
   }
 
   .start-class-btn:hover {
-    transform: translate(-50%, -50%) translateY(-8px) scale(1.05);
-    box-shadow: 0 20px 50px rgba(102, 126, 234, 0.5);
+    transform: translate(-50%, -50%) translateY(-12px) scale(1.05);
+    box-shadow: 0 25px 60px rgba(102, 126, 234, 0.5);
     background: linear-gradient(135deg, #7c3aed, #8b5cf6);
   }
 
@@ -238,10 +240,10 @@
 
   @keyframes pulse-glow {
     0%, 100% {
-      box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+      box-shadow: 0 15px 40px rgba(102, 126, 234, 0.3);
     }
     50% {
-      box-shadow: 0 10px 30px rgba(102, 126, 234, 0.5), 0 0 20px rgba(102, 126, 234, 0.3);
+      box-shadow: 0 15px 40px rgba(102, 126, 234, 0.5), 0 0 30px rgba(102, 126, 234, 0.3);
     }
   }
 
@@ -280,8 +282,8 @@
   }
 
   .start-class-btn:hover::after {
-    width: 220px;
-    height: 220px;
+    width: 400px;
+    height: 400px;
   }
 
   .start-class-btn:disabled {
@@ -297,13 +299,13 @@
 
   .class-container {
     position: relative;
-    height: 400px; /* 고정 높이 설정 */
+    height: 500px; /* 고정 높이 설정 */
     width: 100%;
   }
 
   .class-container-session {
     position: relative;
-    height: 400px; /* 고정 높이 설정 */
+    height: 500px; /* 고정 높이 설정 */
     width: 100%;
   }
 

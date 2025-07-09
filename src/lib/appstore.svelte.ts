@@ -25,6 +25,10 @@ class AppStore {
     return this.cur_user.score
   }
 
+  isOnline(username: string) {
+    return this.users.some((user) => user === username)
+  }
+
   connect(user: User) {
     if (this.socket) this.socket.disconnect()
 
