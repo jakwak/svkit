@@ -115,7 +115,7 @@
               수업 종료
             </button>
             
-            <!-- <UserStatusList users={data.users} /> -->
+            <UserStatusList users={data.users} />
             <ClassButtons color={true} />
           </div>
         {/if}

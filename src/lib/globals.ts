@@ -15,8 +15,8 @@ export enum TagSave {
   SAVED = 'saved',
 }
 
-export const AdminUser = '선생님'
-export const Guest = 'Guest'
+export const ADMIN_USER = '선생님'
+export const GUEST_USER = 'Guest'
 
 export function shuffleAnswers(correctAnswer: string, wrongAnswers: string[]) {
   return [correctAnswer, ...wrongAnswers]

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { appStore, AdminUser } from '$lib'
+  import { appStore, ADMIN_USER } from '$lib'
   import Modal from './Modal.svelte'
 
   let modal_open = $state(false)
@@ -10,7 +10,7 @@
       const res = await fetch('/api/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: AdminUser, password }),
+        body: JSON.stringify({ username: ADMIN_USER, password }),
       })
 
       if (res.ok) {
@@ -31,7 +31,7 @@
 
 <button
   class="cursor-pointer hover:text-secondary"
-  onclick={() => (modal_open = true)}>{AdminUser} ?</button
+  onclick={() => (modal_open = true)}>{ADMIN_USER} ?</button
 >
 
 <Modal {modal_open} onClose={()=>(modal_open=false)}>

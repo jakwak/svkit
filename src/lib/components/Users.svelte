@@ -1,6 +1,6 @@
 <script lang="ts">
   import { goto } from '$app/navigation'
-  import { AdminUser, appStore } from '$lib'
+  import { ADMIN_USER, appStore } from '$lib'
   import Triangle from './Triangle.svelte'
   import { fade, slide } from 'svelte/transition'
 
@@ -95,7 +95,7 @@
         <div
           class="border-1 border-primary text-primary hover:text-secondary p-4 rounded-xl hover:border-secondary items-center flex flex-col space-y-3 select-none relative"
         >
-          {#if appStore.users.some((online_user) => online_user === user.username && user.username !== AdminUser)}
+          {#if appStore.users.some((online_user) => online_user === user.username && user.username !== ADMIN_USER)}
             <div class="online-badge"></div>
           {/if}
           <div class="flex items-center space-x-2">

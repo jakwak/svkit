@@ -1,20 +1,20 @@
 import { io, type Socket } from 'socket.io-client'
-import { AdminUser, Guest } from './globals'
+import { ADMIN_USER, GUEST_USER } from './globals'
 import { dev } from '$app/environment'
 
 // const isDev = import.meta.env.MODE === 'development';
 
 class AppStore {
-  cur_user = $state({ username: Guest }) as User
+  cur_user = $state({ username: GUEST_USER }) as User
   users = $state([]) as string[]
   quiz = $state(null) as QuizQuestion | null
   socket = $state(null) as Socket | null
   classInSession = $state(false) // 수업 진행 상태 추가
   get isAuthenticated() {
-    return this.username !== Guest
+    return this.username !== GUEST_USER
   }
   get isAdmin() {
-    return this.username === AdminUser
+    return this.username === ADMIN_USER
   }
 
   get username() {
@@ -113,7 +113,7 @@ class AppStore {
   async logout() {
     if (!this.isAuthenticated) return
     this.users = []
-    this.connect({ username: Guest, id: '0' })
+    this.connect({ username: GUEST_USER, id: '0' })
     await fetch('/api/logout', { method: 'POST' })
   }
 }

@@ -1,12 +1,16 @@
 <script lang="ts">
   import { appStore } from '$lib/appstore.svelte'
+  import { ADMIN_USER } from '$lib/globals'
   
-  export let users: any[] = []
+  const { users } = $props<{ users: User[] }>()
   
   // 선생님 제외하고 학생만 필터링
-  $: students = users.filter(user => !user.is_admin)
-  $: onlineStudents = students.filter(user => user.is_online)
-  $: offlineStudents = students.filter(user => !user.is_online)
+  const students = $derived(users.filter((user: User) => user.username !== ADMIN_USER))
+  
+  // 현재 사용자가 온라인인지 확인하는 함
+  const isUserOnline = (username: string) => {
+    return appStore.isOnline(username)
+  }
 </script>
 
 <div class="user-status-container">
@@ -17,12 +21,12 @@
   
   <div class="users-grid">
     {#each students as user}
-      <div class="user-item {user.is_online ? 'online' : 'offline'}">
+      <div class="user-item {isUserOnline(user.username) ? 'online' : 'offline'}">
         <div class="user-avatar">
           <div class="avatar-circle">
             {user.username?.charAt(0)?.toUpperCase() || '?'}
           </div>
-          <div class="status-indicator {user.is_online ? 'online' : 'offline'}"></div>
+          <div class="status-indicator {isUserOnline(user.username) ? 'online' : 'offline'}"></div>
         </div>
         <div class="user-info">
           <span class="username">{user.username}</span>
@@ -31,21 +35,21 @@
     {/each}
   </div>
   
-  {#if onlineStudents.length > 0}
+  {#if students.length > 0}
     <div class="online-summary">
-      <span class="online-count">{onlineStudents.length}명 온라인</span>
+      <span class="online-count">{students.length}명 온라인</span>
     </div>
   {/if}
 </div>
 
 <style>
   .user-status-container {
-    background: rgba(255, 255, 255, 0.95);
+    background: rgba(31, 41, 55, 0.95);
     border-radius: 12px;
     padding: 16px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(75, 85, 99, 0.3);
     width: 100%;
     margin-bottom: 20px;
   }
@@ -56,19 +60,19 @@
     align-items: center;
     margin-bottom: 12px;
     padding-bottom: 8px;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    border-bottom: 1px solid rgba(156, 163, 175, 0.2);
   }
 
   .status-title {
     font-weight: 600;
     font-size: 14px;
-    color: #374151;
+    color: #f9fafb;
   }
 
   .user-count {
     font-size: 12px;
-    color: #6b7280;
-    background: #f3f4f6;
+    color: #d1d5db;
+    background: rgba(75, 85, 99, 0.5);
     padding: 2px 8px;
     border-radius: 12px;
   }
@@ -91,15 +95,23 @@
   }
 
   .user-item:hover {
-    background: rgba(0, 0, 0, 0.05);
+    background: rgba(156, 163, 175, 0.1);
   }
 
   .user-item.online {
-    background: rgba(34, 197, 94, 0.05);
+    background: rgba(34, 197, 94, 0.1);
   }
 
   .user-item.online:hover {
-    background: rgba(34, 197, 94, 0.1);
+    background: rgba(34, 197, 94, 0.15);
+  }
+
+  .user-item.offline {
+    background: rgba(75, 85, 99, 0.1);
+  }
+
+  .user-item.offline:hover {
+    background: rgba(75, 85, 99, 0.15);
   }
 
   .user-avatar {
@@ -118,7 +130,7 @@
     justify-content: center;
     font-weight: 600;
     font-size: 12px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
   }
 
   .status-indicator {
@@ -128,8 +140,8 @@
     width: 12px;
     height: 12px;
     border-radius: 50%;
-    border: 2px solid white;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    border: 2px solid #1f2937;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
   }
 
   .status-indicator.online {
@@ -138,7 +150,7 @@
   }
 
   .status-indicator.offline {
-    background: #9ca3af;
+    background: #6b7280;
   }
 
   .user-info {
@@ -151,34 +163,17 @@
   .username {
     font-weight: 600;
     font-size: 14px;
-    color: #1f2937;
+    color: #f9fafb;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     margin-bottom: 4px;
   }
 
-  .status-badge {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    margin-top: 4px;
-  }
-
-  .status-badge.online {
-    background: #22c55e;
-    box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.2);
-  }
-
-  .status-badge.offline {
-    background: #9ca3af;
-    box-shadow: 0 0 0 2px rgba(156, 163, 175, 0.2);
-  }
-
   .online-summary {
     margin-top: 12px;
     padding-top: 8px;
-    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    border-top: 1px solid rgba(156, 163, 175, 0.2);
     text-align: center;
   }
 
@@ -206,16 +201,16 @@
   }
 
   .users-grid::-webkit-scrollbar-track {
-    background: rgba(0, 0, 0, 0.05);
+    background: rgba(75, 85, 99, 0.2);
     border-radius: 2px;
   }
 
   .users-grid::-webkit-scrollbar-thumb {
-    background: rgba(0, 0, 0, 0.2);
+    background: rgba(156, 163, 175, 0.4);
     border-radius: 2px;
   }
 
   .users-grid::-webkit-scrollbar-thumb:hover {
-    background: rgba(0, 0, 0, 0.3);
+    background: rgba(156, 163, 175, 0.6);
   }
 </style> 

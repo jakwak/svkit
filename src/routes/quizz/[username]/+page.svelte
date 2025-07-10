@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { AdminUser, appStore } from '$lib'
+  import { ADMIN_USER, appStore } from '$lib'
   import { onMount } from 'svelte'
   import type { PageProps } from './$types'
   import QuizShow from '$lib/components/QuizShow.svelte'

@@ -1,7 +1,7 @@
 <script lang="ts">
   import { goto, invalidateAll } from '$app/navigation'
   import { page } from '$app/state'
-  import { AdminUser, appStore, Guest, LoginModal } from '$lib'
+  import { ADMIN_USER, appStore, GUEST_USER, LoginModal } from '$lib' 
   import { onMount } from 'svelte'
   import '../style.css'
   import type { LayoutProps } from './$types'
@@ -25,7 +25,7 @@
     if (data.cur_user) 
       appStore.connect(data.cur_user) 
     else 
-      appStore.connect({username: Guest, id: '0'})
+      appStore.connect({username: GUEST_USER, id: '0'})
 
     // return () => {
     //   appStore.logout()
