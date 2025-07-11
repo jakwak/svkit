@@ -68,6 +68,6 @@
   </div>
 </header>
 
-<main class="p-5">
+<main class="p-5 max-w-6xl mx-auto">
   {@render children()}
 </main>

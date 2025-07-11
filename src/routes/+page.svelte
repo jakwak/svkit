@@ -107,6 +107,9 @@
           </div>
         {:else}
           <div class="class-container-session container-fade-in">
+            <UserStatusList users={data.users} />
+            <ClassButtons color={true} />
+            
             <button 
               class="end-class-btn" 
               onclick={handleEndClass}
@@ -114,9 +117,6 @@
             >
               수업 종료
             </button>
-            
-            <UserStatusList users={data.users} />
-            <ClassButtons color={true} />
           </div>
         {/if}
       {/if}
@@ -200,9 +200,7 @@
     </div>
   </div>
 {:else}
-  <div class="max-w-5xl mx-auto">
-    <Users users={data.users} />
-  </div>
+  <Users users={data.users} />
 {/if}
 
 
@@ -307,6 +305,9 @@
     position: relative;
     height: 500px; /* 고정 높이 설정 */
     width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 8px; /* 컴포넌트 간 간격 줄이기 */
   }
 
   .start-class-btn {
@@ -317,17 +318,16 @@
   }
 
   .end-class-btn {
-    width: 80px;
-    height: 30px;
+    width: 120px;
+    height: 40px;
     border: 1px solid #ccc;
-    border-radius: 5px;
-    font-size: 12px;
-    font-weight: normal;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
     cursor: pointer;
     transition: all 0.2s ease;
-    position: absolute;
-    top: 2px;
-    right: 5px;
+    align-self: center;
+    margin-top: auto;
     background: #f5f5f5;
     color: #333;
   }

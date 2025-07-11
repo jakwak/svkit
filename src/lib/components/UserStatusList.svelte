@@ -7,6 +7,9 @@
   // 선생님 제외하고 학생만 필터링
   const students = $derived(users.filter((user: User) => user.username !== ADMIN_USER))
   
+  // 온라인 학생 수 계산
+  const onlineStudents = $derived(students.filter((user: User) => appStore.isOnline(user.username)))
+  
   // 현재 사용자가 온라인인지 확인하는 함
   const isUserOnline = (username: string) => {
     return appStore.isOnline(username)
@@ -15,8 +18,7 @@
 
 <div class="user-status-container">
   <div class="status-header">
-    <span class="status-title">학생 참여자</span>
-    <span class="user-count">{students.length}명</span>
+    <span class="status-title">참가자들: {onlineStudents.length}/{students.length}명</span>
   </div>
   
   <div class="users-grid">
@@ -35,11 +37,11 @@
     {/each}
   </div>
   
-  {#if students.length > 0}
+  <!-- {#if students.length > 0}
     <div class="online-summary">
       <span class="online-count">{students.length}명 온라인</span>
     </div>
-  {/if}
+  {/if} -->
 </div>
 
 <style>
@@ -51,7 +53,7 @@
     backdrop-filter: blur(10px);
     border: 1px solid rgba(75, 85, 99, 0.3);
     width: 100%;
-    margin-bottom: 20px;
+    margin-bottom: 8px;
   }
 
   .status-header {
