@@ -6,7 +6,7 @@ export const load: PageServerLoad = async ({ fetch, url, cookies }) => {
   try {
     // 백엔드 API에서 사용자 목록과 점수 정보 가져오기
     const scoresResponse = await fetch('http://localhost:8000/scores')
-    
+
     if (!scoresResponse.ok) {
       console.error('점수 정보 조회 오류:', scoresResponse.status)
       // 백엔드 API가 실패하면 빈 배열 반환
@@ -15,13 +15,12 @@ export const load: PageServerLoad = async ({ fetch, url, cookies }) => {
 
     // 백엔드에서 점수 정보와 함께 사용자 목록 가져오기
     const users = await scoresResponse.json()
-  
-  // 선생님을 맨 뒤로 정렬
-  users.sort((a: { username: string }, b: { username: string }) => {
-    if (a.username === '선생님') return 1;
-    if (b.username === '선생님') return -1;
-    return a.username.localeCompare(b.username);
-  });
+    // 선생님을 맨 뒤로 정렬
+    users.sort((a: { username: string }, b: { username: string }) => {
+      if (a.username === '선생님') return 1
+      if (b.username === '선생님') return -1
+      return a.username.localeCompare(b.username)
+    })
 
     return { users }
   } catch (error) {
@@ -52,16 +51,16 @@ export const actions = {
       })
     return { success: true, quiz: result }
   },
-  
+
   saveQuiz: async ({ request, fetch }) => {
     const formData = await request.formData()
     const quizJson = formData.get('quiz')
     const wsID = formData.get('wsID')
 
-    console.log('wsID: ', wsID);
-    
+    console.log('wsID: ', wsID)
+
     let quiz
-    
+
     if (typeof quizJson === 'string') {
       try {
         quiz = JSON.parse(quizJson)
@@ -91,17 +90,17 @@ export const actions = {
 
       if (result.ok) {
         result = await result.json()
-        console.log('result.id: ', result.id);
-        
-        if(wsID) {
+        console.log('result.id: ', result.id)
+
+        if (wsID) {
           const addRes = await fetch(`/api/worksheets/${wsID}/questions`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({question_ids: [result.id]})
+            body: JSON.stringify({ question_ids: [result.id] }),
           })
-          console.log('add to worksheet Ressult: ', addRes.ok);
+          console.log('add to worksheet Ressult: ', addRes.ok)
         }
 
         return { quiz: result, save: quiz.save === TagSave.NOT_SAVED }
@@ -127,7 +126,7 @@ export const actions = {
 
     if (result.ok) {
       result = await result.json()
-      return { quiz: result, save: quiz.save ===  TagSave.NOT_SAVED }
+      return { quiz: result, save: quiz.save === TagSave.NOT_SAVED }
     } else {
       return { result: await result.json() }
     }

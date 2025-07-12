@@ -70,15 +70,7 @@
     font-size: 14px;
     color: #f9fafb;
   }
-
-  .user-count {
-    font-size: 12px;
-    color: #d1d5db;
-    background: rgba(75, 85, 99, 0.5);
-    padding: 2px 8px;
-    border-radius: 12px;
-  }
-
+  
   .users-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
@@ -170,19 +162,6 @@
     overflow: hidden;
     text-overflow: ellipsis;
     margin-bottom: 4px;
-  }
-
-  .online-summary {
-    margin-top: 12px;
-    padding-top: 8px;
-    border-top: 1px solid rgba(156, 163, 175, 0.2);
-    text-align: center;
-  }
-
-  .online-count {
-    font-size: 12px;
-    color: #22c55e;
-    font-weight: 500;
   }
 
   @keyframes pulse {
