@@ -61,6 +61,11 @@ declare global {
     // interface Error {}
     interface Locals {
       user: User | null
+      score?: {
+        total_score: number
+        today_gained_score: number
+        today_lost_score: number
+      }
     }
     // interface PageData {}
     // interface PageState {}

@@ -5,6 +5,7 @@
   import QuizShow from '$lib/components/QuizShow.svelte'
   import XyInputText from '$lib/components/XYInputText.svelte'
   import GameFrame from '$lib/components/GameFrame.svelte'
+  import { supabase } from '$lib/supabase'
 
   let { data }: PageProps = $props()
 

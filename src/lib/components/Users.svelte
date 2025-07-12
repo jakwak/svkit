@@ -1,14 +1,17 @@
 <script lang="ts">
   import { goto } from '$app/navigation'
+import { invalidate } from '$app/navigation'
   import { ADMIN_USER, appStore } from '$lib'
+  import { supabase } from '$lib/supabase'
   import Triangle from './Triangle.svelte'
   import { fade, slide } from 'svelte/transition'
 
   interface Props {
     users: User[]
     show_score?: boolean
+    onUsersUpdate?: (updatedUsers: User[]) => void
   }
-  let { users, show_score = false }: Props = $props()
+  let { users, show_score = false, onUsersUpdate }: Props = $props()
 
   let usersState = $state(users)
   let showButtons = $state(false)
@@ -18,48 +21,101 @@
   const scores = [-10, -5, -4, -3, -1, +1, +3, +4, +5, +10]
 
   async function handleScoreClick(username: string, today_score: number) {
+    // 현재 사용자의 점수 상태 저장
     let prevScore: number
     let prevTodayGainedScore: number
     let prevTodayLostScore: number
-    usersState.forEach((user) => {
-      if (user.username === username) {
-        if (!user.score) 
-          user.score = { total_score: 0, today_gained_score: 0, today_lost_score: 0 }        
-        prevScore = user.score.total_score
-        prevTodayGainedScore = user.score.today_gained_score
-        prevTodayLostScore = user.score.today_lost_score
-        if (user.score.total_score + today_score > MAX_SCORE)
-          user.score.total_score = MAX_SCORE
-        else if (user.score.total_score + today_score < 0)
-          user.score.total_score = 0
-        else {
-          user.score.total_score += today_score
-          if (today_score > 0) {
-            user.score.today_gained_score += today_score
-          } else {
-            user.score.today_lost_score += Math.abs(today_score)
-          }
-        }
+    
+    const targetUser = usersState.find(user => user.username === username)
+    if (!targetUser) return
+    
+    if (!targetUser.score) {
+      targetUser.score = { total_score: 0, today_gained_score: 0, today_lost_score: 0 }
+    }
+    
+    prevScore = targetUser.score.total_score
+    prevTodayGainedScore = targetUser.score.today_gained_score
+    prevTodayLostScore = targetUser.score.today_lost_score
+    
+    // 50점 이상일 때 +점수는 무시
+    if (today_score > 0 && prevScore >= 50) {
+      console.log(`${username}의 점수가 이미 50점 이상이므로 +점수를 무시합니다.`)
+      return
+    }
+    
+    // 점수 계산 (마이너스 허용)
+    const newTotalScore = prevScore + today_score
+    const newTodayGainedScore = prevTodayGainedScore + (today_score > 0 ? today_score : 0)
+    const newTodayLostScore = prevTodayLostScore + (today_score < 0 ? Math.abs(today_score) : 0)
+    
+    // UI 즉시 업데이트
+    targetUser.score.total_score = newTotalScore
+    targetUser.score.today_gained_score = newTodayGainedScore
+    targetUser.score.today_lost_score = newTodayLostScore
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      let token = session?.access_token
+      
+      // 토큰이 없거나 만료된 경우 새로고침 시도
+      if (!token) {
+        console.log('토큰이 없거나 만료되어 새로고침을 시도합니다.')
+        const { data: { session: refreshedSession } } = await supabase.auth.refreshSession()
+        token = refreshedSession?.access_token
+        
+        if (!token) {
+          console.error('토큰 새로고침 실패 - 로그인이 필요합니다.')
+          // 실패 시 원래 값으로 되돌리기
+          targetUser.score.total_score = prevScore
+          targetUser.score.today_gained_score = prevTodayGainedScore
+          targetUser.score.today_lost_score = prevTodayLostScore
+          // 로그인 페이지로 리다이렉트
+          window.location.href = '/'
+          return
       }
-    })
+      }
 
     const result = await fetch('/api/score', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
       },
-      body: JSON.stringify({ username, today_score, reason: 'test' }),
+        body: JSON.stringify({ 
+          today_score, 
+          reason: `점수 변경: ${today_score > 0 ? '+' : ''}${today_score}`,
+          username: username
+        }),
     })
 
     if (!result.ok) {
-      console.log('Error:', result.status, result.statusText)
-      usersState.forEach((user) => {
-        if (user.username === username && user.score) {
-          user.score.total_score = prevScore
-          user.score.today_gained_score = prevTodayGainedScore
-          user.score.today_lost_score = prevTodayLostScore
+        console.error('점수 업데이트 실패:', result.status, result.statusText)
+        
+        // 401 오류는 토큰 만료를 의미
+        if (result.status === 401) {
+          console.error('토큰이 만료되었습니다. 다시 로그인해주세요.')
+          // 로그인 페이지로 리다이렉트
+          window.location.href = '/'
+          return
         }
-      })
+        
+        // 실패 시 원래 값으로 되돌리기
+        targetUser.score.total_score = prevScore
+        targetUser.score.today_gained_score = prevTodayGainedScore
+        targetUser.score.today_lost_score = prevTodayLostScore
+      } else {
+        console.log('점수 업데이트 성공')
+        // 서버 업데이트 성공 시 부모에게 업데이트된 사용자 정보 전달
+        if (onUsersUpdate) {
+          onUsersUpdate([...usersState])
+        }
+      }
+    } catch (error) {
+      console.error('점수 업데이트 오류:', error)
+      // 오류 시 원래 값으로 되돌리기
+      targetUser.score.total_score = prevScore
+      targetUser.score.today_gained_score = prevTodayGainedScore
+      targetUser.score.today_lost_score = prevTodayLostScore
     }
   }
 </script>
@@ -114,8 +170,13 @@
               </div>
             </div>
             <div class="hidden group-hover:block">
-              <button type="button" class="cursor-pointer" onclick={() => handleScoreClick(user.username, 1)}>
-                <Triangle size={32} left={false} color="violet" />
+              <button 
+                type="button" 
+                class="cursor-pointer {(user.score?.total_score || 0) >= 50 ? 'opacity-50' : ''}" 
+                onclick={() => handleScoreClick(user.username, 1)}
+                disabled={(user.score?.total_score || 0) >= 50}
+              >
+                <Triangle size={32} left={false} color={(user.score?.total_score || 0) >= 50 ? "gray" : "violet"} />
               </button>
             </div>
           </div>
@@ -166,7 +227,14 @@
           class="btn btn-outline btn-primary text-xl border-2 w-12 bg-zinc-900 hover:text-secondary
           {i === 0 ? 'rounded-l-2xl border-r-0' : ''}
           {i === scores.length - 1 ? 'rounded-r-2xl' : 'border-r-0'}"
-          onclick={() => usersState.forEach(user => handleScoreClick(user.username, score))}
+          onclick={() => usersState.forEach(user => {
+            // 50점 이상인 사용자는 +점수를 받지 않음
+            if (score > 0 && (user.score?.total_score || 0) >= 50) {
+              console.log(`${user.username}의 점수가 이미 50점 이상이므로 +${score}점을 무시합니다.`)
+              return
+            }
+            handleScoreClick(user.username, score)
+          })}
         >
           {score > 0 ? `+${score}` : score}
         </button>

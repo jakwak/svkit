@@ -1,11 +1,14 @@
 <script lang="ts">
   import { goto, invalidateAll } from '$app/navigation'
   import { page } from '$app/state'
-  import { ADMIN_USER, appStore, GUEST_USER, LoginModal } from '$lib' 
+  import { ADMIN_USER, appStore, GUEST_USER, SupabaseAuth } from '$lib' 
   import { onMount } from 'svelte'
   import '../style.css'
   import type { LayoutProps } from './$types'
   import { SvelteToast } from '@zerodevx/svelte-toast'
+  import { supabase } from '$lib/supabase'
+  import type { User } from '$lib/globals'
+  import LoginModal from '$lib/components/LoginModal.svelte'
 
   let { children, data }: LayoutProps = $props()
 
@@ -21,15 +24,85 @@
     classes: [], // user-defined classes
   }
 
-  onMount(() => {
-    if (data.cur_user) 
-      appStore.connect(data.cur_user) 
-    else 
-      appStore.connect({username: GUEST_USER, id: '0'})
+  onMount(async () => {
+    // Supabase 세션 확인
+    const { data: { session } } = await supabase.auth.getSession()
+    
+    if (session?.user) {
+      // 사용자 정보 설정
+      const user: User = {
+        id: session.user.id,
+        email: session.user.email,
+        username: session.user.user_metadata?.username || session.user.email?.split('@')[0] || GUEST_USER
+      }
 
-    // return () => {
-    //   appStore.logout()
-    // }
+      // 백엔드 API를 통해 점수 정보 가져오기
+      try {
+        const response = await fetch('/api/scores', {
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`
+          }
+        })
+        
+        if (response.ok) {
+          const scoresData = await response.json()
+          const userScore = scoresData.find((score: any) => score.id === session.user.id)
+          
+          if (userScore?.score) {
+            user.score = {
+              total_score: userScore.score.total_score,
+              today_gained_score: userScore.score.today_gained_score,
+              today_lost_score: userScore.score.today_lost_score
+            }
+          }
+        }
+      } catch (scoreError) {
+        console.log('점수 정보 가져오기 실패:', scoreError)
+      }
+
+      appStore.connect(user)
+    } else {
+      appStore.connect({username: GUEST_USER, id: '0'})
+    }
+
+    // 인증 상태 변경 감지
+    supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_IN' && session?.user) {
+        const user: User = {
+          id: session.user.id,
+          email: session.user.email,
+          username: session.user.user_metadata?.username || session.user.email?.split('@')[0] || GUEST_USER
+        }
+
+        // 백엔드 API를 통해 점수 정보 가져오기
+        try {
+          const response = await fetch('/api/scores', {
+            headers: {
+              'Authorization': `Bearer ${session.access_token}`
+            }
+          })
+          
+          if (response.ok) {
+            const scoresData = await response.json()
+            const userScore = scoresData.find((score: any) => score.id === session.user.id)
+            
+            if (userScore?.score) {
+                          user.score = {
+              total_score: userScore.score.total_score,
+              today_gained_score: userScore.score.today_gained_score,
+              today_lost_score: userScore.score.today_lost_score
+            }
+            }
+          }
+        } catch (scoreError) {
+          console.log('점수 정보 가져오기 실패:', scoreError)
+        }
+
+        appStore.connect(user)
+      } else if (event === 'SIGNED_OUT') {
+        appStore.connect({username: GUEST_USER, id: '0'})
+      }
+    })
   })
 </script>
 
@@ -47,7 +120,7 @@
     <div>{appStore.username}{#if !appStore.isAdmin}({appStore.score?.total_score}){/if}</div>
     <button
       type="button"
-      onclick={() => {
+      onclick={async () => {
         appStore.logout()
         goto('/')
       }}

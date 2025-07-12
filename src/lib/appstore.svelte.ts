@@ -1,6 +1,7 @@
 import { io, type Socket } from 'socket.io-client'
-import { ADMIN_USER, GUEST_USER } from './globals'
+import { ADMIN_USER, GUEST_USER, type User } from './globals'
 import { dev } from '$app/environment'
+import { supabase } from '$lib/supabase'
 
 // const isDev = import.meta.env.MODE === 'development';
 
@@ -112,9 +113,14 @@ class AppStore {
 
   async logout() {
     if (!this.isAuthenticated) return
-    this.users = []
-    this.connect({ username: GUEST_USER, id: '0' })
-    await fetch('/api/logout', { method: 'POST' })
+    // 소켓 연결 해제 등 기존 로직
+    if (this.socket) this.socket.disconnect()
+      this.cur_user = { username: GUEST_USER, id: '0' }
+      this.users = []
+      this.quiz = null
+      this.classInSession = false
+      // Supabase 세션도 함께 종료
+      supabase.auth.signOut()
   }
 }
 

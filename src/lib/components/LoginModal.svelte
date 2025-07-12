@@ -1,30 +1,76 @@
 <script lang="ts">
   import { appStore, ADMIN_USER } from '$lib'
+  import { supabase } from '$lib/supabase'
+  import { goto } from '$app/navigation'
   import Modal from './Modal.svelte'
 
   let modal_open = $state(false)
   let passwordInput: HTMLInputElement
+  let loading = $state(false)
+  let error = $state('')
   
   async function login(password: string) {
+    loading = true
+    error = ''
+
     try {
-      const res = await fetch('/api/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: ADMIN_USER, password }),
+      // 선생님 이메일로 로그인 (user8@gxg.kro.kr)
+      const { data, error: signInError } = await supabase.auth.signInWithPassword({
+        email: 'user8@gxg.kro.kr',
+        password: password
       })
 
-      if (res.ok) {
-        const user = await res.json()
-        appStore.connect(user)
+      if (signInError) {
+        error = '비밀번호가 올바르지 않습니다.'
+        return
       }
-    } catch (error) {
-      console.error('로그인 실패:', error)
+
+      if (data.user) {
+        // 사용자 정보와 점수 정보 가져오기
+        const user: any = {
+          id: data.user.id,
+          email: data.user.email,
+          username: data.user.user_metadata?.username || ADMIN_USER
+        }
+
+        // 점수 정보 가져오기
+        try {
+          const { data: scoreData } = await supabase
+            .from('scores')
+            .select('*')
+            .eq('user_id', data.user.id)
+            .single()
+
+          if (scoreData) {
+            user.score = {
+              total_score: scoreData.total_score,
+              today_gained_score: scoreData.today_gained_score,
+              today_lost_score: scoreData.today_lost_score
+            }
+          }
+        } catch (scoreError) {
+          console.log('점수 정보 없음:', scoreError)
+        }
+
+        appStore.connect(user)
+        modal_open = false
+        goto('/')
+      }
+    } catch (err: any) {
+      error = err.message || '로그인 중 오류가 발생했습니다.'
+    } finally {
+      loading = false
     }
+  }
+
+  function resetForm() {
+    error = ''
   }
 
   $effect(() => {
     if (modal_open && passwordInput) {
       passwordInput.focus()
+      resetForm()
     }
   })
 </script>
@@ -35,35 +81,31 @@
 >
 
 <Modal {modal_open} onClose={()=>(modal_open=false)}>
-  <label class="input w-full border-2 border-secondary">
-    <svg
-      class="h-[1em] opacity-50"
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      >
-      <g
-        stroke-linejoin="round"
-        stroke-linecap="round"
-        stroke-width="2.5"
-        fill="none"
-        stroke="currentColor"
-        >
-        <path
-          d="M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z"></path>
-        <circle cx="16.5" cy="7.5" r=".5" fill="currentColor"></circle>
-      </g>
-    </svg>
-    <input
-      bind:this={passwordInput}
-      type="password"
-      required
-      placeholder="비밀번호"
-      onkeydown={(e: KeyboardEvent) => {
-        if (e.key === 'Enter') {
-          login((e.target as HTMLInputElement).value)
-          modal_open = false
-        }
-      }}
-    />
-  </label>
+  <div class="w-full max-w-md">
+    {#if error}
+      <div class="alert alert-error mb-4">
+        <span>{error}</span>
+      </div>
+    {/if}
+
+    <form onsubmit={(e) => { e.preventDefault(); login((e.target as HTMLFormElement).password.value); }} class="space-y-4">
+      <div class="form-control">
+        <input
+          id="password"
+          bind:this={passwordInput}
+          type="password"
+          autocomplete="new-password"
+          required
+          class="input input-bordered w-full focus:outline-none"
+          placeholder="비밀번호를 입력하고 엔터키를 누르세요"
+        />
+      </div>
+
+      {#if loading}
+        <div class="flex justify-center">
+          <span class="loading loading-spinner loading-md"></span>
+        </div>
+      {/if}
+    </form>
+  </div>
 </Modal>

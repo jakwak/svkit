@@ -10,6 +10,9 @@
 
   let { data, form }: PageProps = $props()
 
+  // data.users를 반응형으로 만들기
+  let usersData = $state(data.users)
+
   // 현재 선택된 탭을 추적하는 변수
   let selectedTab = $state('문제')
 
@@ -107,7 +110,7 @@
           </div>
         {:else}
           <div class="class-container-session container-fade-in">
-            <UserStatusList users={data.users} />
+            <UserStatusList users={usersData} />
             <ClassButtons color={true} />
             
             <button 
@@ -147,7 +150,7 @@
       onchange={handleTabChange}
     />
     <div class="tab-content border-primary border-3 bg-base-100 p-5 rounded-md">
-      <Users users={data.users} />
+      <Users users={usersData} onUsersUpdate={(updatedUsers) => usersData = updatedUsers} />
     </div>
 
     <!-- 점수 탭 -->
@@ -161,7 +164,7 @@
     />
     <div class="tab-content border-primary border-3 bg-base-100 p-5 rounded-md">
       {#if selectedTab === '점수'}
-        <Users users={data.users} show_score={true} />
+        <Users users={usersData} show_score={true} onUsersUpdate={(updatedUsers) => usersData = updatedUsers} />
       {/if}
     </div>
 
@@ -194,7 +197,7 @@
         {#if showGame}
           <GameFrame username={appStore.username} bind:showGame/>
         {:else}
-          <Users users={data.users} show_score={true} />
+          <Users users={usersData} show_score={true} onUsersUpdate={(updatedUsers) => usersData = updatedUsers} />
         {/if}
       {/if}
     </div>

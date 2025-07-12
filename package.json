@@ -23,6 +23,7 @@
 		"vite": "^6.0.0"
 	},
 	"dependencies": {
+		"@supabase/supabase-js": "^2.50.5",
 		"@tailwindcss/vite": "^4.0.17",
 		"daisyui": "^5.0.9",
 		"dompurify": "^3.2.5",

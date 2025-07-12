@@ -18,6 +18,17 @@ export enum TagSave {
 export const ADMIN_USER = '선생님'
 export const GUEST_USER = 'Guest'
 
+export interface User {
+  id: string
+  username: string
+  email?: string
+  score?: {
+    total_score: number
+    today_gained_score: number
+    today_lost_score: number
+  }
+}
+
 export function shuffleAnswers(correctAnswer: string, wrongAnswers: string[]) {
   return [correctAnswer, ...wrongAnswers]
     .map((answer) => ({ answer, sort: Math.random() }))
