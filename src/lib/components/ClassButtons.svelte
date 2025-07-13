@@ -4,7 +4,10 @@
   // 버튼 클릭 핸들러
   function handleButtonClick(number: number) {
     console.log(`버튼 ${number} 클릭됨`)
-    // 여기에 버튼 클릭 시 로직 추가
+    // 여기에 버튼 클릭 시 로직
+    if (typeof window !== 'undefined' && (window as any).sendBroadcast) {
+      (window as any).sendBroadcast('show_buttons', { data: 'custom data', admin_number: number })
+    }
   }
 </script>
 
@@ -53,36 +56,37 @@
 
   /* 평범한 버튼 스타일 */
   .number-btn.plain {
-    background: #f5f5f5;
+    background: transparent;
     color: #333;
-    border: 1px solid #ccc;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    border: 3px solid #ccc;
+    box-shadow: none;
   }
 
   .number-btn.plain:hover {
-    background: linear-gradient(135deg, #ff9f43, #ff6348);
+    background: transparent;
     border-color: #ff6348;
-    color: white;
+    color: #ff6348;
     transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(255, 159, 67, 0.3);
+    box-shadow: 0 4px 12px rgba(255, 99, 72, 0.2);
   }
 
   .number-btn.plain:active {
-    background: #d0d0d0;
+    background: transparent;
     transform: translateY(0);
   }
 
   /* 컬러풀한 버튼 스타일 */
   .number-btn.colorful {
-    background: linear-gradient(135deg, #4ecdc4, #44a08d);
-    color: white;
-    box-shadow: 0 8px 25px rgba(78, 205, 196, 0.3);
+    background: transparent;
+    color: #4ecdc4;
+    border: 3px solid #4ecdc4;
+    box-shadow: none;
     animation: gentle-pulse 4s ease-in-out infinite;
   }
 
   .number-btn.colorful:hover {
     transform: translateY(-8px) scale(1.05);
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 8px 20px rgba(78, 205, 196, 0.3);
   }
 
   .number-btn.colorful:active {
@@ -91,30 +95,28 @@
   }
 
   .number-btn.colorful:nth-child(1) {
-    background: linear-gradient(135deg, #ff9f43, #ff6348);
-    box-shadow: 0 8px 25px rgba(255, 159, 67, 0.3);
+    color: #ff6348;
+    border-color: #ff6348;
     animation-delay: 0s;
   }
 
   .number-btn.colorful:nth-child(2) {
-    background: linear-gradient(135deg, #4ecdc4, #44a08d);
-    box-shadow: 0 8px 25px rgba(78, 205, 196, 0.3);
+    color: #4ecdc4;
+    border-color: #4ecdc4;
     animation-delay: 0.5s;
   }
 
   .number-btn.colorful:nth-child(3) {
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+    color: #667eea;
+    border-color: #667eea;
     animation-delay: 1s;
   }
 
   .number-btn.colorful:nth-child(4) {
-    background: linear-gradient(135deg, #f093fb, #f5576c);
-    box-shadow: 0 8px 25px rgba(240, 147, 251, 0.3);
+    color: #f5576c;
+    border-color: #f5576c;
     animation-delay: 1.5s;
   }
-
-
 
   .number-text {
     font-size: 108px;
@@ -124,47 +126,15 @@
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
   }
 
-  /* 컬러풀한 버튼 반짝이는 효과 */
-  .number-btn.colorful::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-    transition: left 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  .number-btn.colorful:hover::before {
-    left: 100%;
-  }
-
-  /* 컬러풀한 버튼 원형 확산 효과 */
-  .number-btn.colorful::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 0;
-    height: 0;
-    background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
-    border-radius: 50%;
-    transform: translate(-50%, -50%);
-    transition: all 0.6s ease;
-  }
-
-  .number-btn.colorful:hover::after {
-    width: 200px;
-    height: 200px;
-  }
+  /* 아웃라인 스타일에서는 반짝이는 효과와 원형 확산 효과 제거 */
 
   @keyframes gentle-pulse {
-    0%, 100% {
-      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+    0%,
+    100% {
+      box-shadow: 0 4px 12px rgba(78, 205, 196, 0.2);
     }
     50% {
-      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3), 0 0 20px rgba(255, 255, 255, 0.1);
+      box-shadow: 0 6px 16px rgba(78, 205, 196, 0.4);
     }
   }
 
@@ -184,10 +154,7 @@
       font-size: 84px;
     }
 
-    .number-btn.colorful:hover::after {
-      width: 180px;
-      height: 180px;
-    }
+
   }
 
   @media (max-width: 480px) {
@@ -205,9 +172,6 @@
       font-size: 63px;
     }
 
-    .number-btn.colorful:hover::after {
-      width: 140px;
-      height: 140px;
-    }
+
   }
 </style>

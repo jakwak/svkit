@@ -1,7 +1,8 @@
 import { io, type Socket } from 'socket.io-client'
-import { ADMIN_USER, GUEST_USER, type User } from './globals'
+import { ADMIN_USER, GUEST_USER, type User, type SessionState } from './globals'
 import { dev } from '$app/environment'
 import { supabase } from '$lib/supabase'
+import { goto } from '$app/navigation'
 
 // const isDev = import.meta.env.MODE === 'development';
 
@@ -10,7 +11,10 @@ class AppStore {
   users = $state([]) as string[]
   quiz = $state(null) as QuizQuestion | null
   socket = $state(null) as Socket | null
-  classInSession = $state(false) // 수업 진행 상태 추가
+  
+  // 세션 상태 관리
+  sessionState = $state<SessionState>('idle')
+  
   get isAuthenticated() {
     return this.username !== GUEST_USER
   }
@@ -68,13 +72,13 @@ class AppStore {
     // class_start 메시지 받기
     this.socket.on('class_start', (data) => {
       console.log('수업 시작 메시지 받음:', data)
-      this.classInSession = true
+      this.startSession()
     })
 
     // class_end 메시지 받기
     this.socket.on('class_end', (data) => {
       console.log('수업 종료 메시지 받음:', data)
-      this.classInSession = false
+      this.endSession()
     })
   }
 
@@ -97,7 +101,8 @@ class AppStore {
         username: this.username,
         message: '수업이 시작되었습니다.',
       })
-      this.classInSession = true // 수업 상태 업데이트
+      // this.startSession() // 수업 상태 업데이트
+      this.sessionState = 'waiting'
     }
   }
   // 수업종료 메시지 보내기
@@ -107,8 +112,29 @@ class AppStore {
         username: this.username,
         message: '수업이 종료되었습니다.',
       })
-      this.classInSession = false // 수업 상태 업데이트
+      this.endSession() // 수업 상태 업데이트
     }
+  }
+  
+  // 세션 상태 변경 함수들
+  startSession() {
+    this.sessionState = 'start'
+  }
+  
+  startGame() {
+    this.sessionState = 'game'
+  }
+  
+  showQuiz() {
+    this.sessionState = 'quiz'
+  }
+  
+  showResult() {
+    this.sessionState = 'result'
+  }
+  
+  endSession() {
+    this.sessionState = 'end'
   }
 
   async logout() {
@@ -118,9 +144,9 @@ class AppStore {
       this.cur_user = { username: GUEST_USER, id: '0' }
       this.users = []
       this.quiz = null
-      this.classInSession = false
       // Supabase 세션도 함께 종료
       supabase.auth.signOut()
+      goto('/')
   }
 }
 

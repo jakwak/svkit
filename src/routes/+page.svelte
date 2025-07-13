@@ -7,6 +7,7 @@
   import GameFrame from '$lib/components/GameFrame.svelte'
   import ClassButtons from '$lib/components/ClassButtons.svelte'
   import UserStatusList from '$lib/components/UserStatusList.svelte'
+  import UserStatusList2 from '$lib/components/UserStatusList2.svelte'
 
   let { data, form }: PageProps = $props()
 
@@ -27,6 +28,10 @@
       if (tabName === '게임') {
         showGame = true
       }
+
+      if (tabName === '수업') {
+        appStore.sessionState = 'start'
+      }
     }
   }
 
@@ -44,10 +49,10 @@
     // 수업 시작 버튼 클릭 시 처리
     console.log('수업 시작 버튼 클릭됨')
     isTransitioning = true
-    
+    appStore.sendClassStart()
+
     // 페이드 아웃 후 상태 변경 (애니메이션 시간과 동일하게 조정)
     setTimeout(() => {
-      appStore.sendClassStart()
       isTransitioning = false
     }, 400)
   }
@@ -98,7 +103,7 @@
     />
     <div class="tab-content border-primary border-3 bg-base-100 p-5 rounded-md">
       {#if selectedTab === '수업'}
-        {#if !appStore.classInSession}
+        {#if appStore.sessionState === 'start'}
           <div class="class-container container-fade-in">
             <button 
               class="start-class-btn {isTransitioning ? 'fade-out' : 'fade-in'}" 
@@ -110,7 +115,8 @@
           </div>
         {:else}
           <div class="class-container-session container-fade-in">
-            <UserStatusList users={usersData} />
+            <!-- <UserStatusList users={usersData} /> -->
+            <UserStatusList2 users={usersData} />
             <ClassButtons color={true} />
             
             <button 

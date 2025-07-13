@@ -18,6 +18,9 @@ export enum TagSave {
 export const ADMIN_USER = '선생님'
 export const GUEST_USER = 'Guest'
 
+// 세션 상태 타입 정의
+export type SessionState = 'idle' | 'game' | 'start' | 'waiting' | 'quiz' | 'result' | 'end'
+
 export interface User {
   id: string
   username: string
