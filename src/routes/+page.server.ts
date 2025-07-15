@@ -1,6 +1,6 @@
 import { redirect } from '@sveltejs/kit'
 import type { Actions, PageServerLoad } from './$types'
-import { TagSave } from '$lib/globals'
+import { TagSave } from '$lib'
 
 export const load: PageServerLoad = async ({ fetch, url, cookies }) => {
   try {

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { clickOutside } from '$lib/clickOutside'
+  import { clickOutside } from '$lib'
 
   interface Props {
     modal_open?: boolean

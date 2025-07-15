@@ -1,9 +1,6 @@
 <script lang="ts">
   import { onMount, onDestroy } from 'svelte'
-  import { supabase } from '$lib/supabase'
-  import { appStore } from '$lib/appstore.svelte'
-  import { ADMIN_USER } from '$lib/globals'
-  import type { User } from '$lib/globals'
+  import { supabase, appStore, ADMIN_USER, type User } from '$lib'
 
   const { users } = $props<{ users: User[] }>()
 

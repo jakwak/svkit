@@ -1,14 +1,19 @@
 <script lang="ts">
   import { goto, invalidateAll } from '$app/navigation'
   import { page } from '$app/state'
-  import { ADMIN_USER, appStore, GUEST_USER, SupabaseAuth } from '$lib' 
+  import { 
+    ADMIN_USER, 
+    appStore, 
+    GUEST_USER, 
+    SupabaseAuth, 
+    supabase, 
+    LoginModal,
+    type User 
+  } from '$lib' 
   import { onMount } from 'svelte'
   import '../style.css'
   import type { LayoutProps } from './$types'
   import { SvelteToast } from '@zerodevx/svelte-toast'
-  import { supabase } from '$lib/supabase'
-  import type { User } from '$lib/globals'
-  import LoginModal from '$lib/components/LoginModal.svelte'
 
   let { children, data }: LayoutProps = $props()
 

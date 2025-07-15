@@ -1,7 +1,6 @@
 import { io, type Socket } from 'socket.io-client'
-import { ADMIN_USER, GUEST_USER, type User, type SessionState } from './globals'
+import { ADMIN_USER, GUEST_USER, type User, type SessionState, supabase } from '$lib'
 import { dev } from '$app/environment'
-import { supabase } from '$lib/supabase'
 import { goto } from '$app/navigation'
 
 // const isDev = import.meta.env.MODE === 'development';

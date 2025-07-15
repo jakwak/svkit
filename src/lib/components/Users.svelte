@@ -1,9 +1,7 @@
 <script lang="ts">
   import { goto } from '$app/navigation'
 import { invalidate } from '$app/navigation'
-  import { ADMIN_USER, appStore } from '$lib'
-  import { supabase } from '$lib/supabase'
-  import Triangle from './Triangle.svelte'
+  import { ADMIN_USER, appStore, supabase, Triangle } from '$lib'
   import { fade, slide } from 'svelte/transition'
 
   interface Props {

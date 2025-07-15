@@ -1,12 +1,14 @@
 <script lang="ts">
   import { onMount } from 'svelte'
-  import QuizView from './QuizView.svelte'
-  import { fade } from 'svelte/transition'
-  import { toast } from '@zerodevx/svelte-toast'
-  import AiQuiz from './AIQuiz.svelte'
-  import type { ActionResult } from '@sveltejs/kit'
-  import Modal from './Modal.svelte'
-  import { TagSave } from '$lib/globals'
+import { 
+  QuizView, 
+  AIQuiz, 
+  Modal, 
+  TagSave 
+} from '$lib'
+import { fade } from 'svelte/transition'
+import { toast } from '@zerodevx/svelte-toast'
+import type { ActionResult } from '@sveltejs/kit'
 
   let quizList = $state<QuizQuestion[]>([])
   let page = $state(1)
@@ -93,7 +95,7 @@
   <span class="loading loading-spinner loading-xl"></span>
 </Modal>
 
-<AiQuiz  bind:curSubject enhanced={({ formData }: { formData: FormData }) => {
+<AIQuiz  bind:curSubject enhanced={({ formData }: { formData: FormData }) => {
   if(formData.get('subject') === '초등 4학년 전과목') {
     toast.push('과목을 선택하세요', { theme: { '--toastBackground': '#F56565' }})
     return

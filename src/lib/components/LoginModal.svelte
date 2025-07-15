@@ -1,8 +1,7 @@
 <script lang="ts">
-  import { appStore, ADMIN_USER } from '$lib'
-  import { supabase } from '$lib/supabase'
+  import { appStore, ADMIN_USER, supabase } from '$lib'
   import { goto } from '$app/navigation'
-  import Modal from './Modal.svelte'
+  import { Modal } from '$lib'
 
   let modal_open = $state(false)
   let passwordInput: HTMLInputElement

@@ -1,14 +1,17 @@
 <script lang="ts">
-  import { ADMIN_USER, appStore } from '$lib'
+  import { 
+    ADMIN_USER, 
+    appStore, 
+    QuizShow, 
+    XYInputText, 
+    GameFrame, 
+    MainMenu, 
+    WaitingScreen, 
+    NumberButtons, 
+    PresenceManager 
+  } from '$lib'
   import { onMount } from 'svelte'
   import type { PageProps } from './$types'
-  import QuizShow from '$lib/components/QuizShow.svelte'
-  import XyInputText from '$lib/components/XYInputText.svelte'
-  import GameFrame from '$lib/components/GameFrame.svelte'
-  import MainMenu from '$lib/components/MainMenu.svelte'
-  import WaitingScreen from '$lib/components/WaitingScreen.svelte'
-  import NumberButtons from '$lib/components/NumberButtons.svelte'
-  import PresenceManager from '$lib/components/PresenceManager.svelte'
 
   let { data }: PageProps = $props()
 

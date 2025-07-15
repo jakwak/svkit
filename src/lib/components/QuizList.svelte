@@ -1,11 +1,8 @@
 <script lang="ts">
-  import { Modal } from '$lib'
+  import { Modal, AIQuiz, QuizView, TagSave } from '$lib'
   import { onMount } from 'svelte'
-  import AiQuiz from './AIQuiz.svelte'
-  import QuizView from './QuizView.svelte'
   import { type ActionResult } from '@sveltejs/kit';
   import { goto, invalidate, invalidateAll } from '$app/navigation'
-  import { TagSave } from '$lib/globals'
 
   let quizList = $state<QuizQuestion[]>([])
 
@@ -66,7 +63,7 @@
 
 </script>
 
-<AiQuiz enhanced={() => {
+<AIQuiz enhanced={() => {
   loading = true
   return async ({ result }: { result: ActionResult}) => {
     // await update()

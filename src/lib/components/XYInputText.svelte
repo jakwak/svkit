@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { appStore } from '$lib/appstore.svelte'
+  import { appStore } from '$lib'
   import { tick } from 'svelte'
 
   interface Input {

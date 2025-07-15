@@ -1,6 +1,5 @@
 <script lang="ts">
-  import { appStore } from '$lib/appstore.svelte'
-  import { ADMIN_USER } from '$lib/globals'
+  import { appStore, ADMIN_USER } from '$lib'
   
   const { users } = $props<{ users: User[] }>()
   

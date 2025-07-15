@@ -1,13 +1,16 @@
 <script lang="ts">
-  import { Users, appStore } from '$lib'
+  import { 
+    Users, 
+    appStore, 
+    XYInputText, 
+    QuizList2, 
+    WorkSheet, 
+    GameFrame, 
+    ClassButtons, 
+    UserStatusList, 
+    UserStatusList2 
+  } from '$lib'
   import type { PageProps } from './$types'
-  import Talk from '$lib/components/XYInputText.svelte'
-  import QuizList2 from '$lib/components/QuizList2.svelte'
-  import WorkSheet from '$lib/components/WorkSheet.svelte'
-  import GameFrame from '$lib/components/GameFrame.svelte'
-  import ClassButtons from '$lib/components/ClassButtons.svelte'
-  import UserStatusList from '$lib/components/UserStatusList.svelte'
-  import UserStatusList2 from '$lib/components/UserStatusList2.svelte'
 
   let { data, form }: PageProps = $props()
 
@@ -185,7 +188,7 @@
     />
     <div class="tab-content border-primary border-3 bg-base-100 p-5 rounded-md">
       {#if selectedTab === '톡'}
-        <Talk />
+        <XYInputText />
       {/if}
     </div>
 

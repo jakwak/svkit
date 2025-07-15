@@ -1,6 +1,6 @@
 <script>
   import { enhance } from '$app/forms'
-  import { difficultyOptions } from '$lib/globals'
+import { difficultyOptions } from '$lib'
 
   let { enhanced, curSubject = $bindable('초등 4학년 전과목') } = $props()
 

@@ -1,9 +1,6 @@
 <script lang="ts">
-  import { supabase } from '$lib/supabase'
-  import { appStore } from '$lib/appstore.svelte'
+  import { supabase, appStore, Modal, type User } from '$lib'
   import { goto } from '$app/navigation'
-  import Modal from './Modal.svelte'
-  import type { User } from '$lib/globals'
 
   let modal_open = $state(false)
   let isSignUp = $state(false)
