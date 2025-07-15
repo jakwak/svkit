@@ -6,9 +6,7 @@
     QuizList2, 
     WorkSheet, 
     GameFrame, 
-    ClassButtons, 
-    UserStatusList, 
-    UserStatusList2 
+    UserStatusAndClassButtons, 
   } from '$lib'
   import type { PageProps } from './$types'
 
@@ -119,8 +117,7 @@
         {:else}
           <div class="class-container-session container-fade-in">
             <!-- <UserStatusList users={usersData} /> -->
-            <UserStatusList2 users={usersData} />
-            <ClassButtons color={true} />
+            <UserStatusAndClassButtons users={usersData} color={true} />
             
             <button 
               class="end-class-btn" 

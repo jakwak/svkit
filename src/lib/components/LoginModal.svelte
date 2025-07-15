@@ -89,16 +89,21 @@
 
     <form onsubmit={(e) => { e.preventDefault(); login((e.target as HTMLFormElement).password.value); }} class="space-y-4">
       <div class="form-control">
-        <input
-          id="password"
-          bind:this={passwordInput}
-          type="password"
-          autocomplete="new-password"
-          required
-          class="input input-bordered w-full focus:outline-none"
-          placeholder="비밀번호를 입력하고 엔터키를 누르세요"
-        />
-      </div>
+        <div class="relative w-full">
+          <input
+            id="password"
+            bind:this={passwordInput}
+            type="password"
+            autocomplete="new-password"
+            required
+            class="input input-bordered w-full focus:outline-none pr-10 border-2 border-orange-600 text-xs"
+            placeholder="비밀번호를 입력하고 엔터키를 누르세요"
+          />
+          <span class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none text-xs">
+            <!-- 더 작고 심플한 엔터키 아이콘 (예: 유니코드 ⏎) -->
+            ⏎
+          </span>
+        </div>
 
       {#if loading}
         <div class="flex justify-center">
