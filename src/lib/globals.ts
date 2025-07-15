@@ -44,8 +44,8 @@ export function sumOfAllAnswerLengths(
   wrongAnswers: string[]
 ) {
   return (
-    correctAnswer.length +
-    wrongAnswers.reduce((acc, cur) => acc + cur.length, 0)
+    (correctAnswer?.length || 0) +
+    (wrongAnswers?.reduce((acc, cur) => acc + (cur?.length || 0), 0) || 0)
   )
 }
 

@@ -23,17 +23,17 @@
       <span
         class={[
           'badge badge-sm',
-          quiz.subject.includes('국어') && 'badge-primary',
-          quiz.subject.includes('수학') && 'badge-secondary',
-          quiz.subject.includes('사회') && 'badge-accent',
-          quiz.subject.includes('과학') && 'badge-info',
-          quiz.subject.includes('영어') && 'badge-error',
-          quiz.subject.includes('상식') && 'badge-warning',
-        ]}>{quiz.subject.replace('초등 4학년', '')}</span
+          quiz.subject?.includes('국어') && 'badge-primary',
+          quiz.subject?.includes('수학') && 'badge-secondary',
+          quiz.subject?.includes('사회') && 'badge-accent',
+          quiz.subject?.includes('과학') && 'badge-info',
+          quiz.subject?.includes('영어') && 'badge-error',
+          quiz.subject?.includes('상식') && 'badge-warning',
+        ]}>{quiz.subject?.replace('초등 4학년', '') || '과목'}</span
       >
       &nbsp;-&nbsp;
       <span class="text-zinc-400 text-xs underline">
-        {quiz.topic}({difficultyOptions[quiz.difficulty - 1].label}) {wsNum > 0 ? `#${quiz.id}` : ''}
+        {quiz.topic || '주제'}({difficultyOptions[(quiz.difficulty || 1) - 1]?.label || '보통'}) {wsNum > 0 ? `#${quiz.id}` : ''}
       </span>
     </div>
     <div class="text-sm text-justify mt-5 flex font-thin items-baseline">
@@ -44,21 +44,21 @@
         {wsNum}.
       {/if}
       </span>
-      &nbsp; <Markdown content={quiz.question} />
+      &nbsp; <Markdown content={quiz.question || ''} />
     </div>
     <ul
       class={[
         'text-sm',
-        sumOfAllAnswerLengths(quiz.correctAnswer, quiz.wrongAnswers) > 15
+        sumOfAllAnswerLengths(quiz.correctAnswer || '', quiz.wrongAnswers || []) > 15
           ? 'flex flex-col'
           : 'flex flex-wrap justify-evenly gap-2',
       ]}
     >
-      {#each [quiz.correctAnswer, ...quiz.wrongAnswers] as item, index}
+      {#each [(quiz.correctAnswer || ''), ...(quiz.wrongAnswers || [])] as item, index}
         <li
           class={[
             'p-1 pl-5 rounded-lg text-left flex font-light',
-            item === quiz.correctAnswer && 'text-secondary font-medium',
+            item === (quiz.correctAnswer || '') && 'text-secondary font-medium',
           ]}
         >
           {#if index === 0}①&nbsp;{/if}

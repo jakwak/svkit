@@ -5,7 +5,7 @@ import { TagSave } from '$lib/globals'
 export const load: PageServerLoad = async ({ fetch, url, cookies }) => {
   try {
     // 백엔드 API에서 사용자 목록과 점수 정보 가져오기
-    const scoresResponse = await fetch('http://localhost:8000/scores')
+    const scoresResponse = await fetch(`${process.env.VITE_API_URL || 'http://localhost:8000'}/scores`)
 
     if (!scoresResponse.ok) {
       console.error('점수 정보 조회 오류:', scoresResponse.status)

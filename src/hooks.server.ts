@@ -11,7 +11,7 @@ const handleAuth: Handle = async ({ event, resolve }) => {
 
   try {
     // Supabase 인증을 사용하여 현재 사용자 확인
-    const meResponse = await event.fetch('http://localhost:8000/supabase/me')
+    const meResponse = await event.fetch(`${process.env.VITE_API_URL || 'http://localhost:8000'}/supabase/me`)
 
     if (meResponse.ok) {
       event.locals.user = await meResponse.json()
@@ -26,7 +26,7 @@ const handleAuth: Handle = async ({ event, resolve }) => {
 
         if (username) {
           const loginResponse = await event.fetch(
-            `http://localhost:8000/supabase/signin-username`,
+            `${process.env.VITE_API_URL || 'http://localhost:8000'}/supabase/signin-username`,
             {
               method: 'POST',
               headers: {

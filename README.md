@@ -1,6 +1,28 @@
-# sv
+# svkit
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+SvelteKit 기반 프론트엔드 애플리케이션
+
+## 환경 변수 설정
+
+프로젝트를 실행하기 전에 환경 변수를 설정해야 합니다:
+
+1. `env.example` 파일을 `.env`로 복사:
+```bash
+cp env.example .env
+```
+
+2. `.env` 파일에서 다음 값들을 실제 값으로 수정:
+   - `VITE_SUPABASE_URL`: Supabase 프로젝트 URL
+   - `VITE_SUPABASE_ANON_KEY`: Supabase Anonymous Key
+   - `VITE_SUPABASE_SERVICE_KEY`: Supabase Service Role Key
+   - `VITE_API_URL`: FastAPI 백엔드 서버 URL
+
+## 개발 서버 실행
+
+```bash
+npm install
+npm run dev
+```
 
 ## Creating a project
 

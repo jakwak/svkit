@@ -38,7 +38,7 @@ class AppStore {
     if (this.socket) this.socket.disconnect()
 
     this.cur_user = user
-    this.socket = io(dev ? 'http://localhost:8000' : 'https://gxg.kro.kr', {
+    this.socket = io(dev ? (import.meta.env.VITE_API_URL || 'http://localhost:8000') : 'https://gxg.kro.kr', {
       path: '/ws2/socket.io', // socketio_path 설정과 맞춰줘야 함
       transports: ['websocket'], // polling 문제 방지
     })

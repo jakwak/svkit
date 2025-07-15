@@ -28,13 +28,13 @@
         }
 
         const quiz: QuizQuestion = {
-          id: data.id,
-          subject: data.subject,
-          topic: data.topic,
-          question: data.question,
-          correctAnswer: data.correct_answer,
-          wrongAnswers: data.wrong_answers,
-          difficulty: data.difficulty,
+          id: data.id || null,
+          subject: data.subject || '',
+          topic: data.topic || '',
+          question: data.question || '',
+          correctAnswer: data.correct_answer || '',
+          wrongAnswers: data.wrong_answers || [],
+          difficulty: data.difficulty || 1,
           save: TagSave.SAVED,
         }
         quizList = [...quizList, quiz]
@@ -76,7 +76,7 @@
     quizList = quizList.filter((item) => item.id !== quiz.id)
 
     // db에 저장된 문제를 삭제하고, 새로 고침
-    if(quiz.save !== TagSave.NOT_SAVED) {
+    if(quiz.save !== TagSave.NOT_SAVED && quiz.id) {
       const res = await fetch('/api/questions/' + quiz.id, {
         method: 'DELETE',
       })

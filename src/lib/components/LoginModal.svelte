@@ -16,7 +16,7 @@
     try {
       // 선생님 이메일로 로그인 (user8@gxg.kro.kr)
       const { data, error: signInError } = await supabase.auth.signInWithPassword({
-        email: 'user8@gxg.kro.kr',
+        email: 'teacher@gxg.kro.kr',
         password: password
       })
 
