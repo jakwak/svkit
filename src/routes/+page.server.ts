@@ -1,6 +1,6 @@
 import { redirect } from '@sveltejs/kit'
 import type { Actions, PageServerLoad } from './$types'
-import { TagSave } from '$lib'
+import { TagSave, ADMIN_NAME } from '$lib'
 
 export const load: PageServerLoad = async ({ fetch, url, cookies }) => {
   try {
@@ -17,8 +17,8 @@ export const load: PageServerLoad = async ({ fetch, url, cookies }) => {
     const users = await scoresResponse.json()
     // 선생님을 맨 뒤로 정렬
     users.sort((a: { username: string }, b: { username: string }) => {
-      if (a.username === '선생님') return 1
-      if (b.username === '선생님') return -1
+      if (a.username === ADMIN_NAME) return 1
+      if (b.username === ADMIN_NAME) return -1
       return a.username.localeCompare(b.username)
     })
 

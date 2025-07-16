@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount, onDestroy } from 'svelte'
-import { supabase, appStore, ADMIN_USER } from '$lib'
+import { supabase, appStore, ADMIN_NAME } from '$lib'
 
   let presenceChannel: any = null
   let heartbeatInterval: any = null
@@ -99,16 +99,16 @@ import { supabase, appStore, ADMIN_USER } from '$lib'
         // 선생님이 온라인인지 확인
         const teacherPresent = Object.values(state).some((presence: any) => {
           if (Array.isArray(presence)) {
-            return presence.some((p: any) => p.username === ADMIN_USER)
+            return presence.some((p: any) => p.username === ADMIN_NAME)
           }
-          return presence.username === ADMIN_USER
+          return presence.username === ADMIN_NAME
         })
         
         isTeacherOnline = teacherPresent
         console.log('선생님 온라인 상태:', isTeacherOnline)
         
         // 선생님이 온라인이면 하트비트 시작
-        if (isTeacherOnline && appStore.username !== ADMIN_USER) {
+        if (isTeacherOnline && appStore.username !== ADMIN_NAME) {
           startHeartbeat()
         } else {
           stopHeartbeat()
@@ -118,8 +118,8 @@ import { supabase, appStore, ADMIN_USER } from '$lib'
         console.log('사용자 접속:', key, newPresences)
         
         // 선생님이 접속했는지 확인
-        const teacherJoined = newPresences.some((presence: any) => presence.username === ADMIN_USER)
-        if (teacherJoined && appStore.username !== ADMIN_USER) {
+        const teacherJoined = newPresences.some((presence: any) => presence.username === ADMIN_NAME)
+        if (teacherJoined && appStore.username !== ADMIN_NAME) {
           isTeacherOnline = true
           startHeartbeat()
           console.log('선생님 접속 - 하트비트 시작')
@@ -129,7 +129,7 @@ import { supabase, appStore, ADMIN_USER } from '$lib'
         console.log('사용자 퇴장:', key, leftPresences)
         
         // 선생님이 퇴장했는지 확인
-        const teacherLeft = leftPresences.some((presence: any) => presence.username === ADMIN_USER)
+        const teacherLeft = leftPresences.some((presence: any) => presence.username === ADMIN_NAME)
         if (teacherLeft) {
           isTeacherOnline = false
           stopHeartbeat()

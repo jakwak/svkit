@@ -15,7 +15,8 @@ export enum TagSave {
   SAVED = 'saved',
 }
 
-export const ADMIN_USER = '선생님'
+export const ADMIN_NAME = import.meta.env.VITE_ADMIN_NAME || '선생님'
+export const ADMIN_EMAIL = import.meta.env.VITE_ADMIN_EMAIL || 'teacher@gxg.kro.kr'
 export const GUEST_USER = 'Guest'
 
 // 세션 상태 타입 정의

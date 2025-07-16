@@ -1,11 +1,11 @@
 <script lang="ts">
   import { onMount, onDestroy } from 'svelte'
-  import { supabase, appStore, ADMIN_USER, type User } from '$lib'
+  import { supabase, appStore, ADMIN_NAME, type User } from '$lib'
 
   const { users } = $props<{ users: User[] }>()
 
   // 선생님 제외하고 학생만 필터링
-  const students = $derived(users.filter((user: User) => user.username !== ADMIN_USER))
+  const students = $derived(users.filter((user: User) => user.username !== ADMIN_NAME))
   
   // Supabase Presence 상태
   let presenceChannel: any = null
@@ -100,7 +100,7 @@
       })
       .on('broadcast', { event: 'heartbeat' }, (payload: any) => {
         // 선생님만 하트비트 응답
-        if (appStore.username === ADMIN_USER) {
+        if (appStore.username === ADMIN_NAME) {
           console.log('하트비트 수신:', payload)
           sendHeartbeatResponse(payload.payload.from)
         }
@@ -147,10 +147,10 @@
 
   // 하트비트 응답 함수 (선생님만)
   const sendHeartbeatResponse = async (to: string) => {
-    if (presenceChannel && appStore.username === ADMIN_USER) {
+    if (presenceChannel && appStore.username === ADMIN_NAME) {
       const response = {
         to: to,
-        from: ADMIN_USER,
+        from: ADMIN_NAME,
         timestamp: new Date().toISOString(),
         type: 'heartbeat_response'
       }

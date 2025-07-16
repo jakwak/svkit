@@ -2,7 +2,7 @@
   import { goto, invalidateAll } from '$app/navigation'
   import { page } from '$app/state'
   import { 
-    ADMIN_USER, 
+    ADMIN_NAME, 
     appStore, 
     GUEST_USER, 
     SupabaseAuth, 
@@ -17,7 +17,7 @@
 
   let { children, data }: LayoutProps = $props()
 
-  const options = {
+  const svelteToastOptions = {
     duration: 4000, // duration of progress bar tween to the `next` value
     initial: 1, // initial progress bar value
     next: 0, // next progress value
@@ -111,7 +111,7 @@
   })
 </script>
 
-<SvelteToast {options} />
+<SvelteToast options={svelteToastOptions} />
 
 <div
   class={[

@@ -1,7 +1,7 @@
 <script lang="ts">
   import { goto } from '$app/navigation'
 import { invalidate } from '$app/navigation'
-  import { ADMIN_USER, appStore, supabase, Triangle } from '$lib'
+  import { ADMIN_NAME, appStore, supabase, Triangle } from '$lib'
   import { fade, slide } from 'svelte/transition'
 
   interface Props {
@@ -120,7 +120,7 @@ import { invalidate } from '$app/navigation'
 
 {#if !show_score}
   <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 p-4 mx-auto">
-    {#each [...usersState].filter(user => user.username !== '선생님') as user}
+    {#each [...usersState].filter(user => user.username !== ADMIN_NAME) as user}
       <button
         type="button"
         class="btn btn-soft btn-primary text-5xl h-30 border-2 border-primary hover:border-secondary-content relative"
@@ -149,7 +149,7 @@ import { invalidate } from '$app/navigation'
         <div
           class="border-1 border-primary text-primary hover:text-secondary p-4 rounded-xl hover:border-secondary items-center flex flex-col space-y-3 select-none relative"
         >
-          {#if appStore.users.some((online_user) => online_user === user.username && user.username !== ADMIN_USER)}
+          {#if appStore.users.some((online_user) => online_user === user.username && user.username !== ADMIN_NAME)}
             <div class="online-badge"></div>
           {/if}
           <div class="flex items-center space-x-2">

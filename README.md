@@ -16,6 +16,9 @@ cp env.example .env
    - `VITE_SUPABASE_ANON_KEY`: Supabase Anonymous Key
    - `VITE_SUPABASE_SERVICE_KEY`: Supabase Service Role Key
    - `VITE_API_URL`: FastAPI 백엔드 서버 URL
+   - `VITE_ADMIN_NAME`: 관리자 사용자명 (기본값: 선생님)
+   - `VITE_ADMIN_EMAIL`: 관리자 이메일 (기본값: teacher@gxg.kro.kr)
+   - `VITE_DEBUG`: 디버그 모드 (true/false)
 
 ## 개발 서버 실행
 

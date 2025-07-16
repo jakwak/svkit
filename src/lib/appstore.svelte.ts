@@ -1,5 +1,11 @@
 import { io, type Socket } from 'socket.io-client'
-import { ADMIN_USER, GUEST_USER, type User, type SessionState, supabase } from '$lib'
+import {
+  ADMIN_NAME,
+  GUEST_USER,
+  type User,
+  type SessionState,
+  supabase,
+} from '$lib'
 import { dev } from '$app/environment'
 import { goto } from '$app/navigation'
 
@@ -10,15 +16,15 @@ class AppStore {
   users = $state([]) as string[]
   quiz = $state(null) as QuizQuestion | null
   socket = $state(null) as Socket | null
-  
+
   // 세션 상태 관리
   sessionState = $state<SessionState>('idle')
-  
+
   get isAuthenticated() {
     return this.username !== GUEST_USER
   }
   get isAdmin() {
-    return this.username === ADMIN_USER
+    return this.username === ADMIN_NAME
   }
 
   get username() {
@@ -37,10 +43,15 @@ class AppStore {
     if (this.socket) this.socket.disconnect()
 
     this.cur_user = user
-    this.socket = io(dev ? (import.meta.env.VITE_API_URL || 'http://localhost:8000') : 'https://gxg.kro.kr', {
-      path: '/ws2/socket.io', // socketio_path 설정과 맞춰줘야 함
-      transports: ['websocket'], // polling 문제 방지
-    })
+    this.socket = io(
+      dev
+        ? import.meta.env.VITE_API_URL || 'http://localhost:8000'
+        : 'https://gxg.kro.kr',
+      {
+        path: '/ws2/socket.io', // socketio_path 설정과 맞춰줘야 함
+        transports: ['websocket'], // polling 문제 방지
+      }
+    )
 
     this.socket.on('connect', () => {
       console.log('✅ Socket.IO Connected')
@@ -68,17 +79,19 @@ class AppStore {
       console.log('❌ Socket.IO Disconnected')
     })
 
-    // class_start 메시지 받기
-    this.socket.on('class_start', (data) => {
-      console.log('수업 시작 메시지 받음:', data)
-      this.startSession()
-    })
+    if (this.isAdmin === false) {
+      // class_start 메시지 받기
+      this.socket.on('class_start', (data) => {
+        console.log('수업 시작 메시지 받음:', data)
+        this.startSession()
+      })
 
-    // class_end 메시지 받기
-    this.socket.on('class_end', (data) => {
-      console.log('수업 종료 메시지 받음:', data)
-      this.endSession()
-    })
+      // class_end 메시지 받기
+      this.socket.on('class_end', (data) => {
+        console.log('수업 종료 메시지 받음:', data)
+        this.endSession()
+      })
+    }
   }
 
   sendMessage(msg: Message) {
@@ -114,24 +127,24 @@ class AppStore {
       this.endSession() // 수업 상태 업데이트
     }
   }
-  
+
   // 세션 상태 변경 함수들
   startSession() {
     this.sessionState = 'start'
   }
-  
+
   startGame() {
     this.sessionState = 'game'
   }
-  
+
   showQuiz() {
     this.sessionState = 'quiz'
   }
-  
+
   showResult() {
     this.sessionState = 'result'
   }
-  
+
   endSession() {
     this.sessionState = 'end'
   }
@@ -140,12 +153,12 @@ class AppStore {
     if (!this.isAuthenticated) return
     // 소켓 연결 해제 등 기존 로직
     if (this.socket) this.socket.disconnect()
-      this.cur_user = { username: GUEST_USER, id: '0' }
-      this.users = []
-      this.quiz = null
-      // Supabase 세션도 함께 종료
-      supabase.auth.signOut()
-      goto('/')
+    this.cur_user = { username: GUEST_USER, id: '0' }
+    this.users = []
+    this.quiz = null
+    // Supabase 세션도 함께 종료
+    supabase.auth.signOut()
+    goto('/')
   }
 }
 

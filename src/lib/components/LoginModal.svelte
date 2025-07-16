@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { appStore, ADMIN_USER, supabase } from '$lib'
+  import { appStore, ADMIN_NAME, ADMIN_EMAIL, supabase } from '$lib'
   import { goto } from '$app/navigation'
   import { Modal } from '$lib'
 
@@ -13,9 +13,9 @@
     error = ''
 
     try {
-      // 선생님 이메일로 로그인 (user8@gxg.kro.kr)
+      // 선생님 이메일로 로그인
       const { data, error: signInError } = await supabase.auth.signInWithPassword({
-        email: 'teacher@gxg.kro.kr',
+        email: ADMIN_EMAIL,
         password: password
       })
 
@@ -29,7 +29,7 @@
         const user: any = {
           id: data.user.id,
           email: data.user.email,
-          username: data.user.user_metadata?.username || ADMIN_USER
+          username: data.user.user_metadata?.username || ADMIN_NAME
         }
 
         // 점수 정보 가져오기
@@ -76,7 +76,7 @@
 
 <button
   class="cursor-pointer hover:text-secondary"
-  onclick={() => (modal_open = true)}>{ADMIN_USER} ?</button
+  onclick={() => (modal_open = true)}>{ADMIN_NAME} ?</button
 >
 
 <Modal {modal_open} onClose={()=>(modal_open=false)}>

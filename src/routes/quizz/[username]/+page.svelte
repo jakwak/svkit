@@ -1,6 +1,6 @@
 <script lang="ts">
   import { 
-    ADMIN_USER, 
+    ADMIN_NAME, 
     appStore, 
     QuizShow, 
     XYInputText, 

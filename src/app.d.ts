@@ -1,6 +1,21 @@
 // See https://svelte.dev/docs/kit/types#app.d.ts
 // for information about these interfaces
 declare global {
+  // 환경변수 타입 정의
+  interface ImportMetaEnv {
+    readonly VITE_SUPABASE_URL: string
+    readonly VITE_SUPABASE_ANON_KEY: string
+    readonly VITE_SUPABASE_SERVICE_KEY: string
+    readonly VITE_API_URL: string
+    readonly VITE_ADMIN_NAME: string
+    readonly VITE_ADMIN_EMAIL: string
+    readonly VITE_DEBUG: string
+  }
+
+  interface ImportMeta {
+    readonly env: ImportMetaEnv
+  }
+
   // 난이도 레벨 타입
   type DifficultyLevel = 1 | 2 | 3 | 4 | 5
 

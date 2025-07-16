@@ -1,10 +1,10 @@
 <script lang="ts">
-  import { appStore, ADMIN_USER } from '$lib'
+  import { appStore, ADMIN_NAME } from '$lib'
   
   const { users } = $props<{ users: User[] }>()
   
   // 선생님 제외하고 학생만 필터링
-  const students = $derived(users.filter((user: User) => user.username !== ADMIN_USER))
+  const students = $derived(users.filter((user: User) => user.username !== ADMIN_NAME))
   
   // 온라인 학생 수 계산
   const onlineStudents = $derived(students.filter((user: User) => appStore.isOnline(user.username)))
