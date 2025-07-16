@@ -32,23 +32,28 @@
           username: data.user.user_metadata?.username || ADMIN_NAME
         }
 
-        // 점수 정보 가져오기
+        // 백엔드 API를 통해 점수 정보 가져오기
         try {
-          const { data: scoreData } = await supabase
-            .from('scores')
-            .select('*')
-            .eq('user_id', data.user.id)
-            .single()
-
-          if (scoreData) {
-            user.score = {
-              total_score: scoreData.total_score,
-              today_gained_score: scoreData.today_gained_score,
-              today_lost_score: scoreData.today_lost_score
+          const response = await fetch('/api/scores', {
+            headers: {
+              'Authorization': `Bearer ${data.session.access_token}`
+            }
+          })
+          
+          if (response.ok) {
+            const scoresData = await response.json()
+            const userScore = scoresData.find((score: any) => score.id === data.user.id)
+            
+            if (userScore?.score) {
+              user.score = {
+                total_score: userScore.score.total_score,
+                today_gained_score: userScore.score.today_gained_score,
+                today_lost_score: userScore.score.today_lost_score
+              }
             }
           }
         } catch (scoreError) {
-          console.log('점수 정보 없음:', scoreError)
+          console.log('점수 정보 가져오기 실패:', scoreError)
         }
 
         appStore.connect(user)

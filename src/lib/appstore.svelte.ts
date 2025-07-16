@@ -43,6 +43,15 @@ class AppStore {
     if (this.socket) this.socket.disconnect()
 
     this.cur_user = user
+    
+    // 사용자 정보를 localStorage에 저장
+    if (user.username !== GUEST_USER) {
+      localStorage.setItem('current-user', JSON.stringify(user))
+      console.log('💾 사용자 정보 저장:', user.username)
+    } else {
+      localStorage.removeItem('current-user')
+    }
+    
     this.socket = io(
       dev
         ? import.meta.env.VITE_API_URL || 'http://localhost:8000'
@@ -54,7 +63,7 @@ class AppStore {
     )
 
     this.socket.on('connect', () => {
-      console.log('✅ Socket.IO Connected')
+      console.log('✅ Socket.IO Connected for user:', user.username)
       this.socket?.emit('join', { username: user.username })
     })
 
@@ -156,8 +165,11 @@ class AppStore {
     this.cur_user = { username: GUEST_USER, id: '0' }
     this.users = []
     this.quiz = null
-    // Supabase 세션도 함께 종료
-    supabase.auth.signOut()
+    // localStorage에서 사용자 정보 제거
+    localStorage.removeItem('current-user')
+    localStorage.removeItem('supabase-auth')
+    // Supabase 세션도 함께 종료하고 완료 후 페이지 이동
+    await supabase.auth.signOut()
     goto('/')
   }
 }
