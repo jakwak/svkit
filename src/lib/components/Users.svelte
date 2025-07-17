@@ -57,7 +57,7 @@ import { invalidate } from '$app/navigation'
       
       // 토큰이 없거나 만료된 경우 새로고침 시도
       if (!token) {
-        console.log('토큰이 없거나 만료되어 새로고침을 시도합니다.')
+
         const { data: { session: refreshedSession } } = await supabase.auth.refreshSession()
         token = refreshedSession?.access_token
         
@@ -125,10 +125,10 @@ import { invalidate } from '$app/navigation'
         type="button"
         class="btn btn-soft btn-primary text-5xl h-30 border-2 border-primary hover:border-secondary-content relative"
         onclick={() => {
-          if (!appStore.isAdmin && !appStore.users.some((online_user) => online_user === user.username)) goto(`/quizz/${user.username}`)
+          if (!appStore.isAdmin && !appStore.online_users.some((online_user) => online_user === user.username)) goto(`/quizz/${user.username}`)
         }}
         ontouchend={() => {
-          if (!appStore.isAdmin && !appStore.users.some((online_user) => online_user === user.username)) goto(`/quizz/${user.username}`)
+          if (!appStore.isAdmin && !appStore.online_users.some((online_user) => online_user === user.username)) goto(`/quizz/${user.username}`)
         }}
       >
         {user.username}
@@ -149,7 +149,7 @@ import { invalidate } from '$app/navigation'
         <div
           class="border-1 border-primary text-primary hover:text-secondary p-4 rounded-xl hover:border-secondary items-center flex flex-col space-y-3 select-none relative"
         >
-          {#if appStore.users.some((online_user) => online_user === user.username && user.username !== ADMIN_NAME)}
+          {#if appStore.online_users.some((online_user) => online_user === user.username && user.username !== ADMIN_NAME)}
             <div class="online-badge"></div>
           {/if}
           <div class="flex items-center space-x-2">

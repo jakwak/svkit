@@ -2,6 +2,7 @@ import type { LayoutServerLoad } from './$types';
 
 export const load: LayoutServerLoad = async ( { locals } ) => {
   return {
-    cur_user: null // Supabase 클라이언트에서 처리
+    currentUser: locals.user || null,
+    users: [] // 빈 배열로 초기화
   };
 };

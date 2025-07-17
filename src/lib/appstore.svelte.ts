@@ -13,7 +13,7 @@ import { goto } from '$app/navigation'
 
 class AppStore {
   cur_user = $state({ username: GUEST_USER }) as User
-  users = $state([]) as string[]
+  online_users = $state([]) as string[]
   quiz = $state(null) as QuizQuestion | null
   socket = $state(null) as Socket | null
 
@@ -36,7 +36,7 @@ class AppStore {
   }
 
   isOnline(username: string) {
-    return this.users.some((user) => user === username)
+    return this.online_users.some((user) => user === username)
   }
 
   connect(user: User) {
@@ -44,12 +44,9 @@ class AppStore {
 
     this.cur_user = user
     
-    // 사용자 정보를 localStorage에 저장
+    // 사용자 정보는 쿠키로만 관리
     if (user.username !== GUEST_USER) {
-      localStorage.setItem('current-user', JSON.stringify(user))
-      console.log('💾 사용자 정보 저장:', user.username)
-    } else {
-      localStorage.removeItem('current-user')
+      console.log('✅ 사용자 연결:', user.username)
     }
     
     this.socket = io(
@@ -68,7 +65,7 @@ class AppStore {
     })
 
     this.socket.on('users', (data) => {
-      this.users = data.users
+      this.online_users = data.users
       console.log('👥 users:', data.users)
     })
 
@@ -163,11 +160,27 @@ class AppStore {
     // 소켓 연결 해제 등 기존 로직
     if (this.socket) this.socket.disconnect()
     this.cur_user = { username: GUEST_USER, id: '0' }
-    this.users = []
+    this.online_users = []
     this.quiz = null
-    // localStorage에서 사용자 정보 제거
-    localStorage.removeItem('current-user')
-    localStorage.removeItem('supabase-auth')
+    
+    // 쿠키 삭제
+    document.cookie = 'supabase-auth=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/';
+    
+    // 서버에서도 쿠키 삭제 요청 (SvelteKit API 사용)
+    // try {
+    //   const response = await fetch('/logout', {
+    //     method: 'POST',
+    //     credentials: 'include'
+    //   });
+    //   if (response.ok) {
+    //     console.log('서버 로그아웃 성공');
+    //   } else {
+    //     console.log('서버 로그아웃 응답 오류:', response.status);
+    //   }
+    // } catch (error) {
+    //   console.log('서버 로그아웃 요청 실패 (무시됨):', error);
+    // }
+    
     // Supabase 세션도 함께 종료하고 완료 후 페이지 이동
     await supabase.auth.signOut()
     goto('/')

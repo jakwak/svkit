@@ -72,14 +72,7 @@
 
       const data = await response.json()
       
-      console.log('🔐 로그인 응답:', {
-        hasUser: !!data.user,
-        userId: data.user?.id,
-        username: data.user?.username,
-        hasToken: !!data.supabase_token,
-        hasRefreshToken: !!data.supabase_refresh_token,
-        fullResponse: data
-      })
+
       
       // 백엔드에서 받은 사용자 정보로 직접 세션 생성
       const session = {
@@ -89,9 +82,8 @@
         user: data.user
       }
       
-      // localStorage에 세션 저장
-      localStorage.setItem('supabase-auth', JSON.stringify(session))
-      console.log('💾 localStorage에 세션 저장 완료')
+      // 쿠키에 세션 저장
+      document.cookie = `supabase-auth=${JSON.stringify(session)}; path=/; max-age=${60 * 60 * 24}; SameSite=Lax`;
       
       // Supabase 세션도 설정 시도 (선택사항)
       try {
@@ -100,13 +92,11 @@
           refresh_token: data.supabase_refresh_token || data.supabase_token
         })
         
-        if (!sessionError) {
-          console.log('✅ Supabase 세션 설정 완료')
-        } else {
-          console.log('⚠️ Supabase 세션 설정 실패 (localStorage 사용):', sessionError.message)
+        if (sessionError) {
+          // Supabase 세션 설정 실패 (무시)
         }
       } catch (error) {
-        console.log('⚠️ Supabase 세션 설정 오류 (localStorage 사용):', error)
+        // Supabase 세션 설정 오류 (무시)
       }
 
       // 사용자 정보와 점수 정보 가져오기

@@ -10,15 +10,33 @@ const handleAuth: Handle = async ({ event, resolve }) => {
   }
 
   try {
-    // Supabase 인증을 사용하여 현재 사용자 확인
-    const meResponse = await event.fetch(`${process.env.VITE_API_URL || 'http://localhost:8000'}/supabase/me`)
+    // 쿠키에서 토큰 가져오기
+    const supabaseAuthCookie = event.cookies.get('supabase-auth');
+    let token = null;
+    
+    if (supabaseAuthCookie) {
+      try {
+        const authData = JSON.parse(supabaseAuthCookie);
+        token = authData.access_token;
+      } catch (e) {
+        // 쿠키 파싱 오류 무시
+      }
+    }
 
-    if (meResponse.ok) {
-      event.locals.user = await meResponse.json()
+    // 토큰이 있으면 서버 인증 호출
+    if (token) {
+      const meResponse = await event.fetch(`${process.env.VITE_API_URL || 'http://localhost:8000'}/supabase/me`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (meResponse.ok) {
+        event.locals.user = await meResponse.json()
+      }
     } else {
+      // 토큰이 없을 때 /quizz/ 경로에서 자동 로그인 시도
       const currentPath = event.url.pathname
-
-      // /quizz/ 경로에서 자동 로그인 시도
       if (currentPath.startsWith('/quizz/')) {
         // URL에서 username 추출
         const pathParts = currentPath.split('/')
@@ -35,9 +53,25 @@ const handleAuth: Handle = async ({ event, resolve }) => {
               body: JSON.stringify({ username, password: '900606Aa' }),
             }
           )
-
           if (loginResponse.ok) {
             const loginData = await loginResponse.json()
+            
+            // 쿠키에 세션 저장
+            const session = {
+              access_token: loginData.supabase_token,
+              refresh_token: loginData.supabase_refresh_token || loginData.supabase_token,
+              expires_at: Math.floor(Date.now() / 1000) + (60 * 60 * 24), // 24시간 후 만료
+              user: loginData.user
+            }
+            
+            event.cookies.set('supabase-auth', JSON.stringify(session), {
+              httpOnly: false, // 클라이언트에서도 접근 가능하도록
+              secure: process.env.NODE_ENV === 'production',
+              maxAge: 60 * 60 * 24, // 24시간
+              path: '/',
+              sameSite: 'lax'
+            });
+            
             event.locals.user = loginData.user
           } else {
             throw redirect(303, '/')
