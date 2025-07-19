@@ -13,7 +13,7 @@
   let { data, form }: PageProps = $props()
 
   // data.users를 반응형으로 만들기
-  let usersData = $state(data.users)
+  let usersData = $state(data.users) as User[]
 
   // 현재 선택된 탭을 추적하는 변수
   let selectedTab = $state('문제')
