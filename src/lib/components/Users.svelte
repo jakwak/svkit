@@ -119,7 +119,7 @@ import { invalidate } from '$app/navigation'
 </script>
 
 {#if !show_score}
-  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 p-4 mx-auto">
+  <div class="grid grid-cols-3 sm:grid-cols-2 md:grid-cols-4 gap-4 p-4 mx-auto">
     {#each [...usersState].filter(user => user.username !== ADMIN_NAME) as user}
       <button
         type="button"
@@ -251,5 +251,24 @@ import { invalidate } from '$app/navigation'
     background-color: #ff6b6b;
     border-radius: 50%;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  }
+
+  /* 모바일에서 폰트 크기 조정 */
+  @media (max-width: 640px) {
+    button {
+      font-size: 1.8rem !important;
+      line-height: 1.1;
+      word-break: keep-all;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      height: 4rem !important;
+      padding: 0.5rem !important;
+    }
+    
+    .grid {
+      gap: 0.5rem !important;
+      padding: 0.5rem !important;
+    }
   }
 </style>
