@@ -50,7 +50,7 @@ const handleAuth: Handle = async ({ event, resolve }) => {
               headers: {
                 'Content-Type': 'application/json',
               },
-              body: JSON.stringify({ username, password: '900606Aa' }),
+              body: JSON.stringify({ username, password: process.env.VITE_AUTO_LOGIN_PASSWORD }),
             }
           )
           if (loginResponse.ok) {
