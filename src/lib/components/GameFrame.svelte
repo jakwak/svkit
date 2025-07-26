@@ -263,10 +263,4 @@
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
   }
-
-  /* :global(body) {
-    margin: 0;
-    padding: 0;
-    overflow: hidden;
-  } */
 </style> 

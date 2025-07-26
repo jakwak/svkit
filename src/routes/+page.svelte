@@ -1,12 +1,13 @@
 <script lang="ts">
-  import { 
-    Users, 
-    appStore, 
-    XYInputText, 
-    QuizList2, 
-    WorkSheet, 
-    GameFrame, 
-    UserStatusAndClassButtons, 
+  import {
+    Users,
+    appStore,
+    XYInputText,
+    QuizList2,
+    WorkSheet,
+    GameFrame,
+    UserStatusAndClassButtons,
+    ColyRoom,
   } from '$lib'
   import type { PageProps } from './$types'
 
@@ -24,7 +25,7 @@
     if (target.checked) {
       const tabName = target.getAttribute('aria-label') || '문제'
       selectedTab = tabName
-      
+
       // 게임 탭을 선택하면 showGame을 true로 설정
       if (tabName === '게임') {
         showGame = true
@@ -57,12 +58,12 @@
       isTransitioning = false
     }, 400)
   }
-  
+
   function handleEndClass() {
     // 수업 종료 버튼 클릭 시 처리
     console.log('수업 종료 버튼 클릭됨')
     isTransitioning = true
-    
+
     // 페이드 아웃 후 상태 변경 (애니메이션 시간과 동일하게 조정)
     setTimeout(() => {
       appStore.sendClassEnd()
@@ -71,13 +72,50 @@
   }
 </script>
 
-
 <svelte:head>
   <title>ㅎjㅎ HOME</title>
 </svelte:head>
 
 {#if appStore.isAdmin}
   <div class="tabs tabs-border flex justify-center mx-auto">
+    <!-- 수업 탭 -->
+    <input
+      type="radio"
+      name="my_tabs"
+      class="tab hover:text-secondary"
+      aria-label="수업"
+      checked={selectedTab === '수업'}
+      onchange={handleTabChange}
+    />
+    <div class="tab-content border-primary border-3 bg-base-100 p-5 rounded-md">
+      {#if selectedTab === '수업'}
+        <ColyRoom />
+        <!-- {#if appStore.sessionState === 'start'}
+          <div class="class-container container-fade-in">
+            <button
+              class="start-class-btn {isTransitioning ? 'fade-out' : 'fade-in'}"
+              onclick={handleStartClass}
+              disabled={isTransitioning}
+            >
+              <span class="btn-text">수업 시작</span>
+            </button>
+          </div>
+        {:else}
+          <div class="class-container-session container-fade-in">
+            <UserStatusAndClassButtons users={usersData} color={true} />
+
+            <button
+              class="end-class-btn"
+              onclick={handleEndClass}
+              disabled={isTransitioning}
+            >
+              수업 종료
+            </button>
+          </div>
+        {/if} -->
+      {/if}
+    </div>
+
     <!-- 문제 탭 -->
     <input
       type="radio"
@@ -91,44 +129,6 @@
       class="tab-content border-primary border-3 bg-base-100 p-5 rounded-md space-y-4"
     >
       <QuizList2 />
-    </div>
-
-    <!-- 수업 탭 -->
-    <input
-      type="radio"
-      name="my_tabs"
-      class="tab hover:text-secondary"
-      aria-label="수업"
-      checked={selectedTab === '수업'}
-      onchange={handleTabChange}
-    />
-    <div class="tab-content border-primary border-3 bg-base-100 p-5 rounded-md">
-      {#if selectedTab === '수업'}
-        {#if appStore.sessionState === 'start'}
-          <div class="class-container container-fade-in">
-            <button 
-              class="start-class-btn {isTransitioning ? 'fade-out' : 'fade-in'}" 
-              onclick={handleStartClass}
-              disabled={isTransitioning}
-            >
-              <span class="btn-text">수업 시작</span>
-            </button>
-          </div>
-        {:else}
-          <div class="class-container-session container-fade-in">
-            <!-- <UserStatusList users={usersData} /> -->
-            <UserStatusAndClassButtons users={usersData} color={true} />
-            
-            <button 
-              class="end-class-btn" 
-              onclick={handleEndClass}
-              disabled={isTransitioning}
-            >
-              수업 종료
-            </button>
-          </div>
-        {/if}
-      {/if}
     </div>
 
     <!-- 문제지 탭 -->
@@ -156,7 +156,10 @@
       onchange={handleTabChange}
     />
     <div class="tab-content border-primary border-3 bg-base-100 p-5 rounded-md">
-      <Users users={usersData} onUsersUpdate={(updatedUsers) => usersData = updatedUsers} />
+      <Users
+        users={usersData}
+        onUsersUpdate={(updatedUsers) => (usersData = updatedUsers)}
+      />
     </div>
 
     <!-- 점수 탭 -->
@@ -170,7 +173,11 @@
     />
     <div class="tab-content border-primary border-3 bg-base-100 p-5 rounded-md">
       {#if selectedTab === '점수'}
-        <Users users={usersData} show_score={true} onUsersUpdate={(updatedUsers) => usersData = updatedUsers} />
+        <Users
+          users={usersData}
+          show_score={true}
+          onUsersUpdate={(updatedUsers) => (usersData = updatedUsers)}
+        />
       {/if}
     </div>
 
@@ -201,9 +208,13 @@
     <div class="tab-content border-primary border-3 bg-base-100 p-5 rounded-md">
       {#if selectedTab === '게임'}
         {#if showGame}
-          <GameFrame username={appStore.username} bind:showGame/>
+          <GameFrame username={appStore.username} bind:showGame />
         {:else}
-          <Users users={usersData} show_score={true} onUsersUpdate={(updatedUsers) => usersData = updatedUsers} />
+          <Users
+            users={usersData}
+            show_score={true}
+            onUsersUpdate={(updatedUsers) => (usersData = updatedUsers)}
+          />
         {/if}
       {/if}
     </div>
@@ -211,7 +222,6 @@
 {:else}
   <Users users={data.users} />
 {/if}
-
 
 <style>
   .start-class-btn {
@@ -246,11 +256,14 @@
   }
 
   @keyframes pulse-glow {
-    0%, 100% {
+    0%,
+    100% {
       box-shadow: 0 15px 40px rgba(102, 126, 234, 0.3);
     }
     50% {
-      box-shadow: 0 15px 40px rgba(102, 126, 234, 0.5), 0 0 30px rgba(102, 126, 234, 0.3);
+      box-shadow:
+        0 15px 40px rgba(102, 126, 234, 0.5),
+        0 0 30px rgba(102, 126, 234, 0.3);
     }
   }
 
@@ -267,7 +280,12 @@
     left: -100%;
     width: 100%;
     height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.3),
+      transparent
+    );
     transition: left 0.6s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
@@ -282,7 +300,11 @@
     left: 50%;
     width: 0;
     height: 0;
-    background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+    background: radial-gradient(
+      circle,
+      rgba(255, 255, 255, 0.1) 0%,
+      transparent 70%
+    );
     border-radius: 50%;
     transform: translate(-50%, -50%);
     transition: all 0.6s ease;
@@ -350,8 +372,6 @@
     background: #d0d0d0;
   }
 
-
-
   .end-class-btn:disabled {
     opacity: 0.5;
     cursor: not-allowed;
@@ -389,8 +409,6 @@
     transform: scale(0.95) !important;
     transition: transform 0.1s ease !important;
   }
-
-
 
   @keyframes fadeIn {
     0% {

@@ -1,7 +1,7 @@
 <script lang="ts">
-  const { onParticipationClick } = $props<{
-    onParticipationClick: () => void
-  }>()
+  // const { onParticipationClick } = $props<{
+  //   onParticipationClick: () => void
+  // }>()
 </script>
 
 <div class="waiting-container">
@@ -13,14 +13,6 @@
     <span class="char char5">세</span>
     <span class="char char6">요</span>
   </div>
-  <!-- <div class="participation-button-container">
-    <button
-      class="participation-button"
-      onclick={onParticipationClick}
-    >
-      수업 참여 중...
-    </button>
-  </div> -->
 </div>
 
 <style>
@@ -106,31 +98,6 @@
       transform: translateX(-50vw) scale(0.5);
     }
   }
-/* 
-  .participation-button {
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    color: white;
-    border: none;
-    border-radius: 15px;
-    padding: 15px 30px;
-    font-size: 18px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
-  }
-
-  .participation-button:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 12px 35px rgba(102, 126, 234, 0.4);
-  }
-
-  .participation-button-container {
-    position: absolute;
-    bottom: 50px;
-    left: 50%;
-    transform: translateX(-50%);
-  } */
 
   @media (max-width: 768px) {
     .waiting-text {

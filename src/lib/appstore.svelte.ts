@@ -12,7 +12,7 @@ import { goto } from '$app/navigation'
 // const isDev = import.meta.env.MODE === 'development';
 
 class AppStore {
-  cur_user = $state({ username: GUEST_USER }) as User
+  cur_user = $state({}) as User
   online_users = $state([]) as string[]
   quiz = $state(null) as QuizQuestion | null
   socket = $state(null) as Socket | null
@@ -29,6 +29,10 @@ class AppStore {
 
   get username() {
     return this.cur_user.username
+  }
+
+  get id() {
+    return this.cur_user.id
   }
 
   get score() {
@@ -165,21 +169,6 @@ class AppStore {
     
     // 쿠키 삭제
     document.cookie = 'supabase-auth=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/';
-    
-    // 서버에서도 쿠키 삭제 요청 (SvelteKit API 사용)
-    // try {
-    //   const response = await fetch('/logout', {
-    //     method: 'POST',
-    //     credentials: 'include'
-    //   });
-    //   if (response.ok) {
-    //     console.log('서버 로그아웃 성공');
-    //   } else {
-    //     console.log('서버 로그아웃 응답 오류:', response.status);
-    //   }
-    // } catch (error) {
-    //   console.log('서버 로그아웃 요청 실패 (무시됨):', error);
-    // }
     
     // Supabase 세션도 함께 종료하고 완료 후 페이지 이동
     await supabase.auth.signOut()

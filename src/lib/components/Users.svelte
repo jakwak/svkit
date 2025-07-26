@@ -181,22 +181,7 @@ import { invalidate } from '$app/navigation'
           <div class="font-bold text-5xl">{user.username}</div>
         </div>
 
-        <!-- 버튼 리스트: 유저 박스 하단에 마우스 호버 시 표시 -->
-        <!-- <div
-          class="absolute left-1/2 -translate-x-1/2 top-[-20%] mt-2 hidden group-hover:flex join z-10"
-        >
-          {#each scores as score, i}
-            <button
-              type="button"
-              class="btn btn-outline btn-primary text-2xl border-2 w-15 bg-zinc-900 hover:text-secondary
-            {i === 0 ? 'rounded-l-2xl border-r-0' : ''}
-            {i === scores.length - 1 ? 'rounded-r-2xl' : 'border-r-0'}"
-              onclick={() => handleScoreClick(user.username, score)}
-            >
-              {score > 0 ? `+${score}` : score}
-            </button>
-          {/each}
-        </div> -->
+
 
         
       </div>

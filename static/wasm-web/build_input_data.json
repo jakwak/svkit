@@ -1,6 +1,6 @@
 {
   "project_git" : {
-    "sha1" : "58fa3f36632792dc2efe2a80c90469d082028874",
+    "sha1" : "17a182adbec0d9975622586bb2d7994dc3f75008",
     "origin" : "git@github.com:jakwak/HelloDefold.git",
     "branch" : "main"
   },
@@ -15,7 +15,7 @@
     "md5" : "7743A4E02C94BD4B0F3F757D2CB66AC8"
   }, {
     "link" : "https://github.com/defold/extension-websocket/archive/master.zip",
-    "md5" : "7FB783B136E880BA3DD11B91E3E5BF61"
+    "md5" : "BC3846F5DE2A26366B251D0F22D0D2D9"
   }, {
     "link" : "https://github.com/colyseus/colyseus-defold/archive/master.zip",
     "md5" : "5CBB44723C83C5D2CBEBE0C108262CFA"

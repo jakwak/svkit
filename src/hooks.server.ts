@@ -25,7 +25,7 @@ const handleAuth: Handle = async ({ event, resolve }) => {
 
     // 토큰이 있으면 서버 인증 호출
     if (token) {
-      const meResponse = await event.fetch(`${process.env.VITE_API_URL || 'http://localhost:8000'}/supabase/me`, {
+      const meResponse = await event.fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/supabase/me`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -44,13 +44,13 @@ const handleAuth: Handle = async ({ event, resolve }) => {
 
         if (username) {
           const loginResponse = await event.fetch(
-            `${process.env.VITE_API_URL || 'http://localhost:8000'}/supabase/signin-username`,
+            `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/supabase/signin-username`,
             {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
               },
-              body: JSON.stringify({ username, password: process.env.VITE_AUTO_LOGIN_PASSWORD }),
+              body: JSON.stringify({ username, password: import.meta.env.VITE_AUTO_LOGIN_PASSWORD || '900606Aa' }),
             }
           )
           if (loginResponse.ok) {

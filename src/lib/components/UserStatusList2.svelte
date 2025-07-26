@@ -253,29 +253,6 @@
     width: 100%;
     margin-bottom: 8px;
   }
-/* 
-  .status-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 12px;
-    padding-bottom: 8px;
-    border-bottom: 1px solid rgba(156, 163, 175, 0.2);
-  }
-
-  .status-title {
-    font-weight: 600;
-    font-size: 14px;
-    color: #f9fafb;
-  }
-
-  .status-subtitle {
-    font-size: 12px;
-    color: #10b981;
-    background: rgba(16, 185, 129, 0.1);
-    padding: 2px 8px;
-    border-radius: 12px;
-  } */
   
   .users-grid {
     display: grid;
@@ -378,30 +355,6 @@
     color: #10b981;
     font-weight: 500;
   }
-/* 
-  .activity-controls {
-    display: flex;
-    gap: 8px;
-    margin-top: 12px;
-    padding-top: 12px;
-    border-top: 1px solid rgba(156, 163, 175, 0.2);
-  }
-
-  .activity-btn {
-    background: rgba(16, 185, 129, 0.1);
-    color: #10b981;
-    border: 1px solid rgba(16, 185, 129, 0.3);
-    padding: 4px 8px;
-    border-radius: 6px;
-    font-size: 11px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-  }
-
-  .activity-btn:hover {
-    background: rgba(16, 185, 129, 0.2);
-    border-color: rgba(16, 185, 129, 0.5);
-  } */
 
   @keyframes pulse {
     0% {

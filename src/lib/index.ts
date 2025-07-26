@@ -32,6 +32,7 @@ export { default as XYInputText } from "./components/XYInputText.svelte"
 export { default as QuizShow } from "./components/QuizShow.svelte"
 export { default as Triangle } from "./components/Triangle.svelte"
 export { default as UserStatusAndClassButtons } from './components/UserStatusAndClassButtons.svelte';
+export { default as ColyRoom } from './components/AdminRoom.svelte';
 
 // 타입 정의들 (globals.ts에서 가져옴)
 export type { User, SessionState } from "./globals"
