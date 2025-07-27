@@ -6,13 +6,14 @@
   import NumberButtons from './NumberButtons.svelte'
   import UsernameButton from './UsernameButton.svelte'
   import { UserAnimationManager } from './UserAnimationManager'
+  import { gsap } from 'gsap'
+
+  const { users: initialUsers } = $props<{ users: User[] }>()
 
   let room: Room<MyState> | null = $state(null)
   let client: Client
-  let users: { username: string; id: string; answer_number: number }[] = $state([
-    { username: '김철수', id: 'user1', answer_number: 0 },
-    { username: '이영희', id: 'user2', answer_number: 0 },
-    { username: '박지수', id: 'user3', answer_number: 0 },
+  let users = $state([
+    ...initialUsers.filter((user: User) => user.username !== ADMIN_NAME),
   ])
 
   const animationManager = new UserAnimationManager()
@@ -24,11 +25,12 @@
     setTimeout(() => {
       animationManager.fadeInButtons()
 
-      // 애니메이션 완료 후 원래 위치 저장
+      // fade-in 애니메이션 완료 후 원래 위치 저장 (더 긴 대기 시간)
       setTimeout(() => {
         const positions = animationManager.saveOriginalPositions()
         animationManager.initialize(positions)
-      }, 600)
+        
+      }, 1200) // fade-in 완료 후 더 기다림
     }, 100)
   })
 
@@ -79,6 +81,13 @@
   }
 
   onDestroy(() => {
+    // 모든 GSAP 애니메이션 중지
+    if (typeof gsap !== 'undefined') {
+      gsap.killTweensOf('.user-button-container')
+      gsap.killTweensOf('.fade-in-button')
+      console.log('모든 애니메이션 중지됨')
+    }
+    
     room?.leave()
     users = []
   })
@@ -96,8 +105,8 @@
         >
           <UsernameButton
             username={user.username}
-            variant={'primary'}
-            size="large"
+            variant={'gray'}
+            size="medium"
             onClick={() => {
               console.log('사용자 클릭:', user.username)
               // 사용자 버튼 클릭 시 해당 사용자의 answer_number를 1-4 중 하나로 변경. 3초후 원래 위치로 돌아가게 하기
@@ -108,12 +117,16 @@
                 index,
                 randomNumber
               )
+              // 이동 완료 후 바로 rearrange 실행
+              setTimeout(() => {
+                animationManager.rearrangeUsersAfterMove(users)
+              }, 600) // 애니메이션 완료 후 바로 실행
               setTimeout(() => {
                 user.answer_number = 0
                 animationManager.moveSingleUserToOriginal(users, index, () => {
                   animationManager.rearrangeUsersAfterMove(users)
                 })
-              }, 3000)
+              }, 8000)
             }}
           />
         </div>

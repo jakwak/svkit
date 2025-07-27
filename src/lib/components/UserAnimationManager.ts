@@ -210,6 +210,25 @@ export class UserAnimationManager {
       const spacing = 5
       const startY = targetRect.bottom - pageRect.top + 5
 
+      // 현재 해당 숫자 버튼 아래에 있는 사용자들의 실제 위치 확인
+      let maxY = startY
+      sameAnswerUsers.forEach((user) => {
+        const existingUserIndex = users.findIndex(
+          (u) => u.username === user.username
+        )
+        if (existingUserIndex !== -1) {
+          const existingButton = userButtons[existingUserIndex] as HTMLElement
+          if (existingButton) {
+            const currentRect = existingButton.getBoundingClientRect()
+            const currentY = currentRect.bottom - pageRect.top
+            if (currentY > maxY) {
+              maxY = currentY
+            }
+          }
+        }
+      })
+
+      // 모든 사용자를 순차적으로 배치 (나중에 온 것들이 밑으로)
       sameAnswerUsers.forEach((user, index) => {
         const userIndex = users.findIndex((u) => u.username === user.username)
         if (userIndex === -1) return
@@ -217,6 +236,7 @@ export class UserAnimationManager {
         const userButton = userButtons[userIndex] as HTMLElement
         if (!userButton) return
 
+        // 순차적으로 밑으로 배치
         const targetY = startY + index * (buttonHeight + spacing)
 
         // 원래 위치에서 목표 위치까지의 이동 거리 계산

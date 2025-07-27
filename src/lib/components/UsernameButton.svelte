@@ -1,7 +1,7 @@
 <script lang="ts">
   export let username: string
   export let onClick: (() => void) | undefined = undefined
-  export let variant: 'primary' | 'secondary' | 'success' | 'warning' | 'danger' | 'purple' | 'pink' | 'indigo' | 'teal' | 'orange' | 'lime' | 'cyan' = 'primary'
+  export let variant: 'primary' | 'secondary' | 'success' | 'warning' | 'danger' | 'purple' | 'pink' | 'indigo' | 'teal' | 'orange' | 'lime' | 'cyan' | 'gray' = 'primary'
   export let size: 'small' | 'medium' | 'large' = 'medium'
   export let disabled: boolean = false
 
@@ -17,7 +17,8 @@
     teal: 'bg-teal-500 text-white hover:bg-teal-600',
     orange: 'bg-orange-500 text-white hover:bg-orange-600',
     lime: 'bg-lime-500 text-white hover:bg-lime-600',
-    cyan: 'bg-cyan-500 text-white hover:bg-cyan-600'
+    cyan: 'bg-cyan-500 text-white hover:bg-cyan-600',
+    gray: 'bg-gray-500 text-white hover:bg-gray-600'
   }
 
   const sizeStyles = {

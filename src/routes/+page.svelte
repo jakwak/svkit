@@ -88,7 +88,7 @@
     />
     <div class="tab-content border-primary border-3 bg-base-100 p-5 rounded-md">
       {#if selectedTab === '수업'}
-        <AdminRoom />
+        <AdminRoom users={usersData} />
         <!-- {#if appStore.sessionState === 'start'}
           <div class="class-container container-fade-in">
             <button

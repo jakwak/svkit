@@ -17,7 +17,7 @@
     {#each [1,2,3,4] as num}
       <button
         class="number-button btn-{num}"
-        on:click={() => handleClick(num)}
+        onclick={() => handleClick(num)}
       >
         {num}
       </button>
