@@ -14,6 +14,8 @@ export interface OriginalPosition {
 export class UserAnimationManager {
   private originalPositions: OriginalPosition[] = []
   private isInitialized = false
+  private arrivalOrder: { [username: string]: number } = {} // 도착 순서 추적
+  private nextArrivalIndex = 0 // 다음 도착 인덱스
 
   initialize(originalPositions: OriginalPosition[]) {
     this.originalPositions = originalPositions
@@ -30,6 +32,13 @@ export class UserAnimationManager {
     const numberButtons = document.querySelectorAll('.number-button')
     const userButtons = document.querySelectorAll('.user-button-container')
     const pageRect = document.body.getBoundingClientRect()
+
+    // 각 사용자의 도착 순서 기록
+    users.forEach((user) => {
+      if (user.answer_number > 0 && user.answer_number <= 4 && !this.arrivalOrder[user.username]) {
+        this.arrivalOrder[user.username] = this.nextArrivalIndex++
+      }
+    })
 
     // 각 숫자 버튼별로 사용자들을 그룹화
     const usersByAnswer: {
@@ -74,9 +83,16 @@ export class UserAnimationManager {
 
       const targetRect = targetButton.getBoundingClientRect()
 
-      // 같은 답변을 선택한 사용자들 중에서 현재 사용자의 순서 찾기
-      const sameAnswerUsers = usersByAnswer[user.answer_number] || []
-      const userOrder = sameAnswerUsers.findIndex((u) => u.user.id === user.id)
+      // 같은 답변을 선택한 사용자들을 도착 순서대로 정렬
+      const sameAnswerUsers = users
+        .filter((u) => u.answer_number === user.answer_number)
+        .sort((a, b) => {
+          const orderA = this.arrivalOrder[a.username] || 0
+          const orderB = this.arrivalOrder[b.username] || 0
+          return orderA - orderB // 먼저 도착한 것이 위에
+        })
+
+      const userOrder = sameAnswerUsers.findIndex((u) => u.username === user.username)
 
       // 숫자 버튼 바로 아래 세로 일렬 가운데 정렬
       const targetCenterX =
@@ -119,37 +135,32 @@ export class UserAnimationManager {
     const userButton = userButtons[userIndex] as HTMLElement
     if (!userButton) return
 
+    // 현재 사용자의 도착 순서 기록 (항상 새로운 순서로 업데이트)
+    const currentUser = users[userIndex]
+    this.arrivalOrder[currentUser.username] = this.nextArrivalIndex++
+
     // 숫자 버튼 바로 아래로 이동
     const targetCenterX = targetRect.left + targetRect.width / 2 - pageRect.left
     const buttonHeight = 40
     const spacing = 5
     const startY = targetRect.bottom - pageRect.top + 5
 
-    // 같은 답변을 선택한 사용자들 중에서 맨 마지막 순서로 배치
-    const sameAnswerUsers = users.filter(
-      (user) => user.answer_number === targetNumber
-    )
+    // 도착 순서대로 정렬
+    const sameAnswerUsers = users
+      .filter((user) => user.answer_number === targetNumber)
+      .sort((a, b) => {
+        const orderA = this.arrivalOrder[a.username] || 0
+        const orderB = this.arrivalOrder[b.username] || 0
+        return orderA - orderB // 먼저 도착한 것이 위에
+      })
 
-    // 현재 해당 숫자 버튼 아래에 있는 사용자들의 실제 위치 확인
-    let maxY = startY
-    sameAnswerUsers.forEach((user, index) => {
-      const existingUserIndex = users.findIndex(
-        (u) => u.username === user.username
-      )
-      if (existingUserIndex !== -1) {
-        const existingButton = userButtons[existingUserIndex] as HTMLElement
-        if (existingButton) {
-          const currentRect = existingButton.getBoundingClientRect()
-          const currentY = currentRect.bottom - pageRect.top
-          if (currentY > maxY) {
-            maxY = currentY
-          }
-        }
-      }
-    })
 
-    // 마지막 사용자 바로 아래에 배치
-    const targetY = maxY + spacing
+
+    // 현재 사용자의 순서 찾기
+    const userOrder = sameAnswerUsers.findIndex((user) => user.username === currentUser.username)
+
+    // 순서대로 배치
+    const targetY = startY + userOrder * (buttonHeight + spacing)
 
     // 원래 위치에서 목표 위치까지의 이동 거리 계산
     const originalPos = this.originalPositions[userIndex]
@@ -197,9 +208,16 @@ export class UserAnimationManager {
       if (!targetButton) continue
 
       const targetRect = targetButton.getBoundingClientRect()
-      const sameAnswerUsers = users.filter(
-        (user) => user.answer_number === numberIndex
-      )
+      // 도착 순서대로 정렬
+      const sameAnswerUsers = users
+        .filter((user) => user.answer_number === numberIndex)
+        .sort((a, b) => {
+          const orderA = this.arrivalOrder[a.username] || 0
+          const orderB = this.arrivalOrder[b.username] || 0
+          return orderA - orderB // 먼저 도착한 것이 위에
+        })
+
+
 
       if (sameAnswerUsers.length === 0) continue
 
@@ -228,7 +246,7 @@ export class UserAnimationManager {
         }
       })
 
-      // 모든 사용자를 순차적으로 배치 (나중에 온 것들이 밑으로)
+      // 도착 순서대로 배치 (username 기준 정렬 제거)
       sameAnswerUsers.forEach((user, index) => {
         const userIndex = users.findIndex((u) => u.username === user.username)
         if (userIndex === -1) return
@@ -236,7 +254,7 @@ export class UserAnimationManager {
         const userButton = userButtons[userIndex] as HTMLElement
         if (!userButton) return
 
-        // 순차적으로 밑으로 배치
+        // 도착 순서대로 밑으로 배치
         const targetY = startY + index * (buttonHeight + spacing)
 
         // 원래 위치에서 목표 위치까지의 이동 거리 계산
@@ -265,6 +283,11 @@ export class UserAnimationManager {
       return
     }
 
+    // 도착 순서 리셋
+    this.arrivalOrder = {}
+    this.nextArrivalIndex = 0
+    console.log('도착 순서 리셋 완료')
+
     gsap.to('.user-button-container', {
       x: 0,
       y: 0,
@@ -282,6 +305,20 @@ export class UserAnimationManager {
       duration: 0.6,
       ease: 'power2.out',
       stagger: 0.1,
+      onComplete: () => {
+        // 페이드인 완료 후 사용자 버튼 위치 로그
+        const userButtons = document.querySelectorAll('.user-button-container')
+        const pageRect = document.body.getBoundingClientRect()
+        
+        console.log('=== 페이드인 완료 후 사용자 버튼 위치 ===')
+        userButtons.forEach((button, index) => {
+          const rect = button.getBoundingClientRect()
+          const x = rect.left - pageRect.left
+          const y = rect.top - pageRect.top
+          console.log(`사용자 ${index + 1}: x=${x.toFixed(2)}, y=${y.toFixed(2)}`)
+        })
+        console.log('========================================')
+      }
     })
   }
 
