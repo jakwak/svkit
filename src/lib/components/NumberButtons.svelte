@@ -1,15 +1,27 @@
 <script lang="ts">
+  import { onMount } from 'svelte'
   const { onNumberClick } = $props<{
     onNumberClick: (number: number) => void
   }>()
+
+  let selected: number | null = null
+
+  function handleClick(num: number) {
+    selected = num
+    onNumberClick(num)
+  }
 </script>
 
 <div class="buttons-container">
   <div class="number-buttons">
-    <button class="number-button btn-1" onclick={() => onNumberClick(1)}>1</button>
-    <button class="number-button btn-2" onclick={() => onNumberClick(2)}>2</button>
-    <button class="number-button btn-3" onclick={() => onNumberClick(3)}>3</button>
-    <button class="number-button btn-4" onclick={() => onNumberClick(4)}>4</button>
+    {#each [1,2,3,4] as num}
+      <button
+        class="number-button btn-{num}"
+        on:click={() => handleClick(num)}
+      >
+        {num}
+      </button>
+    {/each}
   </div>
 </div>
 
@@ -34,43 +46,64 @@
   .number-button {
     width: 200px;
     height: 200px;
-    border: none;
     border-radius: 25px;
     font-size: 120px;
     font-weight: bold;
     cursor: pointer;
     transition: all 0.3s ease;
-    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.2);
-    color: white;
-    text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.4);
+    box-shadow: none;
+    text-shadow: none;
+    background: none;
   }
 
   .btn-1 {
-    background: linear-gradient(135deg, #fff2cc, #ffd966);
+    background: none;
+    border: 4px solid #ffd966;
+    color: #555;
   }
-
+  .btn-1:hover {
+    background: #ffd966;
+    color: #333;
+  }
   .btn-2 {
-    background: linear-gradient(135deg, #b3d9ff, #8ac4ff);
+    background: none;
+    border: 4px solid #8ac4ff;
+    color: #555;
   }
-
+  .btn-2:hover {
+    background: #8ac4ff;
+    color: #333;
+  }
   .btn-3 {
-    background: linear-gradient(135deg, #b3ffb3, #8aff8a);
+    background: none;
+    border: 4px solid #8aff8a;
+    color: #555;
   }
-
+  .btn-3:hover {
+    background: #8aff8a;
+    color: #333;
+  }
   .btn-4 {
-    background: linear-gradient(135deg, #ffb3ff, #ff8aff);
+    background: none;
+    border: 4px solid #ff8aff;
+    color: #555;
+  }
+  .btn-4:hover {
+    background: #ff8aff;
+    color: #333;
   }
 
   .number-button:hover {
     transform: translateY(-5px);
-    box-shadow: 0 18px 45px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
   }
+
+
 
   @media (max-width: 768px) {
     .number-buttons {
       gap: 15px;
     }
-
     .number-button {
       width: 120px;
       height: 120px;
