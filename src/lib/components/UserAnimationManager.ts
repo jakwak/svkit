@@ -1,25 +1,37 @@
 import { gsap } from 'gsap'
-
-export interface User {
-  username: string
-  id: string
-  answer_number: number
-}
+import { ANIMATION_CONSTANTS, Z_INDEX_CONSTANTS, BUTTON_CONSTANTS } from '$lib/globals'
 
 export interface OriginalPosition {
   x: number
   y: number
 }
 
+
+
 export class UserAnimationManager {
   private originalPositions: OriginalPosition[] = []
   private isInitialized = false
   private arrivalOrder: { [username: string]: number } = {} // 도착 순서 추적
   private nextArrivalIndex = 0 // 다음 도착 인덱스
+  private currentZIndex = Z_INDEX_CONSTANTS.ANIMATION_Z_INDEX // 현재 사용 중인 z-index 값
+  private resizeListener: (() => void) | null = null
+  private resizeTimeout: number | null = null
 
   initialize(originalPositions: OriginalPosition[]) {
     this.originalPositions = originalPositions
     this.isInitialized = true
+    this.currentZIndex = 10 // z-index 초기화
+    
+    // 리사이즈 이벤트 리스너 추가 (디바운싱 적용)
+    this.resizeListener = () => {
+      if (this.resizeTimeout) {
+        clearTimeout(this.resizeTimeout)
+      }
+      this.resizeTimeout = window.setTimeout(() => {
+        // 리사이즈 처리는 UserButtons 컴포넌트에서 처리
+      }, ANIMATION_CONSTANTS.DEBOUNCE_DELAY)
+    }
+    window.addEventListener('resize', this.resizeListener)
   }
 
   isReady(): boolean {
@@ -35,7 +47,12 @@ export class UserAnimationManager {
 
     // 각 사용자의 도착 순서 기록
     users.forEach((user) => {
-      if (user.answer_number > 0 && user.answer_number <= 4 && !this.arrivalOrder[user.username]) {
+      const answerNumber = user.answer_number ?? 0
+      if (
+        answerNumber > 0 &&
+        answerNumber <= 4 &&
+        !this.arrivalOrder[user.username]
+      ) {
         this.arrivalOrder[user.username] = this.nextArrivalIndex++
       }
     })
@@ -46,11 +63,12 @@ export class UserAnimationManager {
     } = {}
 
     users.forEach((user, index) => {
-      if (user.answer_number > 0 && user.answer_number <= 4) {
-        if (!usersByAnswer[user.answer_number]) {
-          usersByAnswer[user.answer_number] = []
+      const answerNumber = user.answer_number ?? 0
+      if (answerNumber > 0 && answerNumber <= 4) {
+        if (!usersByAnswer[answerNumber]) {
+          usersByAnswer[answerNumber] = []
         }
-        usersByAnswer[user.answer_number].push({ user, originalIndex: index })
+        usersByAnswer[answerNumber].push({ user, originalIndex: index })
       }
     })
 
@@ -59,7 +77,8 @@ export class UserAnimationManager {
       if (!element) return
 
       const user = users[index]
-      if (!user || user.answer_number === 0) {
+      const answerNumber = user?.answer_number ?? 0
+      if (!user || answerNumber === 0) {
         // answer_number가 0이면 원래 위치로
         gsap.to(element, {
           x: 0,
@@ -74,7 +93,7 @@ export class UserAnimationManager {
       }
 
       // answer_number에 해당하는 숫자 버튼 찾기 (1-4)
-      const targetNumberIndex = user.answer_number - 1
+      const targetNumberIndex = answerNumber - 1
       if (targetNumberIndex < 0 || targetNumberIndex >= numberButtons.length)
         return
 
@@ -85,20 +104,23 @@ export class UserAnimationManager {
 
       // 같은 답변을 선택한 사용자들을 도착 순서대로 정렬
       const sameAnswerUsers = users
-        .filter((u) => u.answer_number === user.answer_number)
+        .filter((u) => (u.answer_number ?? 0) === answerNumber)
         .sort((a, b) => {
           const orderA = this.arrivalOrder[a.username] || 0
           const orderB = this.arrivalOrder[b.username] || 0
           return orderA - orderB // 먼저 도착한 것이 위에
         })
 
-      const userOrder = sameAnswerUsers.findIndex((u) => u.username === user.username)
+      const userOrder = sameAnswerUsers.findIndex(
+        (u) => u.username === user.username
+      )
 
       // 숫자 버튼 바로 아래 세로 일렬 가운데 정렬
+      const buttonWidth = element.offsetWidth || 80 // 실제 버튼 너비 사용
       const targetCenterX =
-        targetRect.left + targetRect.width / 2 - pageRect.left
-      const buttonHeight = 40 // 사용자 버튼의 대략적인 높이
-      const spacing = 5 // 버튼 간 간격 (더 좁게)
+        targetRect.left + targetRect.width / 2 - pageRect.left - buttonWidth / 2
+      const buttonHeight = element.offsetHeight || 40 // 실제 버튼 높이 사용
+      const spacing = 4 // 간격을 늘려서 겹치지 않도록
       const startY = targetRect.bottom - pageRect.top + 5 // 숫자 버튼 바로 아래 5px
 
       // 단순히 순서대로 세로로 배치
@@ -109,19 +131,24 @@ export class UserAnimationManager {
       const moveX = targetCenterX - originalPos.x
       const moveY = targetY - originalPos.y
 
-      gsap.to(element, {
-        x: moveX,
-        y: moveY,
-        scale: 0.8,
-        opacity: 0.9,
-        duration: 0.8,
-        ease: 'power2.out',
-        delay: index * 0.05,
-      })
+          gsap.to(element, {
+      x: moveX,
+      y: moveY,
+      scale: 0.8,
+      opacity: 0.9,
+      zIndex: this.currentZIndex++,
+      duration: 0.8,
+      ease: 'power2.out',
+      delay: index * 0.05,
+    })
     })
   }
 
-  moveSingleUserToNumber(users: User[], userIndex: number, targetNumber: number) {
+  moveSingleUserToNumber(
+    users: User[],
+    userIndex: number,
+    targetNumber: number
+  ) {
     if (!this.isReady()) return
 
     const numberButtons = document.querySelectorAll('.number-button')
@@ -139,10 +166,12 @@ export class UserAnimationManager {
     const currentUser = users[userIndex]
     this.arrivalOrder[currentUser.username] = this.nextArrivalIndex++
 
-    // 숫자 버튼 바로 아래로 이동
-    const targetCenterX = targetRect.left + targetRect.width / 2 - pageRect.left
-    const buttonHeight = 40
-    const spacing = 5
+    // 숫자 버튼 바로 아래로 이동 (중앙 정렬)
+    const buttonWidth = userButton.offsetWidth || 80 // 실제 버튼 너비 사용
+    // 숫자 버튼의 정확한 중앙 위치 계산 (pageRect.left 제거)
+    const targetCenterX = targetRect.left + targetRect.width / 2 - buttonWidth / 2
+    const buttonHeight = userButton.offsetHeight || 40 // 실제 버튼 높이 사용
+    const spacing = 4 // 간격을 반으로 줄임
     const startY = targetRect.bottom - pageRect.top + 5
 
     // 도착 순서대로 정렬
@@ -154,10 +183,10 @@ export class UserAnimationManager {
         return orderA - orderB // 먼저 도착한 것이 위에
       })
 
-
-
     // 현재 사용자의 순서 찾기
-    const userOrder = sameAnswerUsers.findIndex((user) => user.username === currentUser.username)
+    const userOrder = sameAnswerUsers.findIndex(
+      (user) => user.username === currentUser.username
+    )
 
     // 순서대로 배치
     const targetY = startY + userOrder * (buttonHeight + spacing)
@@ -167,17 +196,28 @@ export class UserAnimationManager {
     const moveX = targetCenterX - originalPos.x
     const moveY = targetY - originalPos.y
 
+
+
     gsap.to(userButton, {
       x: moveX,
       y: moveY,
       scale: 0.8,
       opacity: 0.9,
-      duration: 0.8,
+      zIndex: this.currentZIndex++,
+      duration: ANIMATION_CONSTANTS.MOVE_DURATION / 1000,
       ease: 'power2.out',
+      onComplete: () => {
+        // 이동 완료 후 자동으로 rearrange 실행
+        this.rearrangeUsersAfterMove(users)
+      },
     })
   }
 
-  moveSingleUserToOriginal(users: User[], userIndex: number, onComplete?: () => void) {
+  moveSingleUserToOriginal(
+    users: User[],
+    userIndex: number,
+    onComplete?: () => void
+  ) {
     if (!this.isReady()) return
 
     const userButtons = document.querySelectorAll('.user-button-container')
@@ -189,7 +229,8 @@ export class UserAnimationManager {
       y: 0,
       scale: 1,
       opacity: 1,
-      duration: 0.8,
+      zIndex: Z_INDEX_CONSTANTS.BASE_Z_INDEX,
+      duration: ANIMATION_CONSTANTS.MOVE_DURATION / 1000,
       ease: 'power2.out',
       onComplete,
     })
@@ -210,41 +251,17 @@ export class UserAnimationManager {
       const targetRect = targetButton.getBoundingClientRect()
       // 도착 순서대로 정렬
       const sameAnswerUsers = users
-        .filter((user) => user.answer_number === numberIndex)
+        .filter((user) => (user.answer_number ?? 0) === numberIndex)
         .sort((a, b) => {
           const orderA = this.arrivalOrder[a.username] || 0
           const orderB = this.arrivalOrder[b.username] || 0
           return orderA - orderB // 먼저 도착한 것이 위에
         })
 
-
-
       if (sameAnswerUsers.length === 0) continue
 
       // 숫자 버튼 바로 아래로 재배치
-      const targetCenterX =
-        targetRect.left + targetRect.width / 2 - pageRect.left
-      const buttonHeight = 40
-      const spacing = 5
       const startY = targetRect.bottom - pageRect.top + 5
-
-      // 현재 해당 숫자 버튼 아래에 있는 사용자들의 실제 위치 확인
-      let maxY = startY
-      sameAnswerUsers.forEach((user) => {
-        const existingUserIndex = users.findIndex(
-          (u) => u.username === user.username
-        )
-        if (existingUserIndex !== -1) {
-          const existingButton = userButtons[existingUserIndex] as HTMLElement
-          if (existingButton) {
-            const currentRect = existingButton.getBoundingClientRect()
-            const currentY = currentRect.bottom - pageRect.top
-            if (currentY > maxY) {
-              maxY = currentY
-            }
-          }
-        }
-      })
 
       // 도착 순서대로 배치 (username 기준 정렬 제거)
       sameAnswerUsers.forEach((user, index) => {
@@ -253,6 +270,16 @@ export class UserAnimationManager {
 
         const userButton = userButtons[userIndex] as HTMLElement
         if (!userButton) return
+
+        // 실제 버튼 높이와 간격 계산
+        const buttonHeight = userButton.offsetHeight || BUTTON_CONSTANTS.BUTTON_HEIGHT
+        const spacing = BUTTON_CONSTANTS.VERTICAL_SPACING
+        const buttonWidth = userButton.offsetWidth || BUTTON_CONSTANTS.BUTTON_WIDTH // 실제 버튼 너비 사용
+        const targetCenterX =
+          targetRect.left +
+          targetRect.width / 2 -
+          pageRect.left -
+          buttonWidth / 2
 
         // 도착 순서대로 밑으로 배치
         const targetY = startY + index * (buttonHeight + spacing)
@@ -267,7 +294,8 @@ export class UserAnimationManager {
           y: moveY,
           scale: 0.8,
           opacity: 0.9,
-          duration: 0.5,
+          zIndex: this.currentZIndex++,
+          duration: ANIMATION_CONSTANTS.MOVE_DURATION / 1000,
           ease: 'power2.out',
           delay: index * 0.1,
         })
@@ -279,46 +307,39 @@ export class UserAnimationManager {
     // 모든 버튼을 원래 위치로
     const elements = document.querySelectorAll('.user-button-container')
     if (elements.length === 0) {
-      console.log('resetAnimation: .user-button-container 요소를 찾을 수 없음')
       return
     }
 
     // 도착 순서 리셋
     this.arrivalOrder = {}
     this.nextArrivalIndex = 0
-    console.log('도착 순서 리셋 완료')
+    this.currentZIndex = Z_INDEX_CONSTANTS.ANIMATION_Z_INDEX // z-index 리셋
 
     gsap.to('.user-button-container', {
       x: 0,
       y: 0,
       scale: 1,
       opacity: 1,
-      duration: 0.5,
+      zIndex: Z_INDEX_CONSTANTS.BASE_Z_INDEX,
+      duration: ANIMATION_CONSTANTS.RESET_DURATION / 1000,
       ease: 'power2.out',
     })
+  }
+
+  resetArrivalOrder() {
+    // 도착 순서만 리셋 (애니메이션 없이)
+    this.arrivalOrder = {}
+    this.nextArrivalIndex = 0
+    this.currentZIndex = Z_INDEX_CONSTANTS.ANIMATION_Z_INDEX
   }
 
   fadeInButtons() {
     gsap.to('.fade-in-button', {
       opacity: 1,
       y: 0,
-      duration: 0.6,
+      duration: ANIMATION_CONSTANTS.FADE_IN_DURATION / 1000,
       ease: 'power2.out',
       stagger: 0.1,
-      onComplete: () => {
-        // 페이드인 완료 후 사용자 버튼 위치 로그
-        const userButtons = document.querySelectorAll('.user-button-container')
-        const pageRect = document.body.getBoundingClientRect()
-        
-        console.log('=== 페이드인 완료 후 사용자 버튼 위치 ===')
-        userButtons.forEach((button, index) => {
-          const rect = button.getBoundingClientRect()
-          const x = rect.left - pageRect.left
-          const y = rect.top - pageRect.top
-          console.log(`사용자 ${index + 1}: x=${x.toFixed(2)}, y=${y.toFixed(2)}`)
-        })
-        console.log('========================================')
-      }
     })
   }
 
@@ -338,4 +359,39 @@ export class UserAnimationManager {
 
     return positions
   }
-} 
+
+
+
+    // 리사이즈 후 완전히 새로운 상태로 시작하는 메서드
+  resetAfterResize() {
+    // 모든 상태 초기화
+    this.arrivalOrder = {}
+    this.nextArrivalIndex = 0
+    this.currentZIndex = Z_INDEX_CONSTANTS.ANIMATION_Z_INDEX
+    this.isInitialized = false
+    
+    // 새로운 위치 저장 및 초기화
+    const newPositions = this.saveOriginalPositions()
+    this.initialize(newPositions)
+  }
+
+
+
+
+
+
+
+  destroy() {
+    // 리사이즈 이벤트 리스너 제거
+    if (this.resizeListener) {
+      window.removeEventListener('resize', this.resizeListener)
+      this.resizeListener = null
+    }
+    
+    // 타임아웃 정리
+    if (this.resizeTimeout) {
+      clearTimeout(this.resizeTimeout)
+      this.resizeTimeout = null
+    }
+  }
+}

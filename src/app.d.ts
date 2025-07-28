@@ -47,7 +47,9 @@ declare global {
   interface User {
     id: string
     username: string
+    email?: string
     answer_number?: number
+    variant?: string
     score?: {
       total_score: number
       today_gained_score: number

@@ -35,4 +35,4 @@ export { default as UserStatusAndClassButtons } from './components/UserStatusAnd
 export { default as AdminRoom } from './components/AdminRoom.svelte';
 
 // 타입 정의들 (globals.ts에서 가져옴)
-export type { User, SessionState } from "./globals"
+export type { SessionState } from "./globals"

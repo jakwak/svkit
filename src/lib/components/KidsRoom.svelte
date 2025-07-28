@@ -18,12 +18,23 @@
       : (import.meta.env.VITE_GAME_SERVER || 'wss://gxg.kro.kr/game-server/')
     
     client = new Client(gameServerUrl)
+    
     room = await client.joinOrCreate<MyState>('q_room', {
       username: username,
     })
 
     room.onMessage('__playground_message_types', (message) => {
       console.log('__playground_message_types--->', message)
+    })
+
+    const stateCb = getStateCallbacks(room!)
+
+    stateCb(room!.state).listen('correct_number', (correct_number, previous_correct_number) => {
+      console.log('correct_number--->', correct_number, previous_correct_number)
+    })
+
+    room!.onStateChange(({ correct_number, teacher_ready, all_ready }) => {
+      console.log('onStateChange--->', correct_number, teacher_ready, all_ready)
     })
   })
 

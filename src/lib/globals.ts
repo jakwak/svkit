@@ -19,19 +19,54 @@ export const ADMIN_NAME = import.meta.env.VITE_ADMIN_NAME || '선생님'
 export const ADMIN_EMAIL = import.meta.env.VITE_ADMIN_EMAIL || 'teacher@gxg.kro.kr'
 export const GUEST_USER = 'Guest'
 
+// 애니메이션 관련 상수
+export const ANIMATION_CONSTANTS = {
+  FADE_IN_DURATION: 1200,
+  MOVE_DURATION: 800,
+  RESET_DURATION: 300,
+  DEBOUNCE_DELAY: 100,
+  USER_CLICK_TIMEOUT: 8000,
+  FADE_IN_DELAY: 100,
+  POSITION_SAVE_DELAY: 1200,
+  RESIZE_TIMEOUT: 300,
+} as const
+
+// 사용자 관련 상수
+export const USER_CONSTANTS = {
+  DEFAULT_VARIANT: 'gray',
+  PRIMARY_VARIANT: 'primary',
+  SECONDARY_VARIANT: 'secondary',
+  SUCCESS_VARIANT: 'success',
+  WARNING_VARIANT: 'warning',
+  DANGER_VARIANT: 'danger',
+  MAX_ANSWER_NUMBER: 4,
+  MIN_ANSWER_NUMBER: 0,
+  DEFAULT_ANSWER_NUMBER: 0,
+  RANDOM_ANSWER_MIN: 1,
+  RANDOM_ANSWER_MAX: 4,
+} as const
+
+// z-index 관련 상수
+export const Z_INDEX_CONSTANTS = {
+  BASE_Z_INDEX: 1,
+  ANIMATION_Z_INDEX: 10,
+  USER_BUTTON_Z_INDEX: 5,
+  NUMBER_BUTTON_Z_INDEX: 1,
+} as const
+
+// 버튼 스타일 관련 상수
+export const BUTTON_CONSTANTS = {
+  DEFAULT_SIZE: 'medium',
+  SMALL_SIZE: 'small',
+  LARGE_SIZE: 'large',
+  VERTICAL_SPACING: 4,
+  HORIZONTAL_SPACING: 2,
+  BUTTON_HEIGHT: 40,
+  BUTTON_WIDTH: 80,
+} as const
+
 // 세션 상태 타입 정의
 export type SessionState = 'idle' | 'game' | 'start' | 'waiting' | 'quiz' | 'result' | 'end'
-
-export interface User {
-  id: string
-  username: string
-  email?: string
-  score?: {
-    total_score: number
-    today_gained_score: number
-    today_lost_score: number
-  }
-}
 
 export function shuffleAnswers(correctAnswer: string, wrongAnswers: string[]) {
   return [correctAnswer, ...wrongAnswers]

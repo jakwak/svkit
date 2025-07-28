@@ -4,10 +4,16 @@
     onNumberClick: (number: number) => void
   }>()
 
-  let selected: number | null = null
+  let selected = $state<number | null>(null)
 
   function handleClick(num: number) {
-    selected = num
+    if (selected === num) {
+      // 같은 버튼을 다시 클릭하면 선택 해제
+      selected = null
+    } else {
+      // 다른 버튼을 클릭하면 선택
+      selected = num
+    }
     onNumberClick(num)
   }
 </script>
@@ -17,6 +23,7 @@
     {#each [1,2,3,4] as num}
       <button
         class="number-button btn-{num}"
+        class:selected={selected === num}
         onclick={() => handleClick(num)}
       >
         {num}
@@ -96,6 +103,19 @@
   .number-button:hover {
     transform: translateY(-5px);
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+  }
+
+  .number-button.selected {
+    border-color: #ff0000 !important;
+    border-width: 6px !important;
+    color: white !important;
+    transform: translateY(-3px);
+    box-shadow: 0 6px 15px rgba(255, 0, 0, 0.3);
+  }
+
+  .number-button.selected:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 10px 25px rgba(255, 0, 0, 0.4);
   }
 
 
