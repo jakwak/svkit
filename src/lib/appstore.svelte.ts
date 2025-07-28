@@ -2,7 +2,6 @@ import { io, type Socket } from 'socket.io-client'
 import {
   ADMIN_NAME,
   GUEST_USER,
-  type User,
   type SessionState,
   supabase,
 } from '$lib'

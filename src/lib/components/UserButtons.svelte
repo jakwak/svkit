@@ -16,22 +16,28 @@ import { ANIMATION_CONSTANTS, USER_CONSTANTS, Z_INDEX_CONSTANTS, BUTTON_CONSTANT
   const animationManager = new UserAnimationManager()
 
   onMount(() => {
-            // 초기 fade-in 애니메이션
-        setTimeout(() => {
-          animationManager.fadeInButtons()
+    // 즉시 초기 상태 설정 (깜박 방지)
+    gsap.set('.user-button-container', {
+      opacity: 0,
+      y: 0,
+      scale: 1,
+    })
 
-          // fade-in 애니메이션 완료 후 원래 위치 저장
-          setTimeout(() => {
-            const positions = animationManager.saveOriginalPositions()
-            animationManager.initialize(positions)
-          }, ANIMATION_CONSTANTS.POSITION_SAVE_DELAY)
-        }, ANIMATION_CONSTANTS.FADE_IN_DELAY)
+    // 초기 fade-in 애니메이션
+    setTimeout(() => {
+      animationManager.fadeInButtons()
+
+      // fade-in 애니메이션 완료 후 원래 위치 저장
+      setTimeout(() => {
+        const positions = animationManager.saveOriginalPositions()
+        animationManager.initialize(positions)
+      }, ANIMATION_CONSTANTS.POSITION_SAVE_DELAY)
+    }, ANIMATION_CONSTANTS.FADE_IN_DELAY)
 
     // 리사이즈 이벤트 리스너 추가
     const handleResize = () => {
       // 모든 진행 중인 애니메이션 중단
       gsap.killTweensOf('.user-button-container')
-      gsap.killTweensOf('.fade-in-button')
 
       // 모든 사용자 버튼을 원래 위치로 즉시 리셋
       const userButtons = document.querySelectorAll('.user-button-container')
@@ -81,8 +87,7 @@ import { ANIMATION_CONSTANTS, USER_CONSTANTS, Z_INDEX_CONSTANTS, BUTTON_CONSTANT
     {#each users.filter((user: User) => user.username !== '') as user, index}
       {@const currentVariant = userVariants[user.username] || user.variant || 'gray'}
       <div
-        class="fade-in-button user-button-container"
-        style="animation-delay: {index * 0.1}s;"
+        class="user-button-container"
       >
                           <UsernameButton
                     username={user.username}
@@ -111,11 +116,6 @@ import { ANIMATION_CONSTANTS, USER_CONSTANTS, Z_INDEX_CONSTANTS, BUTTON_CONSTANT
 </div>
 
 <style>
-  .fade-in-button {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-
   .user-button-container {
     z-index: 1;
   }

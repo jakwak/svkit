@@ -7,8 +7,7 @@
     GUEST_USER, 
     SupabaseAuth, 
     supabase, 
-    LoginModal,
-    type User 
+    LoginModal
   } from '$lib' 
   import { onMount } from 'svelte'
   import '../style.css'

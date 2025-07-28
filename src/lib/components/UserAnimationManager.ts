@@ -1,12 +1,14 @@
 import { gsap } from 'gsap'
-import { ANIMATION_CONSTANTS, Z_INDEX_CONSTANTS, BUTTON_CONSTANTS } from '$lib/globals'
+import {
+  ANIMATION_CONSTANTS,
+  Z_INDEX_CONSTANTS,
+  BUTTON_CONSTANTS,
+} from '$lib/globals'
 
 export interface OriginalPosition {
   x: number
   y: number
 }
-
-
 
 export class UserAnimationManager {
   private originalPositions: OriginalPosition[] = []
@@ -21,7 +23,7 @@ export class UserAnimationManager {
     this.originalPositions = originalPositions
     this.isInitialized = true
     this.currentZIndex = 10 // z-index 초기화
-    
+
     // 리사이즈 이벤트 리스너 추가 (디바운싱 적용)
     this.resizeListener = () => {
       if (this.resizeTimeout) {
@@ -115,15 +117,15 @@ export class UserAnimationManager {
         (u) => u.username === user.username
       )
 
-      // 숫자 버튼 바로 아래 세로 일렬 가운데 정렬
-      const buttonWidth = element.offsetWidth || 80 // 실제 버튼 너비 사용
+      // 숫자 버튼 바로 아래 세로 일렬 가운데 정렬 (실제 DOM 크기 사용)
+      const buttonWidth = (element.offsetWidth || 80) * BUTTON_CONSTANTS.SCALE_FACTOR
       const targetCenterX =
         targetRect.left + targetRect.width / 2 - pageRect.left - buttonWidth / 2
-      const buttonHeight = element.offsetHeight || 40 // 실제 버튼 높이 사용
-      const spacing = 4 // 간격을 늘려서 겹치지 않도록
+      const buttonHeight = (element.offsetHeight || 40) * BUTTON_CONSTANTS.SCALE_FACTOR
+      const spacing = BUTTON_CONSTANTS.VERTICAL_SPACING
       const startY = targetRect.bottom - pageRect.top + 5 // 숫자 버튼 바로 아래 5px
 
-      // 단순히 순서대로 세로로 배치
+      // 단순히 순서대로 세로로 배치 (scale 적용된 크기로 계산)
       const targetY = startY + userOrder * (buttonHeight + spacing)
 
       // 원래 위치에서 목표 위치까지의 이동 거리 계산
@@ -131,16 +133,16 @@ export class UserAnimationManager {
       const moveX = targetCenterX - originalPos.x
       const moveY = targetY - originalPos.y
 
-          gsap.to(element, {
-      x: moveX,
-      y: moveY,
-      scale: 0.8,
-      opacity: 0.9,
-      zIndex: this.currentZIndex++,
-      duration: 0.8,
-      ease: 'power2.out',
-      delay: index * 0.05,
-    })
+      gsap.to(element, {
+        x: moveX,
+        y: moveY,
+        scale: BUTTON_CONSTANTS.SCALE_FACTOR,
+        opacity: 0.9,
+        zIndex: this.currentZIndex++,
+        duration: ANIMATION_CONSTANTS.MOVE_DURATION / 1000,
+        ease: 'power2.out',
+        delay: 0, // delay 제거하여 동시 애니메이션
+      })
     })
   }
 
@@ -166,17 +168,18 @@ export class UserAnimationManager {
     const currentUser = users[userIndex]
     this.arrivalOrder[currentUser.username] = this.nextArrivalIndex++
 
-    // 숫자 버튼 바로 아래로 이동 (중앙 정렬)
-    const buttonWidth = userButton.offsetWidth || 80 // 실제 버튼 너비 사용
-    // 숫자 버튼의 정확한 중앙 위치 계산 (pageRect.left 제거)
-    const targetCenterX = targetRect.left + targetRect.width / 2 - buttonWidth / 2
-    const buttonHeight = userButton.offsetHeight || 40 // 실제 버튼 높이 사용
-    const spacing = 4 // 간격을 반으로 줄임
+    // 숫자 버튼 바로 아래로 이동 (중앙 정렬) - 실제 DOM 크기 사용
+    const buttonWidth = (userButton.offsetWidth || 80) * BUTTON_CONSTANTS.SCALE_FACTOR
+    // 숫자 버튼의 정확한 중앙 위치 계산
+    const targetCenterX =
+      targetRect.left + targetRect.width / 2 - pageRect.left - buttonWidth / 2
+    const buttonHeight = (userButton.offsetHeight || 40) * BUTTON_CONSTANTS.SCALE_FACTOR
+    const spacing = BUTTON_CONSTANTS.VERTICAL_SPACING
     const startY = targetRect.bottom - pageRect.top + 5
 
     // 도착 순서대로 정렬
     const sameAnswerUsers = users
-      .filter((user) => user.answer_number === targetNumber)
+      .filter((user) => (user.answer_number ?? 0) === targetNumber)
       .sort((a, b) => {
         const orderA = this.arrivalOrder[a.username] || 0
         const orderB = this.arrivalOrder[b.username] || 0
@@ -196,12 +199,10 @@ export class UserAnimationManager {
     const moveX = targetCenterX - originalPos.x
     const moveY = targetY - originalPos.y
 
-
-
     gsap.to(userButton, {
       x: moveX,
       y: moveY,
-      scale: 0.8,
+      scale: BUTTON_CONSTANTS.SCALE_FACTOR,
       opacity: 0.9,
       zIndex: this.currentZIndex++,
       duration: ANIMATION_CONSTANTS.MOVE_DURATION / 1000,
@@ -271,17 +272,17 @@ export class UserAnimationManager {
         const userButton = userButtons[userIndex] as HTMLElement
         if (!userButton) return
 
-        // 실제 버튼 높이와 간격 계산
-        const buttonHeight = userButton.offsetHeight || BUTTON_CONSTANTS.BUTTON_HEIGHT
+        // 실제 버튼 높이와 간격 계산 (실제 DOM 크기 사용)
+        const buttonHeight = (userButton.offsetHeight || 40) * BUTTON_CONSTANTS.SCALE_FACTOR
         const spacing = BUTTON_CONSTANTS.VERTICAL_SPACING
-        const buttonWidth = userButton.offsetWidth || BUTTON_CONSTANTS.BUTTON_WIDTH // 실제 버튼 너비 사용
+        const buttonWidth = (userButton.offsetWidth || 80) * BUTTON_CONSTANTS.SCALE_FACTOR // 실제 DOM 너비 사용
         const targetCenterX =
           targetRect.left +
           targetRect.width / 2 -
           pageRect.left -
           buttonWidth / 2
 
-        // 도착 순서대로 밑으로 배치
+        // 도착 순서대로 밑으로 배치 (scale 적용된 크기로 계산)
         const targetY = startY + index * (buttonHeight + spacing)
 
         // 원래 위치에서 목표 위치까지의 이동 거리 계산
@@ -292,12 +293,12 @@ export class UserAnimationManager {
         gsap.to(userButton, {
           x: moveX,
           y: moveY,
-          scale: 0.8,
+          scale: BUTTON_CONSTANTS.SCALE_FACTOR,
           opacity: 0.9,
           zIndex: this.currentZIndex++,
           duration: ANIMATION_CONSTANTS.MOVE_DURATION / 1000,
           ease: 'power2.out',
-          delay: index * 0.1,
+          delay: 0, // delay 제거하여 동시 애니메이션
         })
       })
     }
@@ -334,9 +335,11 @@ export class UserAnimationManager {
   }
 
   fadeInButtons() {
-    gsap.to('.fade-in-button', {
+    // fade-in 애니메이션 (제자리에서 나타남)
+    gsap.to('.user-button-container', {
       opacity: 1,
       y: 0,
+      scale: 1,
       duration: ANIMATION_CONSTANTS.FADE_IN_DURATION / 1000,
       ease: 'power2.out',
       stagger: 0.1,
@@ -360,26 +363,18 @@ export class UserAnimationManager {
     return positions
   }
 
-
-
-    // 리사이즈 후 완전히 새로운 상태로 시작하는 메서드
+  // 리사이즈 후 완전히 새로운 상태로 시작하는 메서드
   resetAfterResize() {
     // 모든 상태 초기화
     this.arrivalOrder = {}
     this.nextArrivalIndex = 0
     this.currentZIndex = Z_INDEX_CONSTANTS.ANIMATION_Z_INDEX
     this.isInitialized = false
-    
+
     // 새로운 위치 저장 및 초기화
     const newPositions = this.saveOriginalPositions()
     this.initialize(newPositions)
   }
-
-
-
-
-
-
 
   destroy() {
     // 리사이즈 이벤트 리스너 제거
@@ -387,7 +382,7 @@ export class UserAnimationManager {
       window.removeEventListener('resize', this.resizeListener)
       this.resizeListener = null
     }
-    
+
     // 타임아웃 정리
     if (this.resizeTimeout) {
       clearTimeout(this.resizeTimeout)
