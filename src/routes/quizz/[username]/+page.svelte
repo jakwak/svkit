@@ -14,16 +14,15 @@
   import type { PageProps } from './$types'
   import KidsRoom from '$lib/components/KidsRoom.svelte'
 
-  let { data }: PageProps = $props()
-  const username = data.username;
-  const cur_user = data.cur_user;
+  const { data }: PageProps = $props()
+  const { username, currentUser } = data
   
   onMount(() => {
-    if (cur_user) {
-      appStore.connect(cur_user)
+    if (currentUser) {
+      appStore.connect(currentUser)
     }
 
-    return async () => {
+    return () => {
       appStore.logout()
     }
   })

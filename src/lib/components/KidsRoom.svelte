@@ -22,12 +22,12 @@
     }
   }
 
-  // 방 초기화 함수
+    // 방 초기화 함수
   const initializeRoom = async () => {
     try {
       isConnecting = true
       connectionError = null
-      
+
       // 개발 환경에서는 localhost, 프로덕션에서는 환경변수 사용
       const gameServerUrl = import.meta.env.DEV 
         ? 'ws://localhost:2568' 
@@ -35,10 +35,19 @@
       
       client = new Client(gameServerUrl)
     
-      
-      room = await client.joinOrCreate<MyState>('q_room', {
+      // 연결 타임아웃 설정
+      const connectionTimeout = 10000 // 10초
+      const connectionPromise = client.joinOrCreate<MyState>('q_room', {
         username: username,
       })
+
+      // 타임아웃과 연결을 동시에 처리
+      room = await Promise.race([
+        connectionPromise,
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('연결 타임아웃')), connectionTimeout)
+        )
+      ]) as Room<MyState>
 
       // 테스트용 1초 지연
       await new Promise(resolve => setTimeout(resolve, 500))
@@ -63,6 +72,16 @@
       console.error('연결 실패:', error)
       connectionError = error instanceof Error ? error.message : '연결에 실패했습니다.'
       isConnecting = false
+      
+      // seat reservation expired 오류인 경우 재시도
+      if (error instanceof Error && error.message.includes('seat reservation expired')) {
+        console.log('좌석 예약 만료 - 3초 후 재시도')
+        setTimeout(() => {
+          if (isConnecting === false) {
+            initializeRoom()
+          }
+        }, 3000)
+      }
     }
   }
 

@@ -29,7 +29,7 @@
   }
 
   onMount(() => {
-    // SSR에서 내려준 사용자 정보와 users를 appStore에 반영
+    // SSR에서 내려준 사용자 정보를 appStore에 반영
     if (data.currentUser) {
       appStore.connect(data.currentUser)
     } else {

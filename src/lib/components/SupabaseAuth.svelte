@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { supabase, appStore, Modal, type User } from '$lib'
+  import { supabase, appStore, Modal } from '$lib'
   import { goto } from '$app/navigation'
 
   let modal_open = $state(false)

@@ -83,22 +83,54 @@
 </script>
 
 {#if room}
-  <UserButtons {users} {userVariants} />
-
-  <div class="number-buttons-container">
-    <NumberButtons
-      onNumberClick={(number) => {
-        room?.send('correct_number', { correct_number: number })
-      }}
-    />
+  <div class="admin-room-container">
+    <div class="user-buttons-section">
+      <UserButtons {users} {userVariants} />
+    </div>
+    
+    <div class="number-buttons-section">
+      <NumberButtons
+        onNumberClick={(number) => {
+          room?.send('correct_number', { correct_number: number })
+        }}
+      />
+    </div>
   </div>
 {:else}
-  <div>서버에 접속 중...</div>
+  <div class="loading-container">
+    <div class="loading loading-spinner loading-lg"></div>
+    <p class="mt-4">서버에 접속 중...</p>
+  </div>
 {/if}
 
 <style>
-  .number-buttons-container {
+  .admin-room-container {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+  }
+
+  .user-buttons-section {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1rem;
+  }
+
+  .number-buttons-section {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     position: relative;
     z-index: 1;
+  }
+
+  .loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 2rem;
   }
 </style>

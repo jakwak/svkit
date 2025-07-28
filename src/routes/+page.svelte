@@ -10,13 +10,13 @@
   } from '$lib'
   import type { PageProps } from './$types'
 
-  let { data, form }: PageProps = $props()
+  const { data, form }: PageProps = $props()
 
-  // data.users를 반응형으로 만들기
+  // data.users를 초기화
   let usersData = $state(data.users) as User[]
 
   // 현재 선택된 탭을 추적하는 변수
-  let selectedTab = $state('문제')
+  let selectedTab = $state('수업')
 
   // 탭 변경 핸들러
   function handleTabChange(event: Event) {
@@ -223,8 +223,8 @@
 {/if}
 
 <style>
-  /* 모든 탭 컨테이너 높이 통일 */
+  /* 탭 컨테이너 높이 조정 */
   .tab-content {
-    min-height: 500px !important;
+    min-height: auto;
   }
 </style>
