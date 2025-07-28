@@ -123,15 +123,23 @@ import { invalidate } from '$app/navigation'
     {#each [...usersState].filter(user => user.username !== ADMIN_NAME) as user}
       <button
         type="button"
-        class="btn btn-soft btn-primary text-5xl h-30 border-2 border-primary hover:border-secondary-content relative"
+        class="btn btn-soft btn-primary text-5xl h-30 border-2 border-primary hover:border-secondary-content relative truncate"
         onclick={() => {
-          if (!appStore.isAdmin && !appStore.online_users.some((online_user) => online_user === user.username)) goto(`/quizz/${user.username}`)
+          if (!appStore.isAdmin && !appStore.online_users.some((online_user) => online_user === user.username)) {
+            console.log('👤 사용자 버튼 클릭:', user.username)
+            // 강제 페이지 새로고침으로 자동 로그인 상태 반영
+            window.location.href = `/quizz/${encodeURIComponent(user.username)}`
+          }
         }}
         ontouchend={() => {
-          if (!appStore.isAdmin && !appStore.online_users.some((online_user) => online_user === user.username)) goto(`/quizz/${user.username}`)
+          if (!appStore.isAdmin && !appStore.online_users.some((online_user) => online_user === user.username)) {
+            console.log('👤 사용자 버튼 터치:', user.username)
+            // 강제 페이지 새로고침으로 자동 로그인 상태 반영
+            window.location.href = `/quizz/${encodeURIComponent(user.username)}`
+          }
         }}
       >
-        {user.username}
+        <span class="truncate block w-full">{user.username}</span>
         {#if appStore.isOnline(user.username)}
           <div class="online-badge"></div>
         {/if}
@@ -178,7 +186,7 @@ import { invalidate } from '$app/navigation'
               </button>
             </div>
           </div>
-          <div class="font-bold text-5xl">{user.username}</div>
+          <div class="font-bold text-5xl truncate max-w-full text-center">{user.username}</div>
         </div>
 
 
@@ -255,5 +263,15 @@ import { invalidate } from '$app/navigation'
       gap: 0.5rem !important;
       padding: 0.5rem !important;
     }
+  }
+
+  /* username이 항상 1줄로 표시되도록 강제 설정 */
+  button span,
+  .font-bold {
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    display: block !important;
+    width: 100% !important;
   }
 </style>

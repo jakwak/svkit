@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onDestroy, onMount } from 'svelte'
+  import { onMount } from 'svelte'
   import { Room, Client, getStateCallbacks } from 'colyseus.js'
   import type { MyState } from '$lib/MyState'
   import { WaitingScreen } from '$lib'
@@ -22,19 +22,19 @@
     }
   }
 
-    // 방 초기화 함수
+  // 방 초기화 함수
   const initializeRoom = async () => {
     try {
       isConnecting = true
       connectionError = null
 
       // 개발 환경에서는 localhost, 프로덕션에서는 환경변수 사용
-      const gameServerUrl = import.meta.env.DEV 
-        ? 'ws://localhost:2568' 
-        : (import.meta.env.VITE_GAME_SERVER || 'wss://gxg.kro.kr/game-server/')
-      
+      const gameServerUrl = import.meta.env.DEV
+        ? 'ws://localhost:2568'
+        : import.meta.env.VITE_GAME_SERVER || 'wss://gxg.kro.kr/game-server/'
+
       client = new Client(gameServerUrl)
-    
+
       // 연결 타임아웃 설정
       const connectionTimeout = 10000 // 10초
       const connectionPromise = client.joinOrCreate<MyState>('q_room', {
@@ -42,15 +42,18 @@
       })
 
       // 타임아웃과 연결을 동시에 처리
-      room = await Promise.race([
+      room = (await Promise.race([
         connectionPromise,
-        new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('연결 타임아웃')), connectionTimeout)
-        )
-      ]) as Room<MyState>
+        new Promise((_, reject) =>
+          setTimeout(
+            () => reject(new Error('연결 타임아웃')),
+            connectionTimeout
+          )
+        ),
+      ])) as Room<MyState>
 
       // 테스트용 1초 지연
-      await new Promise(resolve => setTimeout(resolve, 500))
+      await new Promise((resolve) => setTimeout(resolve, 500))
 
       room.onMessage('__playground_message_types', (message) => {
         console.log('__playground_message_types--->', message)
@@ -58,23 +61,39 @@
 
       const stateCb = getStateCallbacks(room!)
 
-      stateCb(room!.state).listen('correct_number', (correct_number, previous_correct_number) => {
-        console.log('correct_number--->', correct_number, previous_correct_number)
-      })
+      stateCb(room!.state).listen(
+        'correct_number',
+        (correct_number, previous_correct_number) => {
+          console.log(
+            'correct_number--->',
+            correct_number,
+            previous_correct_number
+          )
+        }
+      )
 
       room!.onStateChange(({ correct_number, teacher_ready, all_ready }) => {
-        console.log('onStateChange--->', correct_number, teacher_ready, all_ready)
+        console.log(
+          'onStateChange--->',
+          correct_number,
+          teacher_ready,
+          all_ready
+        )
       })
-      
+
       isConnecting = false
       console.log('연결 완료!')
     } catch (error) {
       console.error('연결 실패:', error)
-      connectionError = error instanceof Error ? error.message : '연결에 실패했습니다.'
+      connectionError =
+        error instanceof Error ? error.message : '연결에 실패했습니다.'
       isConnecting = false
-      
+
       // seat reservation expired 오류인 경우 재시도
-      if (error instanceof Error && error.message.includes('seat reservation expired')) {
+      if (
+        error instanceof Error &&
+        error.message.includes('seat reservation expired')
+      ) {
         console.log('좌석 예약 만료 - 3초 후 재시도')
         setTimeout(() => {
           if (isConnecting === false) {
@@ -88,7 +107,10 @@
   // SvelteKit 라우팅 변경 감지 (뒤로가기, 앞으로가기 등)
   let previousPath = ''
   $effect(() => {
-    if (previousPath.startsWith('/quizz/') && !page.url.pathname.startsWith('/quizz/')) {
+    if (
+      previousPath.startsWith('/quizz/') &&
+      !page.url.pathname.startsWith('/quizz/')
+    ) {
       cleanupRoom()
     }
     previousPath = page.url.pathname
@@ -148,13 +170,11 @@
       window.removeEventListener('unload', handleUnload)
       window.removeEventListener('pagehide', handlePageHide)
       window.removeEventListener('popstate', handlePopState)
-    }
-  })
 
-  onDestroy(() => {
-    if (room) {
-      room.removeAllListeners()
-      room.leave()
+      if (room) {
+        room.removeAllListeners()
+        room.leave()
+      }
     }
   })
 </script>
@@ -162,7 +182,9 @@
 {#if isConnecting}
   <div class="flex items-center justify-center min-h-screen">
     <div class="text-center transform -translate-y-20">
-      <div class="animate-spin rounded-full h-16 w-16 border-4 border-blue-800 mx-auto mb-6"></div>
+      <div
+        class="animate-spin rounded-full h-16 w-16 border-4 border-blue-800 mx-auto mb-6"
+      ></div>
       <p class="text-xl font-bold text-white mb-3">서버에 연결 중...</p>
       <p class="text-base text-white">잠시만 기다려주세요</p>
     </div>
@@ -173,7 +195,7 @@
       <div class="text-red-500 text-6xl mb-4">⚠️</div>
       <p class="text-lg text-gray-700 mb-2">연결 실패</p>
       <p class="text-sm text-gray-500 mb-4">{connectionError}</p>
-      <button 
+      <button
         class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
         onclick={() => initializeRoom()}
       >

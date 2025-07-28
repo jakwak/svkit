@@ -14,7 +14,7 @@
   import type { LayoutProps } from './$types'
   import { SvelteToast } from '@zerodevx/svelte-toast'
 
-  let { children, data }: LayoutProps = $props()
+  const { children, data }: LayoutProps = $props()
 
   const svelteToastOptions = {
     duration: 4000, // duration of progress bar tween to the `next` value
@@ -28,12 +28,52 @@
     classes: [], // user-defined classes
   }
 
+  // 서버 상태와 클라이언트 상태 동기화 (최적화)
+  let lastUserState = $state<string | null>(null)
+  
+  $effect(() => {
+    const currentUser = data.currentUser
+    const currentUsername = currentUser?.username || GUEST_USER
+    
+    // 상태가 실제로 변경된 경우에만 업데이트
+    if (currentUsername !== lastUserState) {
+      lastUserState = currentUsername
+      
+      if (currentUser) {
+        appStore.connect(currentUser)
+        console.log('✅ 레이아웃 사용자 상태 업데이트:', currentUser.username)
+      } else {
+        appStore.connect({ username: GUEST_USER, id: '0' })
+        console.log('✅ 레이아웃 게스트 상태로 업데이트')
+      }
+    }
+  })
+
+  // 페이지 로드 시 초기 상태 설정
   onMount(() => {
-    // SSR에서 내려준 사용자 정보를 appStore에 반영
-    if (data.currentUser) {
-      appStore.connect(data.currentUser)
-    } else {
-      appStore.connect({ username: GUEST_USER, id: '0' })
+    const currentUser = data.currentUser
+    if (currentUser && currentUser.username !== appStore.username) {
+      appStore.connect(currentUser)
+      console.log('✅ 초기 사용자 상태 설정:', currentUser.username)
+    }
+  })
+
+  // URL 변경 감지하여 자동 로그인 상태 확인
+  $effect(() => {
+    const pathname = page.url.pathname
+    if (pathname.startsWith('/quizz/')) {
+      // /quizz/ 경로에서 자동 로그인 상태 확인
+      const username = decodeURIComponent(pathname.split('/')[2])
+      if (username && username !== appStore.username && username !== GUEST_USER) {
+        console.log('🔄 자동 로그인 감지:', username)
+        // 잠시 후 상태 재확인
+        setTimeout(() => {
+          if (data.currentUser?.username === username) {
+            appStore.connect(data.currentUser)
+            console.log('✅ 자동 로그인 완료:', username)
+          }
+        }, 100)
+      }
     }
   })
 </script>
