@@ -13,15 +13,15 @@
   let users = $state([
     ...initialUsers
       .filter((user: User) => user.username !== ADMIN_NAME)
-                    .map((user: User) => ({
-                ...user,
-                variant: USER_CONSTANTS.DEFAULT_VARIANT,
-              })),
+      .map((user: User) => ({
+        ...user,
+        variant: USER_CONSTANTS.DEFAULT_VARIANT,
+      })),
   ])
 
   // 사용자별 variant를 별도로 관리
   let userVariants = $state<Record<string, string>>({})
-  
+
   // 현재 correct_number 상태 추적
   let currentCorrectNumber = $state(0)
 
@@ -63,31 +63,38 @@
       if (existingUser) {
         userVariants = { ...userVariants, [user.username]: 'primary' }
 
-        stateCb(user).listen('answer_number', (answer_number, previous_answer_number) => {
-          console.log('answer_number--->', user.username, answer_number, previous_answer_number)
-          
-          // 사용자의 answer_number 업데이트
-          const userIndex = users.findIndex(u => u.username === user.username)
-          if (userIndex !== -1) {
-            const previousAnswerNumber = users[userIndex].answer_number ?? 0
-            
-            // 사용자 정보 업데이트
-            users[userIndex] = { ...users[userIndex], answer_number }
-            users = [...users] // 반응성 트리거
-            
-            // 애니메이션 매니저가 준비되었는지 확인
-            const animationManager = (window as any).userAnimationManager
-            if (animationManager && animationManager.isReady()) {
-              if (answer_number > 0 && answer_number <= 4) {
-                // 사용자가 숫자 버튼으로 이동
-                animationManager.moveSingleUserToNumber(users, userIndex, answer_number)
-              } else if (previousAnswerNumber > 0 && answer_number === 0) {
-                // 사용자가 원래 위치로 돌아감
-                animationManager.moveSingleUserToOriginal(users, userIndex)
+        stateCb(user).listen(
+          'answer_number',
+          (answer_number, previous_answer_number) => {
+            // 사용자의 answer_number 업데이트
+            const userIndex = users.findIndex(
+              (u) => u.username === user.username
+            )
+            if (userIndex !== -1) {
+              const previousAnswerNumber = users[userIndex].answer_number ?? 0
+
+              // 사용자 정보 업데이트
+              users[userIndex] = { ...users[userIndex], answer_number }
+              users = [...users] // 반응성 트리거
+
+              // 애니메이션 매니저가 준비되었는지 확인
+              const animationManager = (window as any).userAnimationManager
+              if (animationManager && animationManager.isReady()) {
+                if (answer_number > 0 && answer_number <= 4) {
+                  // 사용자가 숫자 버튼으로 이동
+                  animationManager.moveSingleUserToNumber(
+                    users,
+                    userIndex,
+                    answer_number
+                  )
+                } else if (previousAnswerNumber > 0 && answer_number === 0) {
+                  // 사용자가 원래 위치로 돌아감
+                  animationManager.moveSingleUserToOriginal(users, userIndex)
+                }
               }
             }
           }
-        })
+        )
       }
     })
     stateCb(room!.state).users.onRemove((user) => {
@@ -100,28 +107,28 @@
     room!.onMessage('error', (message) => {
       // 에러 처리
     })
-    room!.onStateChange(({ correct_number, teacher_ready, all_ready }) => {
-      // 상태 변경 처리
-      currentCorrectNumber = correct_number
-      
-      // correct_number가 0이 되면 모든 사용자를 원위치로 이동
-      if (correct_number === 0) {
-        // 모든 사용자의 answer_number를 0으로 초기화
-        users = users.map(user => ({
-          ...user,
-          answer_number: 0
-        }))
-        
-        // 애니메이션 매니저가 준비되었는지 확인
-        const animationManager = (window as any).userAnimationManager
-        if (animationManager && animationManager.isReady()) {
-          // 모든 사용자를 원래 위치로 이동
-          users.forEach((user, index) => {
-            animationManager.moveSingleUserToOriginal(users, index)
-          })
-        }
-      }
-    })
+    // room!.onStateChange(({ correct_number, teacher_ready, all_ready }) => {
+    //   // 상태 변경 처리
+    //   currentCorrectNumber = correct_number
+
+    //   // correct_number가 0이 되면 모든 사용자를 원위치로 이동
+    //   if (correct_number === 0) {
+    //     // 모든 사용자의 answer_number를 0으로 초기화
+    //     users = users.map((user) => ({
+    //       ...user,
+    //       answer_number: 0,
+    //     }))
+
+    //     // 애니메이션 매니저가 준비되었는지 확인
+    //     const animationManager = (window as any).userAnimationManager
+    //     if (animationManager && animationManager.isReady()) {
+    //       // 모든 사용자를 원래 위치로 이동
+    //       users.forEach((user, index) => {
+    //         animationManager.moveSingleUserToOriginal(users, index)
+    //       })
+    //     }
+    //   }
+    // })
   }
 
   onDestroy(() => {
@@ -135,25 +142,31 @@
     <div class="user-buttons-section">
       <UserButtons {users} {userVariants} />
     </div>
-    
+
     <div class="number-buttons-section">
       <NumberButtons
         onNumberClick={(number) => {
-          let newCorrectNumber: number
-          
+          currentCorrectNumber = currentCorrectNumber === number ? 0 : number
+
+          room?.send('correct_number', currentCorrectNumber)
+
+          // correct_number가 0이 되면 모든 사용자를 원위치로 이동
           if (currentCorrectNumber === 0) {
-            // 현재 correct_number가 0이면 클릭한 숫자를 전송
-            newCorrectNumber = number
-          } else if (currentCorrectNumber === number) {
-            // 현재 correct_number가 클릭한 숫자와 같으면 0을 전송
-            newCorrectNumber = 0
-          } else {
-            // 그 외의 경우 클릭한 숫자를 전송
-            newCorrectNumber = number
+            // 모든 사용자의 answer_number를 0으로 초기화
+            users = users.map((user) => ({
+              ...user,
+              answer_number: 0,
+            }))
+
+            // 애니메이션 매니저가 준비되었는지 확인
+            const animationManager = (window as any).userAnimationManager
+            if (animationManager && animationManager.isReady()) {
+              // 모든 사용자를 원래 위치로 이동
+              users.forEach((user, index) => {
+                animationManager.moveSingleUserToOriginal(users, index)
+              })
+            }
           }
-          
-          console.log('correct_number--->', newCorrectNumber)
-          room?.send('correct_number', newCorrectNumber)
         }}
       />
     </div>

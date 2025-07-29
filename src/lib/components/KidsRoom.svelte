@@ -62,31 +62,37 @@
 
   // currentUserAnswerNumber 변경 시 애니메이션 트리거 (추가)
   $effect(() => {
-    console.log('currentUserAnswerNumber changed:', currentUserAnswerNumber)
     const animationManager = (window as any).userAnimationManager
-    console.log('animationManager:', animationManager)
     if (animationManager && animationManager.isReady()) {
-      console.log('animationManager is ready')
       const currentUserIndex = processedUsers.findIndex(u => u.username === '나')
-      console.log('currentUserIndex:', currentUserIndex)
       if (currentUserIndex !== -1) {
         const answerNumber = currentUserAnswerNumber
-        console.log('answerNumber:', answerNumber)
         
         if (answerNumber > 0 && answerNumber <= 4) {
           // 사용자가 숫자 버튼으로 이동
-          console.log('Moving user to number:', answerNumber)
           animationManager.moveSingleUserToNumber(processedUsers, currentUserIndex, answerNumber)
         } else if (answerNumber === 0) {
           // 사용자가 원래 위치로 돌아감
-          console.log('Moving user to original position')
           animationManager.moveSingleUserToOriginal(processedUsers, currentUserIndex)
         }
       }
-    } else {
-      console.log('animationManager not ready or not found')
     }
   })
+
+  // 애니메이션 매니저가 준비될 때까지 대기하는 함수
+  const waitForAnimationManager = () => {
+    return new Promise<void>((resolve) => {
+      const checkManager = () => {
+        const animationManager = (window as any).userAnimationManager
+        if (animationManager && animationManager.isReady()) {
+          resolve()
+        } else {
+          setTimeout(checkManager, 100)
+        }
+      }
+      checkManager()
+    })
+  }
 
   let room: Room<MyState> | null = $state(null)
   let client: Client
@@ -139,14 +145,13 @@
 
       room.onMessage('__playground_message_types', (message) => {
         // 메시지 처리
-        console.log('__playground_message_types--->', message)
       })
 
       const stateCb = getStateCallbacks(room!)
 
       stateCb(room!.state).listen(
         'correct_number',
-        (correct_number, previous_correct_number) => {
+        async (correct_number, previous_correct_number) => {
           previousCorrectNumber = correctNumber
           correctNumber = correct_number
           
@@ -160,6 +165,17 @@
               ...user,
               answer_number: 0
             }))
+
+            // 애니메이션 매니저가 준비될 때까지 대기
+            await waitForAnimationManager()
+            
+            // 모든 사용자를 원래 위치로 이동
+            const animationManager = (window as any).userAnimationManager
+            if (animationManager && animationManager.isReady()) {
+              processedUsers.forEach((user, index) => {
+                animationManager.moveSingleUserToOriginal(processedUsers, index)
+              })
+            }
           }
         }
       )
@@ -349,7 +365,7 @@
     {#if correctNumber !== 0}
       <div class="component-container" data-component="number-buttons">
         <NumberButtons
-          onNumberClick={(number) => {
+          onNumberClick={async (number) => {
             // 현재 사용자의 answer_number 업데이트
             if (currentUserAnswerNumber === number) {
               // 같은 숫자를 다시 클릭하면 원위치로
@@ -369,6 +385,19 @@
                   ? { ...user, answer_number: currentUserAnswerNumber }
                   : user
               )
+            }
+
+            // 애니메이션 매니저가 준비될 때까지 대기
+            await waitForAnimationManager()
+            
+            // 애니메이션 실행
+            const animationManager = (window as any).userAnimationManager
+            if (animationManager && animationManager.isReady()) {
+              if (currentUserAnswerNumber > 0 && currentUserAnswerNumber <= 4) {
+                animationManager.moveSingleUserToNumber(processedUsers, currentUserIndex, currentUserAnswerNumber)
+              } else if (currentUserAnswerNumber === 0) {
+                animationManager.moveSingleUserToOriginal(processedUsers, currentUserIndex)
+              }
             }
           }}
         />
