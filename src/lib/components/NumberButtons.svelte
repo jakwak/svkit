@@ -37,9 +37,9 @@
     display: flex;
     justify-content: center;
     align-items: flex-start;
-    min-height: 300px;
+    min-height: 150px;
     padding: 0;
-    padding-top: 50px;
+    /* padding-top: 50px; */
   }
 
   .number-buttons {
@@ -101,7 +101,7 @@
   }
 
   .number-button:hover {
-    transform: translateY(-5px);
+    /* transform: translateY(-5px); */
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
   }
 
@@ -109,12 +109,12 @@
     border-color: #ff0000 !important;
     border-width: 6px !important;
     color: white !important;
-    transform: translateY(-3px);
+    /* transform: translateY(-3px); */
     box-shadow: 0 6px 15px rgba(255, 0, 0, 0.3);
   }
 
   .number-button.selected:hover {
-    transform: translateY(-8px);
+    /* transform: translateY(-8px); */
     box-shadow: 0 10px 25px rgba(255, 0, 0, 0.4);
   }
 

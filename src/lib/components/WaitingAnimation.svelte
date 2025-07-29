@@ -402,6 +402,8 @@
     justify-content: center;
     height: 100%;
     font-family: 'Arial', sans-serif;
+    background-color: rgba(0, 0, 0, 0.5);
+    padding: 2rem;
   }
 
   .text-container {

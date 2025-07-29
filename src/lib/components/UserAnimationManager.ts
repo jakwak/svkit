@@ -18,6 +18,7 @@ export class UserAnimationManager {
   private currentZIndex = Z_INDEX_CONSTANTS.ANIMATION_Z_INDEX // 현재 사용 중인 z-index 값
   private resizeListener: (() => void) | null = null
   private resizeTimeout: number | null = null
+  private activeAnimations: { [userIndex: number]: gsap.core.Tween } = {} // 진행 중인 애니메이션 추적
 
   initialize(originalPositions: OriginalPosition[]) {
     this.originalPositions = originalPositions
@@ -166,6 +167,13 @@ export class UserAnimationManager {
     const userButton = userButtons[userIndex] as HTMLElement
     if (!userButton) return
 
+    // 현재 진행 중인 애니메이션이 있다면 취소
+    const existingAnimation = this.activeAnimations[userIndex]
+    if (existingAnimation) {
+      existingAnimation.kill()
+      delete this.activeAnimations[userIndex]
+    }
+
     // 현재 사용자의 도착 순서 기록 (항상 새로운 순서로 업데이트)
     const currentUser = users[userIndex]
     this.arrivalOrder[currentUser.username] = this.nextArrivalIndex++
@@ -203,7 +211,7 @@ export class UserAnimationManager {
     const moveX = targetCenterX - originalPos.x
     const moveY = targetY - originalPos.y
 
-    gsap.to(userButton, {
+    const animation = gsap.to(userButton, {
       x: moveX,
       y: moveY,
       scale: BUTTON_CONSTANTS.SCALE_FACTOR,
@@ -213,10 +221,14 @@ export class UserAnimationManager {
       ease: 'power2.out',
       onComplete: () => {
         console.log('UserAnimationManager - moveSingleUserToNumber 완료')
+        delete this.activeAnimations[userIndex]
         // 이동 완료 후 자동으로 rearrange 실행
         this.rearrangeUsersAfterMove(users)
       },
     })
+
+    // 진행 중인 애니메이션 추적
+    this.activeAnimations[userIndex] = animation
   }
 
   moveSingleUserToOriginal(users: User[], userIndex: number) {
@@ -226,7 +238,14 @@ export class UserAnimationManager {
     const userButton = userButtons[userIndex] as HTMLElement
     if (!userButton) return
 
-    gsap.to(userButton, {
+    // 현재 진행 중인 애니메이션이 있다면 취소
+    const existingAnimation = this.activeAnimations[userIndex]
+    if (existingAnimation) {
+      existingAnimation.kill()
+      delete this.activeAnimations[userIndex]
+    }
+
+    const animation = gsap.to(userButton, {
       x: 0,
       y: 0,
       scale: 1,
@@ -236,9 +255,13 @@ export class UserAnimationManager {
       ease: 'power2.out',
       onComplete: () => {
         console.log('UserAnimationManager - moveSingleUserToOriginal 완료')
+        delete this.activeAnimations[userIndex]
         this.rearrangeUsersAfterMove(users)
       },
     })
+
+    // 진행 중인 애니메이션 추적
+    this.activeAnimations[userIndex] = animation
   }
 
   rearrangeUsersAfterMove(users: User[]) {
