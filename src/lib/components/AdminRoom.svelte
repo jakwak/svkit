@@ -89,6 +89,10 @@
                   )
                 } else if (previousAnswerNumber > 0 && answer_number === 0) {
                   // 사용자가 원래 위치로 돌아감
+                  const currentUser = users[userIndex]
+                  if (currentUser) {
+                    animationManager.removeUserFromArrivalOrder(currentUser.username)
+                  }
                   animationManager.moveSingleUserToOriginal(users, userIndex)
                 }
               }

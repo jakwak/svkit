@@ -166,15 +166,11 @@
               answer_number: 0
             }))
 
-            // 애니메이션 매니저가 준비될 때까지 대기
-            await waitForAnimationManager()
-            
-            // 모든 사용자를 원래 위치로 이동
+            // 애니메이션 매니저가 준비되었는지 확인하고 즉시 실행
             const animationManager = (window as any).userAnimationManager
             if (animationManager && animationManager.isReady()) {
-              processedUsers.forEach((user, index) => {
-                animationManager.moveSingleUserToOriginal(processedUsers, index)
-              })
+              // 모든 사용자를 원래 위치로 이동 (한 번에 처리)
+              animationManager.resetAnimation()
             }
           }
         }
@@ -188,6 +184,43 @@
         )
         if (existingUser) {
           userVariants = { ...userVariants, [user.username]: 'primary' }
+
+          stateCb(user).listen(
+          'answer_number',
+          (answer_number, previous_answer_number) => {
+            // 사용자의 answer_number 업데이트
+            const userIndex = processedUsers.findIndex(
+              (u) => u.username === user.username
+            )
+            if (userIndex !== -1) {
+              const previousAnswerNumber = processedUsers[userIndex].answer_number ?? 0
+
+              // 사용자 정보 업데이트
+              processedUsers[userIndex] = { ...processedUsers[userIndex], answer_number }
+              processedUsers = [...processedUsers] // 반응성 트리거
+
+              // 애니메이션 매니저가 준비되었는지 확인
+              const animationManager = (window as any).userAnimationManager
+              if (animationManager && animationManager.isReady()) {
+                if (answer_number > 0 && answer_number <= 4) {
+                  // 사용자가 숫자 버튼으로 이동
+                  animationManager.moveSingleUserToNumber(
+                    processedUsers,
+                    userIndex,
+                    answer_number
+                  )
+                } else if (previousAnswerNumber > 0 && answer_number === 0) {
+                  // 사용자가 원래 위치로 돌아감
+                  const currentUser = processedUsers[userIndex]
+                  if (currentUser) {
+                    animationManager.removeUserFromArrivalOrder(currentUser.username)
+                  }
+                  animationManager.moveSingleUserToOriginal(processedUsers, userIndex)
+                }
+              }
+            }
+          }
+        )
         }
       })
 
@@ -393,11 +426,21 @@
             // 애니메이션 실행
             const animationManager = (window as any).userAnimationManager
             if (animationManager && animationManager.isReady()) {
+              console.log('KidsRoom - 애니메이션 실행:', currentUserAnswerNumber, currentUserIndex)
               if (currentUserAnswerNumber > 0 && currentUserAnswerNumber <= 4) {
+                console.log('KidsRoom - 숫자로 이동:', currentUserAnswerNumber)
                 animationManager.moveSingleUserToNumber(processedUsers, currentUserIndex, currentUserAnswerNumber)
               } else if (currentUserAnswerNumber === 0) {
+                console.log('KidsRoom - 원위치로 이동')
+                // 사용자가 빠질 때 arrivalOrder에서 제거
+                const currentUser = processedUsers[currentUserIndex]
+                if (currentUser) {
+                  animationManager.removeUserFromArrivalOrder(currentUser.username)
+                }
                 animationManager.moveSingleUserToOriginal(processedUsers, currentUserIndex)
               }
+            } else {
+              console.log('KidsRoom - 애니메이션 매니저 준비 안됨')
             }
           }}
         />

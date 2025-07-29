@@ -212,6 +212,7 @@ export class UserAnimationManager {
       duration: ANIMATION_CONSTANTS.MOVE_DURATION / 1000,
       ease: 'power2.out',
       onComplete: () => {
+        console.log('UserAnimationManager - moveSingleUserToNumber 완료')
         // 이동 완료 후 자동으로 rearrange 실행
         this.rearrangeUsersAfterMove(users)
       },
@@ -234,12 +235,14 @@ export class UserAnimationManager {
       duration: ANIMATION_CONSTANTS.MOVE_DURATION / 1000,
       ease: 'power2.out',
       onComplete: () => {
+        console.log('UserAnimationManager - moveSingleUserToOriginal 완료')
         this.rearrangeUsersAfterMove(users)
       },
     })
   }
 
   rearrangeUsersAfterMove(users: User[]) {
+    console.log('UserAnimationManager - rearrangeUsersAfterMove 호출됨')
     if (!this.isReady()) return
 
     const numberButtons = document.querySelectorAll('.number-button')
@@ -336,6 +339,13 @@ export class UserAnimationManager {
     this.arrivalOrder = {}
     this.nextArrivalIndex = 0
     this.currentZIndex = Z_INDEX_CONSTANTS.ANIMATION_Z_INDEX
+  }
+
+  removeUserFromArrivalOrder(username: string) {
+    // 특정 사용자를 도착 순서에서 제거
+    if (this.arrivalOrder[username]) {
+      delete this.arrivalOrder[username]
+    }
   }
 
   fadeInButtons() {
