@@ -2,17 +2,99 @@
   import { onMount } from 'svelte'
   import { Room, Client, getStateCallbacks } from 'colyseus.js'
   import type { MyState } from '$lib/MyState'
-  import { WaitingScreen } from '$lib'
+  import { ADMIN_NAME, USER_CONSTANTS } from '$lib'
   import { page } from '$app/state'
+  import UserButtons from './UserButtons.svelte'
+  import NumberButtons from './NumberButtons.svelte'
+  import WaitingAnimation from './WaitingAnimation.svelte'
+  import { gsap } from 'gsap'
 
-  let { username }: { username: string } = $props()
+  let { username, users = [] }: { username: string; users?: User[] } = $props()
 
-  console.log('username--->', username)
+  // AdminRoom과 같은 방식으로 사용자 데이터 처리
+  let processedUsers = $state<Array<User & { variant: string }>>([
+    ...users
+      .filter((user: User) => user.username !== ADMIN_NAME)
+      .map((user: User) => ({
+        ...user,
+        variant: USER_CONSTANTS.DEFAULT_VARIANT,
+      })),
+  ])
+
+  // 사용자별 variant를 별도로 관리
+  let userVariants = $state<Record<string, string>>({})
+
+  // users 데이터가 변경될 때 processedUsers 업데이트
+  $effect(() => {
+    processedUsers = [
+      ...users
+        .filter((user: User) => user.username !== ADMIN_NAME)
+        .map((user: User) => ({
+          ...user,
+          // 현재 사용자의 username을 '나'로 변경
+          username: user.username === username ? '나' : user.username,
+          // 현재 사용자의 variant를 'primary'로 설정
+          variant:
+            user.username === username
+              ? 'primary'
+              : USER_CONSTANTS.DEFAULT_VARIANT,
+        })),
+    ]
+  })
+
+  // 사용자들의 answer_number 변경 시 애니메이션 트리거
+  $effect(() => {
+    const animationManager = (window as any).userAnimationManager
+    if (animationManager && animationManager.isReady()) {
+      processedUsers.forEach((user, index) => {
+        const answerNumber = user.answer_number ?? 0
+        
+        if (answerNumber > 0 && answerNumber <= 4) {
+          // 사용자가 숫자 버튼으로 이동
+          animationManager.moveSingleUserToNumber(processedUsers, index, answerNumber)
+        } else if (answerNumber === 0) {
+          // 사용자가 원래 위치로 돌아감
+          animationManager.moveSingleUserToOriginal(processedUsers, index)
+        }
+      })
+    }
+  })
+
+  // currentUserAnswerNumber 변경 시 애니메이션 트리거 (추가)
+  $effect(() => {
+    console.log('currentUserAnswerNumber changed:', currentUserAnswerNumber)
+    const animationManager = (window as any).userAnimationManager
+    console.log('animationManager:', animationManager)
+    if (animationManager && animationManager.isReady()) {
+      console.log('animationManager is ready')
+      const currentUserIndex = processedUsers.findIndex(u => u.username === '나')
+      console.log('currentUserIndex:', currentUserIndex)
+      if (currentUserIndex !== -1) {
+        const answerNumber = currentUserAnswerNumber
+        console.log('answerNumber:', answerNumber)
+        
+        if (answerNumber > 0 && answerNumber <= 4) {
+          // 사용자가 숫자 버튼으로 이동
+          console.log('Moving user to number:', answerNumber)
+          animationManager.moveSingleUserToNumber(processedUsers, currentUserIndex, answerNumber)
+        } else if (answerNumber === 0) {
+          // 사용자가 원래 위치로 돌아감
+          console.log('Moving user to original position')
+          animationManager.moveSingleUserToOriginal(processedUsers, currentUserIndex)
+        }
+      }
+    } else {
+      console.log('animationManager not ready or not found')
+    }
+  })
+
   let room: Room<MyState> | null = $state(null)
   let client: Client
   let isConnecting = $state(true)
   let connectionError = $state<string | null>(null)
-  // let users: User[] = $state([])
+  let correctNumber = $state(0)
+  let previousCorrectNumber = $state(0)
+  let currentUserAnswerNumber = $state(0)
 
   // 정리 작업 함수
   const cleanupRoom = () => {
@@ -56,6 +138,7 @@
       await new Promise((resolve) => setTimeout(resolve, 500))
 
       room.onMessage('__playground_message_types', (message) => {
+        // 메시지 처리
         console.log('__playground_message_types--->', message)
       })
 
@@ -64,25 +147,43 @@
       stateCb(room!.state).listen(
         'correct_number',
         (correct_number, previous_correct_number) => {
-          console.log(
-            'correct_number--->',
-            correct_number,
-            previous_correct_number
-          )
+          previousCorrectNumber = correctNumber
+          correctNumber = correct_number
+          
+          // correctNumber가 0이 되면 모든 사용자를 원위치로 이동
+          if (correct_number === 0) {
+            // 현재 사용자의 answer_number도 0으로 초기화
+            currentUserAnswerNumber = 0
+            
+            // 모든 사용자의 answer_number를 0으로 초기화
+            processedUsers = processedUsers.map(user => ({
+              ...user,
+              answer_number: 0
+            }))
+          }
         }
       )
 
-      room!.onStateChange(({ correct_number, teacher_ready, all_ready }) => {
-        console.log(
-          'onStateChange--->',
-          correct_number,
-          teacher_ready,
-          all_ready
+      // AdminRoom과 같은 사용자 상태 관리
+      stateCb(room!.state).users.onAdd((user) => {
+        // 기존 users에서 username이 일치하는 사용자 찾기
+        const existingUser = processedUsers.find(
+          (u) => u.username === user.username
         )
+        if (existingUser) {
+          userVariants = { ...userVariants, [user.username]: 'primary' }
+        }
+      })
+
+      stateCb(room!.state).users.onRemove((user) => {
+        userVariants = { ...userVariants, [user.username]: 'gray' }
+      })
+
+      room!.onStateChange(({ correct_number, teacher_ready, all_ready }) => {
+        // 상태 변경 처리
       })
 
       isConnecting = false
-      console.log('연결 완료!')
     } catch (error) {
       console.error('연결 실패:', error)
       connectionError =
@@ -94,7 +195,6 @@
         error instanceof Error &&
         error.message.includes('seat reservation expired')
       ) {
-        console.log('좌석 예약 만료 - 3초 후 재시도')
         setTimeout(() => {
           if (isConnecting === false) {
             initializeRoom()
@@ -131,7 +231,6 @@
         isConnecting = false
       } else if (document.visibilityState === 'visible') {
         // 페이지가 다시 보여질 때 재연결
-        console.log('페이지가 다시 보여짐 - 재연결 시도')
         initializeRoom()
       }
     }
@@ -162,6 +261,45 @@
 
     // 초기 연결
     initializeRoom()
+
+    // 컴포넌트 변경 애니메이션 (간단한 버전)
+    $effect(() => {
+      if (correctNumber !== previousCorrectNumber) {
+        // 0에서 0이 아닌 값으로 바뀔 때만 애니메이션 적용
+        if (previousCorrectNumber === 0 && correctNumber !== 0) {
+          const currentComponent = document.querySelector(
+            '.component-container'
+          )
+          if (currentComponent) {
+            // 현재 컴포넌트 즉시 사라짐
+            gsap.set(currentComponent, {
+              opacity: 0,
+              scale: 0.1,
+            })
+
+            // 새 컴포넌트 나타나는 애니메이션
+            setTimeout(() => {
+              const newComponent = document.querySelector(
+                '.component-container'
+              )
+              if (newComponent) {
+                gsap.fromTo(
+                  newComponent,
+                  { opacity: 0, scale: 0.1 },
+                  {
+                    opacity: 1,
+                    scale: 1,
+                    duration: 0.5,
+                    ease: 'power2.out',
+                  }
+                )
+              }
+            }, 50)
+          }
+        }
+        // 0이 아닌 값에서 0으로 바뀔 때는 즉시 변경 (애니메이션 없음)
+      }
+    })
 
     // onDestroy에서 이벤트 리스너 제거
     return () => {
@@ -204,5 +342,96 @@
     </div>
   </div>
 {:else}
-  <WaitingScreen />
+  <div class="kids-room-container">
+    <div class="user-buttons-section">
+      <UserButtons users={processedUsers} {userVariants} />
+    </div>
+    {#if correctNumber !== 0}
+      <div class="component-container" data-component="number-buttons">
+        <NumberButtons
+          onNumberClick={(number) => {
+            // 현재 사용자의 answer_number 업데이트
+            if (currentUserAnswerNumber === number) {
+              // 같은 숫자를 다시 클릭하면 원위치로
+              currentUserAnswerNumber = 0
+              room?.send('number_clicked', 0)
+            } else {
+              // 새로운 숫자 클릭
+              currentUserAnswerNumber = number
+              room?.send('number_clicked', number)
+            }
+            
+            // processedUsers에서 현재 사용자의 answer_number 업데이트
+            const currentUserIndex = processedUsers.findIndex(u => u.username === '나')
+            if (currentUserIndex !== -1) {
+              processedUsers = processedUsers.map((user, index) => 
+                index === currentUserIndex 
+                  ? { ...user, answer_number: currentUserAnswerNumber }
+                  : user
+              )
+            }
+          }}
+        />
+      </div>
+    {/if}
+  </div>
+
+  <!-- 대기화면 모달 -->
+  {#if correctNumber === 0}
+    <div class="modal-overlay">
+      <div class="modal-content">
+        <WaitingAnimation />
+      </div>
+    </div>
+  {/if}
 {/if}
+
+<style>
+  .kids-room-container {
+    border-radius: 15px;
+    padding: 10px;
+    margin: 10px;
+    height: calc(100vh - 120px);
+    background-color: #0e1218;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+  }
+
+  .user-buttons-section {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 1rem;
+    flex-shrink: 0;
+  }
+
+  .component-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 2rem;
+  }
+
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    backdrop-filter: blur(5px);
+  }
+
+  .modal-content {
+    background-color: #1f2937;
+    border-radius: 10px;
+    padding: 3rem;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+  }
+</style>

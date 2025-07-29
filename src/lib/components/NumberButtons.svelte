@@ -37,7 +37,7 @@
     display: flex;
     justify-content: center;
     align-items: flex-start;
-    min-height: 500px;
+    min-height: 300px;
     padding: 0;
     padding-top: 50px;
   }
@@ -65,39 +65,39 @@
 
   .btn-1 {
     background: none;
-    border: 4px solid #ffd966;
-    color: #555;
+    border: 4px solid #6b7280;
+    color: #6b7280;
   }
   .btn-1:hover {
-    background: #ffd966;
-    color: #333;
+    background: #6b7280;
+    color: white;
   }
   .btn-2 {
     background: none;
-    border: 4px solid #8ac4ff;
-    color: #555;
+    border: 4px solid #6b7280;
+    color: #6b7280;
   }
   .btn-2:hover {
-    background: #8ac4ff;
-    color: #333;
+    background: #6b7280;
+    color: white;
   }
   .btn-3 {
     background: none;
-    border: 4px solid #8aff8a;
-    color: #555;
+    border: 4px solid #6b7280;
+    color: #6b7280;
   }
   .btn-3:hover {
-    background: #8aff8a;
-    color: #333;
+    background: #6b7280;
+    color: white;
   }
   .btn-4 {
     background: none;
-    border: 4px solid #ff8aff;
-    color: #555;
+    border: 4px solid #6b7280;
+    color: #6b7280;
   }
   .btn-4:hover {
-    background: #ff8aff;
-    color: #333;
+    background: #6b7280;
+    color: white;
   }
 
   .number-button:hover {

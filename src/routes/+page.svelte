@@ -225,6 +225,6 @@
 <style>
   /* 탭 컨테이너 높이 조정 */
   .tab-content {
-    min-height: auto;
+    min-height: 80vh;
   }
 </style>

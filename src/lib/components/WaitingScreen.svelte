@@ -20,9 +20,8 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 100vh;
+    min-height: 30vh;
     padding: 20px;
-    margin-top: -100px;
   }
 
   .waiting-text {

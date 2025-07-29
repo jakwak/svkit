@@ -16,7 +16,7 @@
 
   const { data }: PageProps = $props()
   const { username, currentUser } = data
-  
+  console.log('data--->', data.users)
   onMount(() => {
     // 자동 로그인 상태 복원
     appStore.restoreAutoLoginState()
@@ -45,4 +45,4 @@
   })
 </script>
 
-<KidsRoom {username} />
+<KidsRoom {username} users={data.users} />

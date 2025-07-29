@@ -118,10 +118,12 @@ export class UserAnimationManager {
       )
 
       // 숫자 버튼 바로 아래 세로 일렬 가운데 정렬 (실제 DOM 크기 사용)
-      const buttonWidth = (element.offsetWidth || 80) * BUTTON_CONSTANTS.SCALE_FACTOR
+      const buttonWidth =
+        (element.offsetWidth || 80) * BUTTON_CONSTANTS.SCALE_FACTOR
       const targetCenterX =
         targetRect.left + targetRect.width / 2 - pageRect.left - buttonWidth / 2
-      const buttonHeight = (element.offsetHeight || 40) * BUTTON_CONSTANTS.SCALE_FACTOR
+      const buttonHeight =
+        (element.offsetHeight || 40) * BUTTON_CONSTANTS.SCALE_FACTOR
       const spacing = BUTTON_CONSTANTS.VERTICAL_SPACING
       const startY = targetRect.bottom - pageRect.top + 5 // 숫자 버튼 바로 아래 5px
 
@@ -169,11 +171,13 @@ export class UserAnimationManager {
     this.arrivalOrder[currentUser.username] = this.nextArrivalIndex++
 
     // 숫자 버튼 바로 아래로 이동 (중앙 정렬) - 실제 DOM 크기 사용
-    const buttonWidth = (userButton.offsetWidth || 80) * BUTTON_CONSTANTS.SCALE_FACTOR
+    const buttonWidth =
+      (userButton.offsetWidth || 80) * BUTTON_CONSTANTS.SCALE_FACTOR
     // 숫자 버튼의 정확한 중앙 위치 계산
     const targetCenterX =
       targetRect.left + targetRect.width / 2 - pageRect.left - buttonWidth / 2
-    const buttonHeight = (userButton.offsetHeight || 40) * BUTTON_CONSTANTS.SCALE_FACTOR
+    const buttonHeight =
+      (userButton.offsetHeight || 40) * BUTTON_CONSTANTS.SCALE_FACTOR
     const spacing = BUTTON_CONSTANTS.VERTICAL_SPACING
     const startY = targetRect.bottom - pageRect.top + 5
 
@@ -214,11 +218,7 @@ export class UserAnimationManager {
     })
   }
 
-  moveSingleUserToOriginal(
-    users: User[],
-    userIndex: number,
-    onComplete?: () => void
-  ) {
+  moveSingleUserToOriginal(users: User[], userIndex: number) {
     if (!this.isReady()) return
 
     const userButtons = document.querySelectorAll('.user-button-container')
@@ -233,7 +233,9 @@ export class UserAnimationManager {
       zIndex: Z_INDEX_CONSTANTS.BASE_Z_INDEX,
       duration: ANIMATION_CONSTANTS.MOVE_DURATION / 1000,
       ease: 'power2.out',
-      onComplete,
+      onComplete: () => {
+        this.rearrangeUsersAfterMove(users)
+      },
     })
   }
 
@@ -273,9 +275,11 @@ export class UserAnimationManager {
         if (!userButton) return
 
         // 실제 버튼 높이와 간격 계산 (실제 DOM 크기 사용)
-        const buttonHeight = (userButton.offsetHeight || 40) * BUTTON_CONSTANTS.SCALE_FACTOR
+        const buttonHeight =
+          (userButton.offsetHeight || 40) * BUTTON_CONSTANTS.SCALE_FACTOR
         const spacing = BUTTON_CONSTANTS.VERTICAL_SPACING
-        const buttonWidth = (userButton.offsetWidth || 80) * BUTTON_CONSTANTS.SCALE_FACTOR // 실제 DOM 너비 사용
+        const buttonWidth =
+          (userButton.offsetWidth || 80) * BUTTON_CONSTANTS.SCALE_FACTOR // 실제 DOM 너비 사용
         const targetCenterX =
           targetRect.left +
           targetRect.width / 2 -

@@ -59,6 +59,19 @@
   }
 </script>
 
+<style>
+  button {
+    /* 모든 버튼이 동일한 너비를 가지도록 설정 */
+    min-width: 80px !important;
+    width: 80px !important;
+    height: 40px !important;
+    text-align: center !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+</style>
+
 <button
   class="
     inline-flex items-center justify-center
@@ -66,6 +79,7 @@
     transition-all duration-200 ease-in-out
     focus:outline-none focus:ring-2 focus:ring-offset-1
     disabled:opacity-50 disabled:cursor-not-allowed
+    min-w-[80px] w-[80px] h-[40px]
     {variantStyles[variantValue]}
     {sizeStyles[sizeValue]}
   "
