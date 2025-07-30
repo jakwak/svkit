@@ -329,6 +329,15 @@
       }
       
       isAnswerConfirmed = false
+      
+      // NumberButtons 컴포넌트의 선택 상태도 초기화
+      const numberButtonsElement = document.querySelector('[data-component="number-buttons"]')
+      if (numberButtonsElement) {
+        const numberButtons = numberButtonsElement.querySelectorAll('button')
+        numberButtons.forEach(button => {
+          button.classList.remove('selected')
+        })
+      }
     }}
     onConfirm={() => {
       showConfirmModal = false

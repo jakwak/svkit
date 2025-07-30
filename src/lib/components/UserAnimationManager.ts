@@ -19,6 +19,7 @@ export class UserAnimationManager {
   private resizeListener: (() => void) | null = null
   private resizeTimeout: number | null = null
   private activeAnimations: { [userIndex: number]: gsap.core.Tween } = {} // 진행 중인 애니메이션 추적
+  private isVerticalAlignment = false // 세로 정렬 상태
 
   initialize(originalPositions: OriginalPosition[]) {
     this.originalPositions = originalPositions
@@ -39,6 +40,10 @@ export class UserAnimationManager {
 
   isReady(): boolean {
     return this.isInitialized && this.originalPositions.length > 0
+  }
+
+  setVerticalAlignment(isVertical: boolean) {
+    this.isVerticalAlignment = isVertical
   }
 
   moveUsersToAnswerNumbers(users: User[]) {
@@ -181,13 +186,22 @@ export class UserAnimationManager {
     // 숫자 버튼 바로 아래로 이동 (중앙 정렬) - 실제 DOM 크기 사용
     const buttonWidth =
       (userButton.offsetWidth || 80) * BUTTON_CONSTANTS.SCALE_FACTOR
-    // 숫자 버튼의 정확한 중앙 위치 계산
-    const targetCenterX =
-      targetRect.left + targetRect.width / 2 - pageRect.left - buttonWidth / 2
     const buttonHeight =
       (userButton.offsetHeight || 40) * BUTTON_CONSTANTS.SCALE_FACTOR
     const spacing = BUTTON_CONSTANTS.VERTICAL_SPACING
-    const startY = targetRect.bottom - pageRect.top + 5
+    
+    let targetCenterX: number
+    let startY: number
+    
+    if (this.isVerticalAlignment) {
+      // 세로 정렬일 때: 숫자 버튼 오른쪽으로 가로 정렬
+      targetCenterX = targetRect.right - pageRect.left + 10 // 숫자 버튼 오른쪽에서 10px 간격
+      startY = targetRect.top - pageRect.top + targetRect.height / 2 - buttonHeight / 2 // 숫자 버튼 세로 중앙
+    } else {
+      // 가로 정렬일 때: 숫자 버튼 아래로 세로 정렬
+      targetCenterX = targetRect.left + targetRect.width / 2 - pageRect.left - buttonWidth / 2
+      startY = targetRect.bottom - pageRect.top + 5
+    }
 
     // 도착 순서대로 정렬
     const sameAnswerUsers = users
@@ -204,11 +218,22 @@ export class UserAnimationManager {
     )
 
     // 순서대로 배치
-    const targetY = startY + userOrder * (buttonHeight + spacing)
+    let targetX: number
+    let targetY: number
+    
+    if (this.isVerticalAlignment) {
+      // 세로 정렬일 때: 가로로 배치
+      targetX = targetCenterX + userOrder * (buttonWidth + spacing)
+      targetY = startY
+    } else {
+      // 가로 정렬일 때: 세로로 배치
+      targetX = targetCenterX
+      targetY = startY + userOrder * (buttonHeight + spacing)
+    }
 
     // 원래 위치에서 목표 위치까지의 이동 거리 계산
     const originalPos = this.originalPositions[userIndex]
-    const moveX = targetCenterX - originalPos.x
+    const moveX = targetX - originalPos.x
     const moveY = targetY - originalPos.y
 
     const animation = gsap.to(userButton, {
@@ -289,9 +314,6 @@ export class UserAnimationManager {
 
       if (sameAnswerUsers.length === 0) continue
 
-      // 숫자 버튼 바로 아래로 재배치
-      const startY = targetRect.bottom - pageRect.top + 5
-
       // 도착 순서대로 배치 (username 기준 정렬 제거)
       sameAnswerUsers.forEach((user, index) => {
         const userIndex = users.findIndex((u) => u.username === user.username)
@@ -306,18 +328,31 @@ export class UserAnimationManager {
         const spacing = BUTTON_CONSTANTS.VERTICAL_SPACING
         const buttonWidth =
           (userButton.offsetWidth || 80) * BUTTON_CONSTANTS.SCALE_FACTOR // 실제 DOM 너비 사용
-        const targetCenterX =
-          targetRect.left +
-          targetRect.width / 2 -
-          pageRect.left -
-          buttonWidth / 2
 
-        // 도착 순서대로 밑으로 배치 (scale 적용된 크기로 계산)
-        const targetY = startY + index * (buttonHeight + spacing)
+        let targetX: number
+        let targetY: number
+
+        if (this.isVerticalAlignment) {
+          // 세로 정렬일 때: 숫자 버튼 오른쪽으로 가로 정렬
+          const startX = targetRect.right - pageRect.left + 10 // 숫자 버튼 오른쪽에서 10px 간격
+          const centerY = targetRect.top - pageRect.top + targetRect.height / 2 - buttonHeight / 2 // 숫자 버튼 세로 중앙
+          targetX = startX + index * (buttonWidth + spacing)
+          targetY = centerY
+        } else {
+          // 가로 정렬일 때: 숫자 버튼 아래로 세로 정렬
+          const targetCenterX =
+            targetRect.left +
+            targetRect.width / 2 -
+            pageRect.left -
+            buttonWidth / 2
+          const startY = targetRect.bottom - pageRect.top + 5
+          targetX = targetCenterX
+          targetY = startY + index * (buttonHeight + spacing)
+        }
 
         // 원래 위치에서 목표 위치까지의 이동 거리 계산
         const originalPos = this.originalPositions[userIndex]
-        const moveX = targetCenterX - originalPos.x
+        const moveX = targetX - originalPos.x
         const moveY = targetY - originalPos.y
 
         gsap.to(userButton, {

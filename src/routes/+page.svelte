@@ -88,7 +88,9 @@
     />
     <div class="tab-content border-primary border-3 bg-base-100 p-5 rounded-md">
       {#if selectedTab === '수업'}
-        <AdminRoom users={usersData} />
+        <div class="admin-room-wrapper">
+          <AdminRoom users={usersData} />
+        </div>
         <!-- {#if appStore.sessionState === 'start'}
           <div class="class-container container-fade-in">
             <button
@@ -226,5 +228,13 @@
   /* 탭 컨테이너 높이 조정 */
   .tab-content {
     min-height: 80vh;
+  }
+
+  /* 수업 탭에서 스크롤 방지 */
+  .admin-room-wrapper {
+    height: calc(100vh - 150px);
+    overflow: hidden;
+    padding: 0;
+    margin: -20px;
   }
 </style>

@@ -3,7 +3,7 @@
   import { Room, Client, getStateCallbacks } from 'colyseus.js'
   import type { MyState } from '$lib/MyState'
   import { ADMIN_NAME, appStore, USER_CONSTANTS } from '$lib'
-  import NumberButtons from './NumberButtons.svelte'
+  import DraggableNumberButtons from './DraggableNumberButtons.svelte'
   import UserButtons from './UserButtons.svelte'
 
   const { users: initialUsers } = $props<{ users: User[] }>()
@@ -24,6 +24,9 @@
 
   // 현재 correct_number 상태 추적
   let currentCorrectNumber = $state(0)
+  
+  // 숫자 버튼 정렬 상태 추적
+  let isVerticalAlignment = $state(false)
 
   onMount(async () => {
     await connectToServer()
@@ -148,8 +151,8 @@
     </div>
 
     <div class="number-buttons-section">
-      <NumberButtons
-        onNumberClick={(number) => {
+      <DraggableNumberButtons
+        onNumberClick={(number: number) => {
           currentCorrectNumber = currentCorrectNumber === number ? 0 : number
 
           room?.send('correct_number', currentCorrectNumber)
@@ -172,6 +175,23 @@
             }
           }
         }}
+        onAlignmentChange={(isVertical: boolean) => {
+          isVerticalAlignment = isVertical
+          
+          // 애니메이션 매니저에 세로 정렬 상태 전달
+          const animationManager = (window as any).userAnimationManager
+          if (animationManager && animationManager.isReady()) {
+            animationManager.setVerticalAlignment(isVertical)
+            
+            // 현재 사용자들의 위치를 새로운 정렬에 맞게 재조정
+            users.forEach((user, index) => {
+              const answerNumber = user.answer_number ?? 0
+              if (answerNumber > 0 && answerNumber <= 4) {
+                animationManager.moveSingleUserToNumber(users, index, answerNumber)
+              }
+            })
+          }
+        }}
       />
     </div>
   </div>
@@ -186,14 +206,19 @@
   .admin-room-container {
     display: flex;
     flex-direction: column;
-    gap: 2rem;
+    gap: 0.25rem;
+    height: calc(100vh - 150px);
+    overflow: hidden;
+    padding: 5px;
   }
 
   .user-buttons-section {
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: 1rem;
+    margin-bottom: 0.1rem;
+    margin-top: 1rem;
+    flex-shrink: 0;
   }
 
   .number-buttons-section {
@@ -202,6 +227,9 @@
     justify-content: center;
     position: relative;
     z-index: 1;
+    width: 100%;
+    height: calc(100vh - 150px);
+    margin-top: -0.5rem;
   }
 
   .loading-container {
