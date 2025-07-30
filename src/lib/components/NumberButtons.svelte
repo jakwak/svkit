@@ -1,12 +1,15 @@
 <script lang="ts">
   import { onMount } from 'svelte'
-  const { onNumberClick } = $props<{
+  const { onNumberClick, disabled = false } = $props<{
     onNumberClick: (number: number) => void
+    disabled?: boolean
   }>()
 
   let selected = $state<number | null>(null)
 
   function handleClick(num: number) {
+    if (disabled) return // 비활성화된 경우 클릭 무시
+    
     if (selected === num) {
       // 같은 버튼을 다시 클릭하면 선택 해제
       selected = null
@@ -24,6 +27,7 @@
       <button
         class="number-button btn-{num}"
         class:selected={selected === num}
+        class:disabled={disabled}
         onclick={() => handleClick(num)}
       >
         {num}
@@ -118,6 +122,11 @@
     box-shadow: 0 10px 25px rgba(255, 0, 0, 0.4);
   }
 
+  .number-button.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
 
 
   @media (max-width: 768px) {
