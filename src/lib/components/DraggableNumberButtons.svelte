@@ -35,7 +35,13 @@
   function handleClick(num: number) {
     if (disabled) return
     
-    if (isDragging || hasDragged) return
+    // 드래그 중이거나 최근에 드래그했다면 클릭 무시
+    if (isDragging || hasDragged) {
+      console.log('Click ignored due to drag')
+      return
+    }
+    
+    console.log('Button clicked:', num)
     
     if (selected === num) {
       selected = null
@@ -54,6 +60,7 @@
   function handleMouseDown(event: MouseEvent, num: number) {
     if (disabled) return
     
+    // 클릭 시작 시 드래그 상태 초기화
     hasDragged = false
     isDragging = false
     
@@ -81,13 +88,13 @@
   function handleMouseMove(event: MouseEvent) {
     if (!draggedButton || !containerElement || !containerRect) return
     
-    // 드래그 시작 판정을 더 민감하게 (1px로 변경)
+    // 드래그 시작 판정을 더 관대하게 (5px로 변경)
     const moveDistance = Math.sqrt(
       Math.pow(event.clientX - lastMouseX, 2) +
       Math.pow(event.clientY - lastMouseY, 2)
     )
     
-    if (moveDistance > 1) {
+    if (moveDistance > 5) {
       isDragging = true
       hasDragged = true
     }
@@ -113,6 +120,10 @@
     draggedButton = null
     isDragging = false
     containerRect = null
+    // 드래그가 끝나면 hasDragged를 false로 리셋하여 클릭 이벤트가 정상 작동하도록 함
+    setTimeout(() => {
+      hasDragged = false
+    }, 10)
   }
 
   function resetToInitialPositions() {
@@ -206,7 +217,7 @@
       {/each}
     </div>
 
-    <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1;">
+    <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0;">
       <TextInput onTextAdd={(textElement) => {
         console.log('Text added:', textElement)
       }} />
@@ -306,8 +317,9 @@
     text-shadow: none;
     background: none;
     user-select: none;
-    z-index: 1;
+    z-index: 2;
     will-change: transform; /* 성능 최적화 */
+    pointer-events: auto;
   }
 
   .number-button.dragging {
