@@ -16,6 +16,7 @@
     3: '',
     4: ''
   })
+  let editingTextId = $state<string | null>(null)
   let textElements = $state<Array<{id: string, text: string, x: number, y: number, numberId: number}>>([])
   let clickPosition = $state<{x: number, y: number} | null>(null)
   let buttonPositions = $state<Record<number, { x: number; y: number }>>({
@@ -32,7 +33,7 @@
   let isDragging = $state(false)
   let hasDragged = $state(false)
   let initialPositions = $state<Record<number, { x: number; y: number }>>({})
-  let buttonSize = $state(64)
+  let buttonSize = $state(48)
   let isVerticalAlignment = $state(false)
 
   
@@ -42,7 +43,65 @@
   let lastMouseY = $state(0)
   let inputElement = $state<HTMLInputElement | null>(null)
 
-
+  // 애니메이션 함수
+  function animateButtonPositions(targetPositions: Record<number, { x: number; y: number }>) {
+    const duration = 500 // 0.5초
+    const startTime = performance.now()
+    const startPositions = { ...buttonPositions }
+    
+    function animate(currentTime: number) {
+      const elapsed = currentTime - startTime
+      const progress = Math.min(elapsed / duration, 1)
+      
+      // easeInOutCubic 함수로 부드러운 애니메이션
+      const easeProgress = progress < 0.5 
+        ? 4 * progress * progress * progress 
+        : 1 - Math.pow(-2 * progress + 2, 3) / 2
+      
+      // 각 버튼의 위치를 보간
+      const newPositions: Record<number, { x: number; y: number }> = {}
+      for (let i = 1; i <= 4; i++) {
+        const start = startPositions[i]
+        const target = targetPositions[i]
+        newPositions[i] = {
+          x: start.x + (target.x - start.x) * easeProgress,
+          y: start.y + (target.y - start.y) * easeProgress
+        }
+      }
+      
+      buttonPositions = newPositions
+      
+      // 연결된 텍스트들도 함께 애니메이션
+      textElements = textElements.map(textElement => {
+        const buttonNumber = textElement.numberId
+        const startButtonPos = startPositions[buttonNumber]
+        const targetButtonPos = targetPositions[buttonNumber]
+        
+        if (startButtonPos && targetButtonPos) {
+          // 텍스트의 고정된 오프셋 (버튼 오른쪽에 10px 간격, 중앙 높이)
+          const fixedOffsetX = buttonSize + 10
+          const fixedOffsetY = buttonSize / 2 - 15
+          
+          // 새로운 버튼 위치에 고정 오프셋을 더해서 텍스트 위치 계산
+          const newButtonX = startButtonPos.x + (targetButtonPos.x - startButtonPos.x) * easeProgress
+          const newButtonY = startButtonPos.y + (targetButtonPos.y - startButtonPos.y) * easeProgress
+          
+          return {
+            ...textElement,
+            x: newButtonX + fixedOffsetX,
+            y: newButtonY + fixedOffsetY
+          }
+        }
+        return textElement
+      })
+      
+      if (progress < 1) {
+        requestAnimationFrame(animate)
+      }
+    }
+    
+    requestAnimationFrame(animate)
+  }
 
   function handleClick(num: number) {
     if (disabled) return
@@ -142,29 +201,69 @@
     const newX = event.clientX - containerRect.left - dragOffset.x
     const newY = event.clientY - containerRect.top - dragOffset.y
     
-    if (draggedButton) {
-      // 버튼 드래그
-      const maxX = containerRect.width - buttonSize
-      const maxY = containerRect.height - buttonSize
-      
-      buttonPositions[draggedButton] = {
-        x: Math.max(0, Math.min(newX, maxX)),
-        y: Math.max(0, Math.min(newY, maxY))
-      }
-    } else if (draggedTextId) {
-      // 텍스트 드래그
-      const textElement = textElements.find(t => t.id === draggedTextId)
-      if (textElement) {
-        const maxX = containerRect.width - 100 // 텍스트 너비 추정
-        const maxY = containerRect.height - 30 // 텍스트 높이 추정
-        
-        textElements = textElements.map(t => 
-          t.id === draggedTextId 
-            ? { ...t, x: Math.max(0, Math.min(newX, maxX)), y: Math.max(0, Math.min(newY, maxY)) }
-            : t
-        )
-      }
-    }
+         if (draggedButton) {
+       // 버튼 드래그
+       const maxX = containerRect.width - buttonSize
+       const maxY = containerRect.height - buttonSize
+       
+       const newButtonX = Math.max(0, Math.min(newX, maxX))
+       const newButtonY = Math.max(0, Math.min(newY, maxY))
+       
+       // 이전 버튼 위치 저장
+       const oldButtonX = buttonPositions[draggedButton].x
+       const oldButtonY = buttonPositions[draggedButton].y
+       
+       // 버튼 위치 업데이트
+       buttonPositions[draggedButton] = {
+         x: newButtonX,
+         y: newButtonY
+       }
+       
+       // 연결된 텍스트들도 함께 이동
+       textElements = textElements.map(textElement => {
+         if (textElement.numberId === draggedButton) {
+           const textOffsetX = textElement.x - oldButtonX
+           const textOffsetY = textElement.y - oldButtonY
+           return {
+             ...textElement,
+             x: newButtonX + textOffsetX,
+             y: newButtonY + textOffsetY
+           }
+         }
+         return textElement
+       })
+          } else if (draggedTextId) {
+       // 텍스트 드래그
+       const textElement = textElements.find(t => t.id === draggedTextId)
+       if (textElement) {
+         const maxX = containerRect.width - 100 // 텍스트 너비 추정
+         const maxY = containerRect.height - 30 // 텍스트 높이 추정
+         
+         const newTextX = Math.max(0, Math.min(newX, maxX))
+         const newTextY = Math.max(0, Math.min(newY, maxY))
+         
+         // 이전 텍스트 위치 저장
+         const oldTextX = textElement.x
+         const oldTextY = textElement.y
+         
+         // 텍스트 위치 업데이트
+         textElements = textElements.map(t => 
+           t.id === draggedTextId 
+             ? { ...t, x: newTextX, y: newTextY }
+             : t
+         )
+         
+         // 연결된 버튼도 함께 이동
+         const buttonNumber = textElement.numberId
+         const buttonOffsetX = buttonPositions[buttonNumber].x - oldTextX
+         const buttonOffsetY = buttonPositions[buttonNumber].y - oldTextY
+         
+         buttonPositions[buttonNumber] = {
+           x: newTextX + buttonOffsetX,
+           y: newTextY + buttonOffsetY
+         }
+       }
+     }
     
     // 마지막 마우스 위치 업데이트
     lastMouseX = event.clientX
@@ -208,61 +307,79 @@
     event.preventDefault()
   }
 
-  function resetToInitialPositions() {
-    buttonPositions = { ...initialPositions }
-    buttonSize = 64 // 원래 크기로 복원
-    isVerticalAlignment = false
-    onAlignmentChange(false) // 부모에게 가로 정렬 상태 알림
-  }
-
-  function alignVertically() {
-    if (containerElement) {
-      buttonSize = 64 // 버튼 크기 유지
-      isVerticalAlignment = true
-      const buttonWidth = buttonSize
-      const buttonHeight = buttonSize
-      const containerWidth = containerElement.offsetWidth
-      const containerHeight = containerElement.offsetHeight
-      
-      // 가로 기준 1/6 지점 (왼쪽에서 1/6)
-      const xPosition = containerWidth / 6
-      
-      // 세로 중앙 정렬을 위한 시작 Y 위치
-      const totalHeight = 4 * buttonHeight + 3 * 20 // 버튼 간격 20px
-      const startY = (containerHeight - totalHeight) / 2
-      
-      const verticalPositions = {
-        1: { x: xPosition, y: startY },
-        2: { x: xPosition, y: startY + buttonHeight + 20 },
-        3: { x: xPosition, y: startY + (buttonHeight + 20) * 2 },
-        4: { x: xPosition, y: startY + (buttonHeight + 20) * 3 }
+           function resetToInitialPositions() {
+        if (containerElement) {
+          const buttonWidth = 48
+          const containerWidth = containerElement.offsetWidth
+          const totalButtonWidth = 4 * buttonWidth
+          const availableSpace = containerWidth - totalButtonWidth
+          const spacing = availableSpace / 5 // 5개 구간으로 나누어 균등 분배
+          
+          const positions = {
+            1: { x: spacing, y: 150 },
+            2: { x: spacing * 2 + buttonWidth, y: 150 },
+            3: { x: spacing * 3 + buttonWidth * 2, y: 150 },
+            4: { x: spacing * 4 + buttonWidth * 3, y: 150 }
+          }
+          
+          // 애니메이션으로 부드럽게 이동
+          animateButtonPositions(positions)
+          buttonSize = 48 // 원래 크기로 복원
+          isVerticalAlignment = false
+          onAlignmentChange(false) // 부모에게 가로 정렬 상태 알림
+        }
       }
-      
-      buttonPositions = verticalPositions
-      onAlignmentChange(true) // 부모에게 세로 정렬 상태 알림
-    }
-  }
+
+           function alignVertically() {
+        if (containerElement) {
+          buttonSize = 48 // 버튼 크기 유지
+          isVerticalAlignment = true
+          const buttonWidth = buttonSize
+          const buttonHeight = buttonSize
+          const containerWidth = containerElement.offsetWidth
+          const containerHeight = containerElement.offsetHeight
+          
+          // 가로 기준 1/6 지점 (왼쪽에서 1/6)
+          const xPosition = containerWidth / 6
+          
+          // 세로 중앙 정렬을 위한 시작 Y 위치
+          const buttonSpacing = 40 // 버튼 간격을 2배로 증가 (20px → 40px)
+          const totalHeight = 4 * buttonHeight + 3 * buttonSpacing
+          const startY = (containerHeight - totalHeight) / 2
+          
+          const verticalPositions = {
+            1: { x: xPosition, y: startY },
+            2: { x: xPosition, y: startY + buttonHeight + buttonSpacing },
+            3: { x: xPosition, y: startY + (buttonHeight + buttonSpacing) * 2 },
+            4: { x: xPosition, y: startY + (buttonHeight + buttonSpacing) * 3 }
+          }
+          
+          // 애니메이션으로 부드럽게 이동
+          animateButtonPositions(verticalPositions)
+          onAlignmentChange(true) // 부모에게 세로 정렬 상태 알림
+        }
+      }
 
   onMount(() => {
-    // 컨테이너가 마운트된 후 위치 계산
-    setTimeout(() => {
-      if (containerElement) {
-        const buttonWidth = 64
-        const containerWidth = containerElement.offsetWidth
-        const totalButtonWidth = 4 * buttonWidth
-        const availableSpace = containerWidth - totalButtonWidth
-        const spacing = availableSpace / 5 // 5개 구간으로 나누어 균등 분배
-        
-        const positions = {
-          1: { x: spacing, y: 150 },
-          2: { x: spacing * 2 + buttonWidth, y: 150 },
-          3: { x: spacing * 3 + buttonWidth * 2, y: 150 },
-          4: { x: spacing * 4 + buttonWidth * 3, y: 150 }
-        }
-        initialPositions = positions
-        buttonPositions = { ...positions }
-      }
-    }, 0)
+         // 컨테이너가 마운트된 후 위치 계산
+     setTimeout(() => {
+       if (containerElement) {
+         const buttonWidth = 48
+         const containerWidth = containerElement.offsetWidth
+         const totalButtonWidth = 4 * buttonWidth
+         const availableSpace = containerWidth - totalButtonWidth
+         const spacing = availableSpace / 5 // 5개 구간으로 나누어 균등 분배
+         
+         const positions = {
+           1: { x: spacing, y: 150 },
+           2: { x: spacing * 2 + buttonWidth, y: 150 },
+           3: { x: spacing * 3 + buttonWidth * 2, y: 150 },
+           4: { x: spacing * 4 + buttonWidth * 3, y: 150 }
+         }
+         initialPositions = positions
+         buttonPositions = { ...positions }
+       }
+     }, 0)
     
     // 전역 마우스 이벤트 리스너 추가
     document.addEventListener('mousemove', handleMouseMove)
@@ -306,35 +423,38 @@
           
 
           
-          <!-- 편집 버튼 -->
-          <button 
-            class="action-button edit-button"
-            title="편집"
-            aria-label="편집"
-            onclick={(e) => {
-              e.stopPropagation()
-              editingNumber = num
-              // 클릭한 위치 저장
-              if (containerElement) {
-                const rect = containerElement.getBoundingClientRect()
-                clickPosition = {
-                  x: e.clientX - rect.left,
-                  y: e.clientY - rect.top
-                }
-              }
-              console.log('Edit button clicked for number:', num)
-              // 다음 틱에서 입력상자에 포커스
-              setTimeout(() => {
-                if (inputElement) {
-                  inputElement.focus()
-                }
-              }, 0)
-            }}
-          >
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
-              <path d="M8 2l2 2-6 6H2V8l6-6z"/>
-            </svg>
-          </button>
+                     <!-- 편집 버튼 -->
+           {#if !textElements.some(text => text.numberId === num)}
+             <button 
+               class="action-button edit-button"
+               title="편집"
+               aria-label="편집"
+               onclick={(e) => {
+                 e.stopPropagation()
+                 editingNumber = num
+                 // 버튼 위치를 기준으로 텍스트 위치 계산
+                 const buttonX = buttonPositions[num].x
+                 const buttonY = buttonPositions[num].y
+                 clickPosition = {
+                   x: buttonX + buttonSize + 10, // 버튼 오른쪽에 10px 간격
+                   y: buttonY + buttonSize / 2 - 15 // 버튼 중앙 높이에 맞춤
+                 }
+                 console.log('Button position:', buttonX, buttonY)
+                 console.log('Text position:', clickPosition)
+                 console.log('Edit button clicked for number:', num)
+                 // 다음 틱에서 입력상자에 포커스
+                 setTimeout(() => {
+                   if (inputElement) {
+                     inputElement.focus()
+                   }
+                 }, 0)
+               }}
+             >
+               <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
+                 <path d="M8 2l2 2-6 6H2V8l6-6z"/>
+               </svg>
+             </button>
+           {/if}
           
           <!-- 편집 입력상자 -->
           {#if editingNumber === num}
@@ -378,20 +498,94 @@
       {/each}
     </div>
 
-    <!-- 텍스트 요소들 -->
+        <!-- 텍스트 요소들 -->
     {#each textElements as textElement (textElement.id)}
       <div 
         class="text-element"
-        style="transform: translate({textElement.x}px, {textElement.y}px);"
+        style="position: absolute; left: {textElement.x}px; top: {textElement.y}px;"
         onmousedown={(e) => handleTextMouseDown(e, textElement.id)}
         role="button"
         tabindex="0"
       >
-        {textElement.text}
+        <!-- 텍스트 수정 입력상자 -->
+        {#if editingTextId === textElement.id}
+          <div class="text-edit-input-container">
+            <input
+              bind:this={inputElement}
+              class="text-edit-input"
+              type="text"
+              bind:value={editingText[textElement.numberId]}
+              placeholder="텍스트 수정..."
+              onkeydown={(e) => {
+                if (e.key === 'Enter') {
+                  if (editingText[textElement.numberId].trim()) {
+                    textElements = textElements.map(t => 
+                      t.id === textElement.id 
+                        ? { ...t, text: editingText[textElement.numberId] }
+                        : t
+                    )
+                    editingText[textElement.numberId] = ''
+                  }
+                  editingTextId = null
+                } else if (e.key === 'Escape') {
+                  editingTextId = null
+                  editingText[textElement.numberId] = ''
+                }
+              }}
+              onblur={() => {
+                editingTextId = null
+                editingText[textElement.numberId] = ''
+              }}
+              spellcheck="false"
+            />
+          </div>
+        {:else}
+          {textElement.text}
+        {/if}
+        
+        <!-- 텍스트 액션 버튼들 -->
+        <div class="text-action-buttons">
+          <!-- 수정 버튼 -->
+          <button 
+            class="text-action-button edit-text-button"
+            title="수정"
+            aria-label="수정"
+            onclick={(e) => {
+              e.stopPropagation()
+              editingTextId = textElement.id
+              editingText[textElement.numberId] = textElement.text
+              setTimeout(() => {
+                if (inputElement) {
+                  inputElement.focus()
+                }
+              }, 0)
+            }}
+          >
+            <svg width="10" height="10" viewBox="0 0 12 12" fill="currentColor">
+              <path d="M8 2l2 2-6 6H2V8l6-6z"/>
+            </svg>
+          </button>
+          
+          <!-- 삭제 버튼 -->
+          <button 
+            class="text-action-button delete-text-button"
+            title="삭제"
+            aria-label="삭제"
+            onclick={(e) => {
+              e.stopPropagation()
+              textElements = textElements.filter(t => t.id !== textElement.id)
+            }}
+          >
+            <svg width="10" height="10" viewBox="0 0 12 12" fill="currentColor">
+              <path d="M2 2l8 8M10 2L2 10"/>
+            </svg>
+          </button>
+        </div>
       </div>
     {/each}
 
-    <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0;">
+    <!-- TextInput 컴포넌트 추가 -->
+    <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: auto;">
       <TextInput onTextAdd={(textElement) => {
         console.log('Text added:', textElement)
       }} />
@@ -591,17 +785,15 @@
   }
 
   .edit-input {
-    background: rgba(0, 0, 0, 0.8);
+    background: none;
     border: none;
     border-bottom: 2px solid #ffffff;
     color: #ffffff;
     padding: 8px 12px;
     font-size: 14px;
-    border-radius: 4px 4px 0 0;
+    border-radius: 0;
     min-width: 200px;
     outline: none;
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
   }
 
   .edit-input::placeholder {
@@ -615,21 +807,100 @@
 
   .text-element {
     position: absolute;
-    background: rgba(0, 0, 0, 0.8);
-    color: #ffffff;
-    padding: 8px 12px;
-    border-radius: 4px;
-    font-size: 14px;
+    background: none;
+    color: #6b7280;
+    padding: 0;
+    border-radius: 0;
+    font-size: 28px;
     cursor: grab;
     user-select: none;
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
     z-index: 5;
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    border: none;
   }
 
   .text-element:active {
     cursor: grabbing;
+  }
+
+  .text-action-buttons {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    display: flex;
+    gap: 2px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+  }
+
+  .text-element:hover .text-action-buttons {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .text-action-button {
+    width: 16px;
+    height: 16px;
+    background: rgba(107, 114, 128, 0.9);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 6px;
+    transition: all 0.2s ease;
+    z-index: 15;
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+  }
+
+  .text-action-button:hover {
+    background: rgba(59, 130, 246, 0.9);
+    transform: scale(1.1);
+  }
+
+  .text-action-button:active {
+    transform: scale(0.95);
+  }
+
+  .delete-text-button:hover {
+    background: rgba(239, 68, 68, 0.9);
+  }
+
+  .text-action-button svg {
+    stroke: currentColor;
+    stroke-width: 1.5;
+    fill: none;
+  }
+
+  .text-edit-input-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 20;
+  }
+
+  .text-edit-input {
+    background: none;
+    border: none;
+    color: #6b7280;
+    padding: 0;
+    font-size: 28px;
+    min-width: 200px;
+    outline: none;
+    width: 100%;
+    height: 100%;
+  }
+
+  .text-edit-input::placeholder {
+    color: rgba(255, 255, 255, 0.6);
+    font-weight: 300;
+  }
+
+  .text-edit-input:focus {
+    border-bottom-color: #3b82f6;
   }
 
   .number-button.dragging {
@@ -642,42 +913,42 @@
     cursor: grabbing;
   }
 
-  .btn-1 {
-    background: none;
-    border: 4px solid #6b7280;
-    color: #6b7280;
-  }
-  .btn-1:hover {
-    background: #6b7280;
-    color: white;
-  }
-  .btn-2 {
-    background: none;
-    border: 4px solid #6b7280;
-    color: #6b7280;
-  }
-  .btn-2:hover {
-    background: #6b7280;
-    color: white;
-  }
-  .btn-3 {
-    background: none;
-    border: 4px solid #6b7280;
-    color: #6b7280;
-  }
-  .btn-3:hover {
-    background: #6b7280;
-    color: white;
-  }
-  .btn-4 {
-    background: none;
-    border: 4px solid #6b7280;
-    color: #6b7280;
-  }
-  .btn-4:hover {
-    background: #6b7280;
-    color: white;
-  }
+     .btn-1 {
+     background: none;
+     border: 2px solid #6b7280;
+     color: #6b7280;
+   }
+   .btn-1:hover {
+     background: #6b7280;
+     color: white;
+   }
+   .btn-2 {
+     background: none;
+     border: 2px solid #6b7280;
+     color: #6b7280;
+   }
+   .btn-2:hover {
+     background: #6b7280;
+     color: white;
+   }
+   .btn-3 {
+     background: none;
+     border: 2px solid #6b7280;
+     color: #6b7280;
+   }
+   .btn-3:hover {
+     background: #6b7280;
+     color: white;
+   }
+   .btn-4 {
+     background: none;
+     border: 2px solid #6b7280;
+     color: #6b7280;
+   }
+   .btn-4:hover {
+     background: #6b7280;
+     color: white;
+   }
 
   .number-button:hover {
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
@@ -700,20 +971,20 @@
     pointer-events: none;
   }
 
-  @media (max-width: 768px) {
-    .buttons-container {
-      height: 100%;
-      padding: 5px;
-    }
-    .number-button {
-      width: 64px;
-      height: 64px;
-      font-size: 32px;
-    }
-    .alignment-button {
-      width: 28px;
-      height: 28px;
-      font-size: 14px;
-    }
-  }
+     @media (max-width: 768px) {
+     .buttons-container {
+       height: 100%;
+       padding: 5px;
+     }
+     .number-button {
+       width: 48px;
+       height: 48px;
+       font-size: 24px;
+     }
+     .alignment-button {
+       width: 28px;
+       height: 28px;
+       font-size: 14px;
+     }
+   }
 </style> 

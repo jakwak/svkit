@@ -263,10 +263,10 @@
             
             if (currentUserAnswerNumber === number) {
               currentUserAnswerNumber = 0
-              room?.send('number_clicked', 0)
+              room?.send('numberClicked', 0)
             } else {
               currentUserAnswerNumber = number
-              room?.send('number_clicked', number)
+              room?.send('numberClicked', number)
               isAnswerConfirmed = true
             }
             
@@ -322,7 +322,7 @@
       showConfirmModal = false
       confirmModalData = null
       currentUserAnswerNumber = 0
-      room?.send('number_clicked', 0)
+      room?.send('numberClicked', 0)
       
       const currentUserIndex = processedUsers.findIndex(u => u.username === '나')
       if (currentUserIndex !== -1) {

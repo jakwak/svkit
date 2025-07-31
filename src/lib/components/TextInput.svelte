@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { onMount } from 'svelte'
+  
   interface TextElement {
     id: string
     text: string
@@ -34,7 +36,9 @@
       target.closest('.control-button') ||
       target.closest('.text-element') ||
       target.closest('.delete-button') ||
-      target.closest('.alignment-controls')
+      target.closest('.alignment-controls') ||
+      target.closest('.action-button') ||
+      target.closest('.text-action-button')
 
     if (isButton) {
       console.log('Click blocked: clicked on button or text element')
@@ -69,6 +73,20 @@
         inputElement.setSelectionRange(0, 0)
       }
     }, 0)
+  }
+
+  // 전역 클릭 이벤트 리스너 추가
+  function handleGlobalClick(event: MouseEvent) {
+    // 현재 입력 중인 상자가 있고, 클릭된 요소가 입력 상자나 컨테이너가 아닌 경우
+    const target = event.target as HTMLElement
+    const isInputContainer = target.closest('.text-input-container')
+    const isInputElement = inputElement && inputElement.contains(target)
+    
+    if (isInputMode && !isInputElement && !isInputContainer) {
+      isInputMode = false
+      inputText = ''
+      editingTextId = null
+    }
   }
 
   function handleDeleteText(textId: string) {
@@ -212,6 +230,15 @@
       isDraggingText = false
     }, 50)
   }
+
+  // 전역 클릭 이벤트 리스너 추가
+  onMount(() => {
+    document.addEventListener('click', handleGlobalClick)
+    
+    return () => {
+      document.removeEventListener('click', handleGlobalClick)
+    }
+  })
 </script>
 
 <div
@@ -282,13 +309,13 @@
     pointer-events: auto;
     z-index: 1;
     overflow: hidden;
+    cursor: text;
   }
 
   .text-element {
     position: absolute;
-    font-size: 30px;
-    color: white;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+    font-size: 28px;
+    color: #6b7280;
     font-weight: bold;
     pointer-events: auto;
     z-index: 5;
@@ -300,8 +327,7 @@
   }
 
   .text-element:hover {
-    text-shadow: 2px 2px 6px rgba(0, 0, 0, 1);
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(107, 114, 128, 0.1);
   }
 
   .text-element.dragging {
@@ -380,10 +406,10 @@
     font-size: 30px;
     background: transparent;
     border: none;
-    border-bottom: 2px solid #007bff;
+    border-bottom: 2px solid #6b7280;
     border-radius: 0;
     padding: 8px 0;
-    color: white;
+    color: #6b7280;
     font-weight: bold;
     outline: none;
     z-index: 10;
@@ -393,18 +419,16 @@
     box-shadow: none;
     cursor: text;
     pointer-events: auto;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
   }
 
   .text-input:focus {
-    border-bottom-color: #0056b3;
+    border-bottom-color: #3b82f6;
     box-shadow: none;
   }
 
   .text-input::placeholder {
-    color: rgba(255, 255, 255, 0.4);
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
-    font-size: 16px;
+    color: rgba(107, 114, 128, 0.6);
+    font-size: 14px;
     font-weight: 300;
   }
 
@@ -417,7 +441,7 @@
       min-width: 280px;
     }
     .text-input::placeholder {
-      font-size: 14px;
+      font-size: 12px;
       font-weight: 300;
     }
   }
