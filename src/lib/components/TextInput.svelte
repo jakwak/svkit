@@ -33,8 +33,7 @@
       target.closest('.number-button') ||
       target.closest('.control-button') ||
       target.closest('.text-element') ||
-      target.closest('.delete-button') ||
-      target.closest('.button-group')
+      target.closest('.delete-button')
 
     if (isButton) {
       console.log('Click blocked: clicked on button or text element')
@@ -158,8 +157,8 @@
 
     draggedTextId = textId
     dragOffset = {
-      x: event.clientX - textElement.x,
-      y: event.clientY - textElement.y,
+      x: event.clientX - rect.left,
+      y: event.clientY - rect.top,
     }
     isDraggingText = false
     lastMouseX = event.clientX
@@ -183,8 +182,8 @@
 
     const container = event.currentTarget as HTMLElement
     const rect = container.getBoundingClientRect()
-    const newX = event.clientX - dragOffset.x
-    const newY = event.clientY - dragOffset.y
+    const newX = event.clientX - rect.left - dragOffset.x
+    const newY = event.clientY - rect.top - dragOffset.y
 
     // 컨테이너 경계 내에서만 이동
     const maxX = rect.width - 100 // 텍스트 요소의 대략적인 너비
