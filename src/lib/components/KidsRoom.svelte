@@ -5,14 +5,23 @@
   import { ADMIN_NAME, USER_CONSTANTS, UserButtons, NumberButtons, WaitingAnimation, ConfirmModal } from '$lib'
   import { page } from '$app/state'
 
-  let { username, users = [] }: { username: string; users?: User[] } = $props()
+  interface ProcessedUser {
+    id: string
+    username: string
+    answerNumber: number
+    variant: string
+  }
+
+  let { username, users = [] }: { username: string; users?: any[] } = $props()
 
   // 사용자 데이터 처리
-  let processedUsers = $state<Array<User & { variant: string }>>([
+  let processedUsers = $state<ProcessedUser[]>([
     ...users
-      .filter((user: User) => user.username !== ADMIN_NAME)
-      .map((user: User) => ({
-        ...user,
+      .filter((user: any) => user.username !== ADMIN_NAME)
+      .map((user: any) => ({
+        id: user.id,
+        username: user.username,
+        answerNumber: user.answer_number || 0,
         variant: USER_CONSTANTS.DEFAULT_VARIANT,
       })),
   ])
@@ -23,10 +32,11 @@
   $effect(() => {
     processedUsers = [
       ...users
-        .filter((user: User) => user.username !== ADMIN_NAME)
-        .map((user: User) => ({
-          ...user,
+        .filter((user: any) => user.username !== ADMIN_NAME)
+        .map((user: any) => ({
+          id: user.id,
           username: user.username === username ? '나' : user.username,
+          answerNumber: user.answer_number || 0,
           variant: user.username === username ? 'primary' : USER_CONSTANTS.DEFAULT_VARIANT,
         })),
     ]
@@ -73,20 +83,24 @@
         ),
       ])) as Room<MyState>
 
+      room!.onMessage('__playground_message_types', (message) => {
+        console.log('__playground_message_types--->', message)
+      })
+
       await new Promise((resolve) => setTimeout(resolve, 500))
 
       const stateCb = getStateCallbacks(room!)
 
-      stateCb(room!.state).listen('correct_number', async (correct_number) => {
-        correctNumber = correct_number
+      stateCb(room!.state).listen('correctNumber', async (_correctNumber) => {
+        correctNumber = _correctNumber
         
-        if (correct_number === 0) {
+        if (correctNumber === 0) {
           currentUserAnswerNumber = 0
           isAnswerConfirmed = false
           pendingUserMoves = []
           processedUsers = processedUsers.map(user => ({
             ...user,
-            answer_number: 0
+            answerNumber: 0
           }))
 
           const animationManager = (window as any).userAnimationManager
@@ -101,19 +115,19 @@
         if (existingUser && user.username !== username) {
           userVariants = { ...userVariants, [user.username]: 'primary' }
           
-          stateCb(user).listen('answer_number', (answer_number) => {
+          stateCb(user).listen('answerNumber', (answerNumber) => {
             const userIndex = processedUsers.findIndex((u) => u.username === user.username)
             if (userIndex !== -1) {
               if (user.username !== username) {
                 if (isAnswerConfirmed) {
-                  processedUsers[userIndex] = { ...processedUsers[userIndex], answer_number }
+                  processedUsers[userIndex] = { ...processedUsers[userIndex], answerNumber }
                   processedUsers = [...processedUsers]
                   
                   const animationManager = (window as any).userAnimationManager
                   if (animationManager && animationManager.isReady()) {
-                    if (answer_number > 0 && answer_number <= 4) {
-                      animationManager.moveSingleUserToNumber(processedUsers, userIndex, answer_number)
-                    } else if (answer_number === 0) {
+                    if (answerNumber > 0 && answerNumber <= 4) {
+                      animationManager.moveSingleUserToNumber(processedUsers, userIndex, answerNumber)
+                    } else if (answerNumber === 0) {
                       const currentUser = processedUsers[userIndex]
                       if (currentUser) {
                         animationManager.removeUserFromArrivalOrder(currentUser.username)
@@ -122,7 +136,7 @@
                     }
                   }
                 } else {
-                  pendingUserMoves = [...pendingUserMoves, { userIndex, answerNumber: answer_number }]
+                  pendingUserMoves = [...pendingUserMoves, { userIndex, answerNumber }]
                 }
               }
             }
@@ -260,7 +274,7 @@
             if (currentUserIndex !== -1) {
               processedUsers = processedUsers.map((user, index) => 
                 index === currentUserIndex 
-                  ? { ...user, answer_number: currentUserAnswerNumber }
+                  ? { ...user, answerNumber: currentUserAnswerNumber }
                   : user
               )
 
@@ -314,7 +328,7 @@
       if (currentUserIndex !== -1) {
         processedUsers = processedUsers.map((user, index) => 
           index === currentUserIndex 
-            ? { ...user, answer_number: 0 }
+            ? { ...user, answerNumber: 0 }
             : user
         )
         
@@ -347,7 +361,7 @@
       const animationManager = (window as any).userAnimationManager
       if (animationManager && animationManager.isReady()) {
         pendingUserMoves.forEach(({ userIndex, answerNumber }) => {
-          processedUsers[userIndex] = { ...processedUsers[userIndex], answer_number: answerNumber }
+          processedUsers[userIndex] = { ...processedUsers[userIndex], answerNumber }
         })
         processedUsers = [...processedUsers]
         

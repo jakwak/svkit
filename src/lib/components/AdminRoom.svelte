@@ -22,7 +22,7 @@
   // 사용자별 variant를 별도로 관리
   let userVariants = $state<Record<string, string>>({})
 
-  // 현재 correct_number 상태 추적
+  // 현재 correctNumber 상태 추적
   let currentCorrectNumber = $state(0)
   
   // 숫자 버튼 정렬 상태 추적
@@ -67,30 +67,30 @@
         userVariants = { ...userVariants, [user.username]: 'primary' }
 
         stateCb(user).listen(
-          'answer_number',
-          (answer_number, previous_answer_number) => {
-            // 사용자의 answer_number 업데이트
+          'answerNumber',
+          (answerNumber, previousAnswerNumber) => {
+            // 사용자의 answerNumber 업데이트
             const userIndex = users.findIndex(
               (u) => u.username === user.username
             )
             if (userIndex !== -1) {
-              const previousAnswerNumber = users[userIndex].answer_number ?? 0
+              const previousAnswerNumber = users[userIndex].answerNumber ?? 0
 
               // 사용자 정보 업데이트
-              users[userIndex] = { ...users[userIndex], answer_number }
+              users[userIndex] = { ...users[userIndex], answerNumber }
               users = [...users] // 반응성 트리거
 
               // 애니메이션 매니저가 준비되었는지 확인
               const animationManager = (window as any).userAnimationManager
               if (animationManager && animationManager.isReady()) {
-                if (answer_number > 0 && answer_number <= 4) {
+                if (answerNumber > 0 && answerNumber <= 4) {
                   // 사용자가 숫자 버튼으로 이동
                   animationManager.moveSingleUserToNumber(
                     users,
                     userIndex,
-                    answer_number
+                    answerNumber
                   )
-                } else if (previousAnswerNumber > 0 && answer_number === 0) {
+                } else if (previousAnswerNumber > 0 && answerNumber === 0) {
                   // 사용자가 원래 위치로 돌아감
                   const currentUser = users[userIndex]
                   if (currentUser) {
@@ -155,14 +155,14 @@
         onNumberClick={(number: number) => {
           currentCorrectNumber = currentCorrectNumber === number ? 0 : number
 
-          room?.send('correct_number', currentCorrectNumber)
+          room?.send('correctNumber', currentCorrectNumber)
 
-          // correct_number가 0이 되면 모든 사용자를 원위치로 이동
+          // correctNumber가 0이 되면 모든 사용자를 원위치로 이동
           if (currentCorrectNumber === 0) {
-            // 모든 사용자의 answer_number를 0으로 초기화
+            // 모든 사용자의 answerNumber를 0으로 초기화
             users = users.map((user) => ({
               ...user,
-              answer_number: 0,
+              answerNumber: 0,
             }))
 
             // 애니메이션 매니저가 준비되었는지 확인
@@ -185,7 +185,7 @@
             
             // 현재 사용자들의 위치를 새로운 정렬에 맞게 재조정
             users.forEach((user, index) => {
-              const answerNumber = user.answer_number ?? 0
+              const answerNumber = user.answerNumber ?? 0
               if (answerNumber > 0 && answerNumber <= 4) {
                 animationManager.moveSingleUserToNumber(users, index, answerNumber)
               }

@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte'
+  import TextInput from './TextInput.svelte'
   
   const { onNumberClick, disabled = false, onAlignmentChange = () => {} } = $props<{
     onNumberClick: (number: number) => void
@@ -29,6 +30,8 @@
   let lastMouseX = $state(0)
   let lastMouseY = $state(0)
 
+
+
   function handleClick(num: number) {
     if (disabled) return
     
@@ -41,6 +44,12 @@
     }
     onNumberClick(num)
   }
+
+
+
+
+
+
 
   function handleMouseDown(event: MouseEvent, num: number) {
     if (disabled) return
@@ -173,13 +182,14 @@
   })
 </script>
 
-  <div 
-    class="buttons-container"
-    bind:this={containerElement}
-    onmousemove={handleMouseMove}
-    onmouseup={handleMouseUp}
-    role="presentation"
-  >
+      <div 
+      class="buttons-container"
+      bind:this={containerElement}
+      onmousemove={handleMouseMove}
+      onmouseup={handleMouseUp}
+
+      role="presentation"
+    >
     <div class="number-buttons">
       {#each [1,2,3,4] as num}
                  <button
@@ -194,6 +204,12 @@
           {num}
         </button>
       {/each}
+    </div>
+
+    <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1;">
+      <TextInput onTextAdd={(textElement) => {
+        console.log('Text added:', textElement)
+      }} />
     </div>
     
     <div class="button-group">
@@ -226,6 +242,7 @@
     border: none;
     border-radius: 5px;
     background: rgba(0, 0, 0, 0.3);
+    cursor: text; /* 텍스트 입력 가능함을 표시 */
   }
 
   .number-buttons {
@@ -233,6 +250,10 @@
     width: 100%;
     height: 100%;
   }
+
+
+
+
 
   .button-group {
     position: absolute;
@@ -367,5 +388,7 @@
       height: 80px;
       font-size: 48px;
     }
+
+
   }
 </style> 
