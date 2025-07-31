@@ -33,7 +33,8 @@
       target.closest('.number-button') ||
       target.closest('.control-button') ||
       target.closest('.text-element') ||
-      target.closest('.delete-button')
+      target.closest('.delete-button') ||
+      target.closest('.alignment-controls')
 
     if (isButton) {
       console.log('Click blocked: clicked on button or text element')
@@ -280,6 +281,7 @@
     height: 100%;
     pointer-events: auto;
     z-index: 1;
+    overflow: hidden;
   }
 
   .text-element {
@@ -387,6 +389,7 @@
     z-index: 10;
     transform: translate(0, -50%);
     min-width: 350px;
+    max-width: calc(100% - 20px);
     box-shadow: none;
     cursor: text;
     pointer-events: auto;
