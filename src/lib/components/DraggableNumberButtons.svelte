@@ -229,14 +229,14 @@
         class:active={!isVerticalAlignment}
         onclick={resetToInitialPositions}
       >
-        ↔️ 가로정렬
+        가로정렬
       </button>
       <button 
         class="control-button"
         class:active={isVerticalAlignment}
         onclick={alignVertically}
       >
-        ↕️ 세로정렬
+        세로정렬
       </button>
     </div>
   </div>
@@ -273,7 +273,7 @@
     transform: translateX(-50%);
     display: flex;
     gap: 10px;
-    z-index: 100;
+    z-index: 1000;
   }
 
   .control-button {
@@ -284,8 +284,10 @@
     border-radius: 8px;
     font-size: 16px;
     font-weight: bold;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     cursor: pointer;
     transition: all 0.3s ease;
+    z-index: 1001;
   }
 
   .control-button:hover {
