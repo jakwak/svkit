@@ -19,16 +19,19 @@
   let dragOffset = $state<{ x: number; y: number }>({ x: 0, y: 0 })
   let containerElement = $state<HTMLDivElement | null>(null)
   let isDragging = $state(false)
-  let mouseDownTime = $state(0)
   let hasDragged = $state(false)
   let initialPositions = $state<Record<number, { x: number; y: number }>>({})
-  let buttonSize = $state(134) // 버튼 크기 상태 추가
-  let isVerticalAlignment = $state(false) // 세로 정렬 상태 추가
+  let buttonSize = $state(134)
+  let isVerticalAlignment = $state(false)
+  
+  // 성능 최적화를 위한 캐시 변수들
+  let containerRect = $state<DOMRect | null>(null)
+  let lastMouseX = $state(0)
+  let lastMouseY = $state(0)
 
   function handleClick(num: number) {
     if (disabled) return
     
-    // 드래그가 발생했으면 클릭 무시
     if (isDragging || hasDragged) return
     
     if (selected === num) {
@@ -42,58 +45,65 @@
   function handleMouseDown(event: MouseEvent, num: number) {
     if (disabled) return
     
-    mouseDownTime = Date.now()
     hasDragged = false
+    isDragging = false
     
     const button = event.currentTarget as HTMLElement
     const rect = button.getBoundingClientRect()
-    const containerRect = (event.currentTarget as HTMLElement).parentElement?.getBoundingClientRect()
     
-    if (containerRect) {
-      draggedButton = num
-      isDragging = false
-      dragOffset = {
-        x: event.clientX - rect.left,
-        y: event.clientY - rect.top
-      }
-      
-      // 드래그 중일 때 텍스트 선택 방지
-      event.preventDefault()
+    // 컨테이너 rect 캐시
+    if (containerElement) {
+      containerRect = containerElement.getBoundingClientRect()
     }
+    
+    draggedButton = num
+    dragOffset = {
+      x: event.clientX - rect.left,
+      y: event.clientY - rect.top
+    }
+    
+    lastMouseX = event.clientX
+    lastMouseY = event.clientY
+    
+    // 드래그 중일 때 텍스트 선택 방지
+    event.preventDefault()
   }
 
   function handleMouseMove(event: MouseEvent) {
-    if (draggedButton && containerElement) {
-      // 드래그 시작 판정 (일정 거리 이상 이동했을 때)
-      const moveDistance = Math.sqrt(
-        Math.pow(event.clientX - (containerElement.getBoundingClientRect().left + dragOffset.x), 2) +
-        Math.pow(event.clientY - (containerElement.getBoundingClientRect().top + dragOffset.y), 2)
-      )
-      
-      if (moveDistance > 3) {
-        isDragging = true
-        hasDragged = true
-      }
-      
-      const rect = containerElement.getBoundingClientRect()
-      const newX = event.clientX - rect.left - dragOffset.x
-      const newY = event.clientY - rect.top - dragOffset.y
-      
-             // 컨테이너 경계 내에서만 이동
-       const maxX = rect.width - buttonSize // 버튼 너비
-       const maxY = rect.height - buttonSize // 버튼 높이
-      
-      buttonPositions[draggedButton] = {
-        x: Math.max(0, Math.min(newX, maxX)),
-        y: Math.max(0, Math.min(newY, maxY))
-      }
+    if (!draggedButton || !containerElement || !containerRect) return
+    
+    // 드래그 시작 판정을 더 민감하게 (1px로 변경)
+    const moveDistance = Math.sqrt(
+      Math.pow(event.clientX - lastMouseX, 2) +
+      Math.pow(event.clientY - lastMouseY, 2)
+    )
+    
+    if (moveDistance > 1) {
+      isDragging = true
+      hasDragged = true
     }
+    
+    const newX = event.clientX - containerRect.left - dragOffset.x
+    const newY = event.clientY - containerRect.top - dragOffset.y
+    
+    // 컨테이너 경계 내에서만 이동
+    const maxX = containerRect.width - buttonSize
+    const maxY = containerRect.height - buttonSize
+    
+    buttonPositions[draggedButton] = {
+      x: Math.max(0, Math.min(newX, maxX)),
+      y: Math.max(0, Math.min(newY, maxY))
+    }
+    
+    // 마지막 마우스 위치 업데이트
+    lastMouseX = event.clientX
+    lastMouseY = event.clientY
   }
 
   function handleMouseUp() {
     draggedButton = null
     isDragging = false
-    // hasDragged는 다음 마우스 다운까지 유지
+    containerRect = null
   }
 
   function resetToInitialPositions() {
@@ -276,15 +286,17 @@
     background: none;
     user-select: none;
     z-index: 1;
-  }
-
-  .number-button:active {
-    cursor: grabbing;
+    will-change: transform; /* 성능 최적화 */
   }
 
   .number-button.dragging {
     z-index: 10;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    transition: none; /* 드래그 중에는 transition 제거 */
+  }
+
+  .number-button:active {
+    cursor: grabbing;
   }
 
   .btn-1 {
