@@ -217,7 +217,7 @@
       {/each}
     </div>
 
-    <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0;">
+    <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none;">
       <TextInput onTextAdd={(textElement) => {
         console.log('Text added:', textElement)
       }} />
@@ -273,7 +273,7 @@
     transform: translateX(-50%);
     display: flex;
     gap: 10px;
-    z-index: 100;
+    z-index: 200;
   }
 
   .control-button {

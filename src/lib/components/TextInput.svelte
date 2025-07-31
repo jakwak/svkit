@@ -26,11 +26,16 @@
 
   function handleContainerClick(event: MouseEvent) {
     console.log('TextInput container clicked!')
-    
+
     // 클릭된 요소가 숫자 버튼이나 컨트롤 버튼인지 확인
     const target = event.target as HTMLElement
-    const isButton = target.closest('.number-button') || target.closest('.control-button') || target.closest('.text-element') || target.closest('.delete-button')
-    
+    const isButton =
+      target.closest('.number-button') ||
+      target.closest('.control-button') ||
+      target.closest('.text-element') ||
+      target.closest('.delete-button') ||
+      target.closest('.button-group')
+
     if (isButton) {
       console.log('Click blocked: clicked on button or text element')
       event.stopPropagation()
@@ -55,7 +60,7 @@
     isInputMode = true
     inputPosition = { x, y } // 클릭한 지점 그대로 사용
     inputText = ''
-    
+
     // 다음 틱에서 인풋에 포커스
     setTimeout(() => {
       inputElement?.focus()
@@ -67,18 +72,18 @@
   }
 
   function handleDeleteText(textId: string) {
-    textElements = textElements.filter(element => element.id !== textId)
+    textElements = textElements.filter((element) => element.id !== textId)
   }
 
   function handleEditText(textId: string) {
-    const textElement = textElements.find(element => element.id === textId)
+    const textElement = textElements.find((element) => element.id === textId)
     if (textElement) {
       editingTextId = textId
       editingText = textElement.text
       inputPosition = { x: textElement.x, y: textElement.y }
       isInputMode = true
       inputText = textElement.text
-      
+
       // 다음 틱에서 인풋에 포커스
       setTimeout(() => {
         inputElement?.focus()
@@ -93,12 +98,12 @@
   function handleInputKeyDown(event: KeyboardEvent) {
     if (event.key === 'Enter') {
       event.preventDefault()
-      
+
       if (inputText.trim()) {
         if (editingTextId) {
           // 기존 텍스트 수정
-          textElements = textElements.map(element => 
-            element.id === editingTextId 
+          textElements = textElements.map((element) =>
+            element.id === editingTextId
               ? { ...element, text: inputText.trim() }
               : element
           )
@@ -109,13 +114,13 @@
             id: Date.now().toString(),
             text: inputText.trim(),
             x: inputPosition.x,
-            y: inputPosition.y
+            y: inputPosition.y,
           }
           textElements = [...textElements, newTextElement]
           onTextAdd(newTextElement)
         }
       }
-      
+
       // 인풋 모드 종료
       isInputMode = false
       inputText = ''
@@ -144,53 +149,57 @@
 
   function handleTextMouseDown(event: MouseEvent, textId: string) {
     if (editingTextId === textId) return // 수정 중인 텍스트는 드래그 불가
-    
-    const textElement = textElements.find(element => element.id === textId)
+
+    const textElement = textElements.find((element) => element.id === textId)
     if (!textElement) return
-    
+
     const target = event.currentTarget as HTMLElement
     const rect = target.getBoundingClientRect()
-    
+
     draggedTextId = textId
     dragOffset = {
-      x: event.clientX - rect.left,
-      y: event.clientY - rect.top
+      x: event.clientX - textElement.x,
+      y: event.clientY - textElement.y,
     }
     isDraggingText = false
     lastMouseX = event.clientX
     lastMouseY = event.clientY
-    
+
     event.preventDefault()
   }
 
   function handleTextMouseMove(event: MouseEvent) {
     if (!draggedTextId) return
-    
+
     // 드래그 시작 판정을 더 민감하게
     const moveDistance = Math.sqrt(
       Math.pow(event.clientX - lastMouseX, 2) +
-      Math.pow(event.clientY - lastMouseY, 2)
+        Math.pow(event.clientY - lastMouseY, 2)
     )
-    
+
     if (moveDistance > 3) {
       isDraggingText = true
     }
-    
+
     const container = event.currentTarget as HTMLElement
     const rect = container.getBoundingClientRect()
-    const newX = event.clientX - rect.left - dragOffset.x
-    const newY = event.clientY - rect.top - dragOffset.y
-    
+    const newX = event.clientX - dragOffset.x
+    const newY = event.clientY - dragOffset.y
+
     // 컨테이너 경계 내에서만 이동
     const maxX = rect.width - 100 // 텍스트 요소의 대략적인 너비
     const maxY = rect.height - 50 // 텍스트 요소의 대략적인 높이
-    
-    textElements = textElements.map(element => 
-      element.id === draggedTextId 
-        ? { ...element, x: Math.max(0, Math.min(newX, maxX)), y: Math.max(0, Math.min(newY, maxY)) }
+
+    textElements = textElements.map((element) =>
+      element.id === draggedTextId
+        ? {
+            ...element,
+            x: Math.max(0, Math.min(newX, maxX)),
+            y: Math.max(0, Math.min(newY, maxY)),
+          }
         : element
     )
-    
+
     // 마지막 마우스 위치 업데이트
     lastMouseX = event.clientX
     lastMouseY = event.clientY
@@ -205,7 +214,7 @@
   }
 </script>
 
-<div 
+<div
   class="text-input-container"
   onclick={handleContainerClick}
   onmousemove={handleTextMouseMove}
@@ -215,7 +224,7 @@
   <!-- 텍스트 요소들 -->
   {#each textElements as textElement (textElement.id)}
     {#if editingTextId !== textElement.id}
-      <div 
+      <div
         class="text-element"
         class:hovered={hoveredTextId === textElement.id}
         class:dragging={draggedTextId === textElement.id}
@@ -228,14 +237,14 @@
       >
         {textElement.text}
         {#if hoveredTextId === textElement.id && !isDraggingText}
-          <button 
+          <button
             class="edit-button"
             onclick={() => handleEditText(textElement.id)}
             title="수정"
           >
             ✏️
           </button>
-          <button 
+          <button
             class="delete-button"
             onclick={() => handleDeleteText(textElement.id)}
             title="삭제"
@@ -257,7 +266,8 @@
       style="left: {inputPosition.x}px; top: {inputPosition.y}px;"
       onkeydown={handleInputKeyDown}
       onblur={handleInputBlur}
-      placeholder="문제를 입력하고, 엔터키를 누르세요..."
+      placeholder="문제를 입력하고, 엔터키를 누르세요... (취소는 ESC키)"
+      spellcheck="false"
     />
   {/if}
 </div>
@@ -393,6 +403,7 @@
     color: rgba(255, 255, 255, 0.4);
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
     font-size: 16px;
+    font-weight: 300;
   }
 
   @media (max-width: 768px) {
@@ -405,6 +416,7 @@
     }
     .text-input::placeholder {
       font-size: 14px;
+      font-weight: 300;
     }
   }
-</style> 
+</style>
