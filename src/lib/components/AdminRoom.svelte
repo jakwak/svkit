@@ -5,6 +5,7 @@
   import { ADMIN_NAME, appStore, USER_CONSTANTS } from '$lib'
   import DraggableNumberButtons from './DraggableNumberButtons.svelte'
   import UserButtons from './UserButtons.svelte'
+  import AdminToolSet from './AdminToolSet.svelte'
 
   const { users: initialUsers } = $props<{ users: User[] }>()
 
@@ -193,6 +194,42 @@
           }
         }}
       />
+      
+      <AdminToolSet
+        isVerticalAlignment={isVerticalAlignment}
+        onHorizontalAlign={() => {
+          // DraggableNumberButtons의 resetToInitialPositions 함수를 직접 호출
+          const draggableComponent = document.querySelector('.number-buttons-section')?.querySelector('.buttons-container')
+          if (draggableComponent) {
+            // 컴포넌트의 메서드를 호출하는 방법이 필요하므로 이벤트를 통해 처리
+            const event = new CustomEvent('horizontalAlign')
+            draggableComponent.dispatchEvent(event)
+          }
+        }}
+        onVerticalAlign={() => {
+          // DraggableNumberButtons의 alignVertically 함수를 직접 호출
+          const draggableComponent = document.querySelector('.number-buttons-section')?.querySelector('.buttons-container')
+          if (draggableComponent) {
+            const event = new CustomEvent('verticalAlign')
+            draggableComponent.dispatchEvent(event)
+          }
+        }}
+      />
+      
+      <!-- 전송 버튼 -->
+      <button
+        class="send-button"
+        title="전송"
+        aria-label="전송"
+        onclick={() => {
+          // 전송 로직 구현
+          console.log('전송 버튼 클릭됨')
+        }}
+      >
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+        </svg>
+      </button>
     </div>
   </div>
 {:else}
@@ -239,5 +276,42 @@
     justify-content: center;
     text-align: center;
     padding: 2rem;
+  }
+
+  .send-button {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    width: 56px;
+    height: 56px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    transition: all 0.3s ease;
+    z-index: 1000;
+  }
+
+  .send-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+  }
+
+  .send-button:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 10px rgba(102, 126, 234, 0.4);
+  }
+
+  .send-button svg {
+    width: 24px;
+    height: 24px;
+    stroke: currentColor;
+    stroke-width: 2;
+    fill: none;
   }
 </style>
