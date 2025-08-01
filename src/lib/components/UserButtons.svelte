@@ -91,7 +91,7 @@
   })
 </script>
 
-<div class="mb-4">
+<div>
   <div class="flex flex-wrap gap-2 justify-center user-buttons-wrapper">
     {#each users.filter((user: User) => user.username !== '') as user, index}
       {@const currentVariant =

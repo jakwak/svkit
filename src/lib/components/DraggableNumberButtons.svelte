@@ -522,9 +522,10 @@
         const equalSpacing = availableSpace / (totalGaps + 2) // 양 끝 여백 + 버튼 사이 간격
 
         // 가운데 정렬을 위한 시작 위치 계산
+        const centerY = containerHeight / 2 - buttonSize / 2 // 세로 중앙
         let currentX = equalSpacing
         for (let i = 1; i <= 4; i++) {
-          positions[i] = { x: currentX, y: 150 }
+          positions[i] = { x: currentX, y: centerY }
           currentX += buttonWidths[i - 1] + equalSpacing
         }
       } else {
@@ -557,6 +558,10 @@
 
         if (canFitInTwoLines) {
           // 2줄로 배치 (숫자 버튼 기준으로 가로 위치 맞춤)
+          const centerY = containerHeight / 2 - buttonSize / 2 // 세로 중앙
+          const firstRowY = centerY - buttonSize - 20 // 첫 번째 줄 (중앙에서 위로)
+          const secondRowY = centerY + 20 // 두 번째 줄 (중앙에서 아래로)
+          
           // 첫 번째 줄: 숫자 버튼 기준으로 정렬
           let currentX = centerX - firstRowWidth / 2
           for (let i = 1; i <= 2; i++) {
@@ -661,11 +666,12 @@
         const availableSpace = containerWidth - totalButtonWidth
         const spacing = availableSpace / 5 // 5개 구간으로 나누어 균등 분배
 
+        const centerY = containerElement.offsetHeight / 2 - buttonWidth / 2 // 세로 중앙
         const positions = {
-          1: { x: spacing, y: 150 },
-          2: { x: spacing * 2 + buttonWidth, y: 150 },
-          3: { x: spacing * 3 + buttonWidth * 2, y: 150 },
-          4: { x: spacing * 4 + buttonWidth * 3, y: 150 },
+          1: { x: spacing, y: centerY },
+          2: { x: spacing * 2 + buttonWidth, y: centerY },
+          3: { x: spacing * 3 + buttonWidth * 2, y: centerY },
+          4: { x: spacing * 4 + buttonWidth * 3, y: centerY },
         }
         initialPositions = positions
         buttonPositions = { ...positions }

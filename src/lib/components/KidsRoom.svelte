@@ -2,7 +2,7 @@
   import { onMount } from 'svelte'
   import { Room, Client, getStateCallbacks } from 'colyseus.js'
   import type { MyState } from '$lib/MyState'
-  import { ADMIN_NAME, USER_CONSTANTS, UserButtons, NumberButtons, WaitingAnimation, ConfirmModal } from '$lib'
+  import { ADMIN_NAME, USER_CONSTANTS, UserButtons, WaitingAnimation, ConfirmModal } from '$lib'
   import DraggableNumberButtons from './DraggableNumberButtons.svelte'
   import { page } from '$app/state'
 
@@ -15,7 +15,6 @@
 
   let { username, users = [] }: { username: string; users?: any[] } = $props()
 
-  // 사용자 데이터 처리
   let processedUsers = $state<ProcessedUser[]>([
     ...users
       .filter((user: any) => user.username !== ADMIN_NAME)
@@ -29,7 +28,6 @@
 
   let userVariants = $state<Record<string, string>>({})
 
-  // users 데이터가 변경될 때 processedUsers 업데이트
   $effect(() => {
     processedUsers = [
       ...users
@@ -55,10 +53,7 @@
   let pendingUserMoves = $state<Array<{ userIndex: number; answerNumber: number }>>([])
   let buttonPositions = $state<Record<number, { x: number; y: number; size: number; text?: string }>>({})
 
-  // buttonPositions 변경 감지
-  $effect(() => {
-    console.log('KidsRoom에서 buttonPositions 변경됨:', $inspect(buttonPositions))
-  })
+
 
   const cleanupRoom = () => {
     if (room) {
@@ -91,7 +86,7 @@
       ])) as Room<MyState>
 
       room!.onMessage('__playground_message_types', (message) => {
-        console.log('__playground_message_types--->', message)
+        console.log('서버 메세지--->', message)
       })
 
       await new Promise((resolve) => setTimeout(resolve, 500))
@@ -117,14 +112,10 @@
         }
       })
 
-      // 버튼 위치 정보 감지 - 배치 처리로 최적화
       let pendingButtonUpdates = new Map<number, { x: number; y: number; size: number; text?: string }>()
       let updateTimeout: NodeJS.Timeout | null = null
 
       stateCb(room!.state).buttonPositions.onAdd((buttonPos, buttonNumber) => {
-        console.log('서버로부터 버튼 위치 수신:', buttonNumber, buttonPos)
-        
-        // 업데이트를 Map에 저장
         pendingButtonUpdates.set(Number(buttonNumber), {
           x: buttonPos.x,
           y: buttonPos.y,
@@ -132,23 +123,17 @@
           text: buttonPos.text || undefined
         })
         
-        // 기존 타이머가 있다면 취소
         if (updateTimeout) {
           clearTimeout(updateTimeout)
         }
         
-        // 50ms 후에 배치 업데이트 실행
         updateTimeout = setTimeout(() => {
-          // 모든 pending 업데이트를 buttonPositions에 적용
           for (const [buttonNumber, position] of pendingButtonUpdates) {
             buttonPositions[buttonNumber] = position
           }
           
-          // 새로운 객체 참조로 업데이트 트리거
           buttonPositions = { ...buttonPositions }
-          console.log('배치 업데이트된 buttonPositions:', buttonPositions)
           
-          // pending 업데이트 초기화
           pendingButtonUpdates.clear()
           updateTimeout = null
         }, 50)
@@ -196,7 +181,6 @@
 
       isConnecting = false
     } catch (error) {
-      console.error('연결 실패:', error)
       connectionError = error instanceof Error ? error.message : '연결에 실패했습니다.'
       isConnecting = false
 
@@ -210,7 +194,6 @@
     }
   }
 
-  // SvelteKit 라우팅 변경 감지
   let previousPath = ''
   $effect(() => {
     if (previousPath.startsWith('/quizz/') && !page.url.pathname.startsWith('/quizz/')) {
@@ -390,7 +373,6 @@
       
       isAnswerConfirmed = false
       
-      // NumberButtons 컴포넌트의 선택 상태도 초기화
       const numberButtonsElement = document.querySelector('[data-component="number-buttons"]')
       if (numberButtonsElement) {
         const numberButtons = numberButtonsElement.querySelectorAll('button')
@@ -474,7 +456,7 @@
     left: 0;
     width: 100%;
     height: 100%;
-    /* background-color: rgba(0, 0, 0, 0.3); */
+
     display: flex;
     align-items: center;
     justify-content: center;
