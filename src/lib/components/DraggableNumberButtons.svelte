@@ -52,8 +52,6 @@
   
   $effect(() => {
     if (isStudentMode && Object.keys(receivedButtonPositions).length > 0) {
-      console.log('DraggableNumberButtons에서 받은 위치 정보:', receivedButtonPositions)
-      
       // 이전 위치와 비교하여 실제 변경이 있는지 확인
       let hasChanges = false
       for (let i = 1; i <= 4; i++) {
@@ -71,7 +69,6 @@
       }
       
       if (!hasChanges) {
-        console.log('위치 변경 없음, 애니메이션 건너뜀')
         return
       }
       
@@ -79,9 +76,6 @@
         const containerRect = containerElement.getBoundingClientRect()
         const containerWidth = containerRect.width
         const containerHeight = containerRect.height
-        
-        console.log('컨테이너 크기:', { width: containerWidth, height: containerHeight })
-        console.log('컨테이너 위치:', { left: containerRect.left, top: containerRect.top })
         
         // 컨테이너 높이가 0이거나 매우 작은 경우 경고
         if (containerHeight < 10) {
@@ -101,9 +95,6 @@
             const relativeX = receivedButtonPositions[i].x
             const relativeY = receivedButtonPositions[i].y
             
-            console.log(`버튼 ${i} - 상대 좌표:`, { x: relativeX, y: relativeY })
-            console.log(`버튼 ${i} - 컨테이너 중앙:`, { centerX, centerY })
-            
             // 상대 좌표(-1 ~ 1)를 절대 좌표로 변환
             const absoluteX = centerX + (relativeX * centerX)
             const absoluteY = centerY + (relativeY * centerY)
@@ -112,15 +103,6 @@
               x: absoluteX,
               y: absoluteY
             }
-            
-            // 디버깅: 좌표 변환 검증
-            console.log(`버튼 ${i} - 좌표 변환 검증:`)
-            console.log(`  relativeY: ${relativeY}`)
-            console.log(`  centerY: ${centerY}`)
-            console.log(`  relativeY * centerY: ${relativeY * centerY}`)
-            console.log(`  absoluteY: ${absoluteY}`)
-            
-            console.log(`버튼 ${i} - 절대 좌표:`, { x: absoluteX, y: absoluteY })
             
             // 텍스트가 있으면 텍스트 요소 생성
             if (receivedButtonPositions[i].text) {
@@ -132,16 +114,12 @@
                 y: absoluteY + buttonSize / 2 - 15, // 버튼 중앙 높이에 맞춤
                 numberId: i
               })
-              console.log(`버튼 ${i} - 텍스트 요소 생성:`, receivedButtonPositions[i].text)
             }
             
             // 버튼 크기도 업데이트
             buttonSize = receivedButtonPositions[i].size
           }
         }
-        
-        console.log('변환된 절대 좌표:', newPositions)
-        console.log('새로운 텍스트 요소들:', newTextElements)
         
         // 학생 모드에서 텍스트 요소 업데이트
         if (isStudentMode) {
@@ -168,9 +146,6 @@
     targetPositions: Record<number, { x: number; y: number }>,
     onComplete?: () => void
   ) {
-    console.log('애니메이션 시작 - 현재 위치:', buttonPositions)
-    console.log('애니메이션 시작 - 목표 위치:', targetPositions)
-    
     const duration = 500 // 0.5초
     const startTime = performance.now()
     const startPositions = { ...buttonPositions }
@@ -193,10 +168,6 @@
         newPositions[i] = {
           x: start.x + (target.x - start.x) * easeProgress,
           y: start.y + (target.y - start.y) * easeProgress,
-        }
-        
-        if (progress === 1) {
-          console.log(`버튼 ${i} - 최종 위치:`, newPositions[i])
         }
       }
 
@@ -456,17 +427,12 @@
   }
 
   function sendButtonPositions() {
-    console.log('sendButtonPositions 함수 호출됨')
     const positions: Record<number, { x: number; y: number; size: number; text?: string }> = {}
     
     if (containerElement) {
       const containerRect = containerElement.getBoundingClientRect()
       const containerWidth = containerRect.width
       const containerHeight = containerRect.height
-      
-      console.log('컨테이너 크기:', { width: containerWidth, height: containerHeight })
-      console.log('현재 버튼 위치:', buttonPositions)
-      console.log('텍스트 요소들:', textElements)
       
       for (let i = 1; i <= 4; i++) {
         // 컨테이너 중앙 기준 상대 좌표로 변환
@@ -477,11 +443,6 @@
         
         // 해당 버튼에 연결된 텍스트 찾기
         const textElement = textElements.find(text => text.numberId === i)
-        
-        console.log(`버튼 ${i} 전송 - 절대 좌표:`, buttonPositions[i])
-        console.log(`버튼 ${i} 전송 - 컨테이너 중앙:`, { centerX, centerY })
-        console.log(`버튼 ${i} 전송 - 상대 좌표:`, { x: relativeX, y: relativeY })
-        console.log(`버튼 ${i} 전송 - 연결된 텍스트:`, textElement?.text || '없음')
         
         positions[i] = {
           x: relativeX,
@@ -502,8 +463,6 @@
         }
       }
     }
-    
-    console.log('전송할 버튼 위치와 텍스트:', positions)
     
     // 부모 컴포넌트에 전송 (AdminRoom에서 서버로 전송)
     onSendButtonPositions(positions)

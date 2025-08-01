@@ -194,10 +194,8 @@
           }
         }}
         onSendButtonPositions={(positions) => {
-          console.log('AdminRoom에서 버튼 위치 수신:', positions)
           // 버튼 위치 정보를 서버로 전송
           room?.send('buttonPositions', positions)
-          console.log('서버로 버튼 위치 전송 완료:', positions)
         }}
       />
       

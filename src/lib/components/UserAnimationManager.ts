@@ -124,15 +124,18 @@ export class UserAnimationManager {
       )
 
       // 숫자 버튼 바로 아래 세로 일렬 가운데 정렬 (실제 DOM 크기 사용)
-      const buttonWidth =
-        (element.offsetWidth || 80) * 0.75 // scale 0.75 적용된 크기로 계산
+      const buttonWidth = element.offsetWidth || 80 // 실제 DOM 크기 사용
       // 숫자 버튼과 사용자 버튼의 실제 크기를 감안한 정확한 가운데 정렬
       const numberButtonWidth = targetRect.width
       const userButtonWidth = buttonWidth
       const numberButtonCenterX = targetRect.left + numberButtonWidth / 2
+      // 사용자 버튼의 중앙이 숫자 버튼의 중앙과 정확히 일치하도록 계산
+      // pageRect.left를 빼서 페이지 기준 좌표로 변환
+      // targetCenterX는 사용자 버튼의 왼쪽 가장자리 위치
+      // 실제 DOM 크기를 사용하여 정확한 중앙 정렬 계산
+      // 숫자 버튼 중앙에서 사용자 버튼의 절반 크기를 빼서 왼쪽 가장자리 위치 계산
       const targetCenterX = numberButtonCenterX - pageRect.left - userButtonWidth / 2
-      const buttonHeight =
-        (element.offsetHeight || 40) * 0.75 // scale 0.75 적용된 크기로 계산
+      const buttonHeight = element.offsetHeight || 40 // 실제 DOM 크기 사용
       const spacing = BUTTON_CONSTANTS.VERTICAL_SPACING
       
       // 숫자 버튼의 실제 높이를 계산하여 겹치지 않도록 함
@@ -189,33 +192,6 @@ export class UserAnimationManager {
     const currentUser = users[userIndex]
     this.arrivalOrder[currentUser.username] = this.nextArrivalIndex++
 
-    // 숫자 버튼 바로 아래로 이동 (중앙 정렬) - 실제 DOM 크기 사용
-    const buttonWidth =
-      (userButton.offsetWidth || 80) * 0.75 // scale 0.75 적용된 크기로 계산
-    const buttonHeight =
-      (userButton.offsetHeight || 40) * 0.75 // scale 0.75 적용된 크기로 계산
-    const spacing = BUTTON_CONSTANTS.VERTICAL_SPACING
-    
-    let targetCenterX: number
-    let startY: number
-    
-    if (this.isVerticalAlignment) {
-      // 세로 정렬일 때: 숫자 버튼 오른쪽으로 가로 정렬
-      targetCenterX = targetRect.right - pageRect.left + 10 // 숫자 버튼 오른쪽에서 10px 간격
-      startY = targetRect.top - pageRect.top + targetRect.height / 2 - buttonHeight / 2 // 숫자 버튼 세로 중앙
-    } else {
-      // 가로 정렬일 때: 숫자 버튼 아래로 세로 정렬
-      // 숫자 버튼과 사용자 버튼의 실제 크기를 감안한 정확한 가운데 정렬
-      const numberButtonWidth = targetRect.width
-      const userButtonWidth = buttonWidth
-      const numberButtonCenterX = targetRect.left + numberButtonWidth / 2
-      targetCenterX = numberButtonCenterX - pageRect.left - userButtonWidth / 2
-      
-      // 숫자 버튼의 실제 높이를 계산하여 겹치지 않도록 함
-      const numberButtonHeight = targetRect.height
-      startY = targetRect.bottom - pageRect.top + 35 // 숫자 버튼 아래에서 35px 간격으로 겹치지 않도록
-    }
-
     // 도착 순서대로 정렬
     const sameAnswerUsers = users
       .filter((user) => (user.answer_number ?? 0) === targetNumber)
@@ -229,6 +205,46 @@ export class UserAnimationManager {
     const userOrder = sameAnswerUsers.findIndex(
       (user) => user.username === currentUser.username
     )
+
+    // 숫자 버튼 바로 아래로 이동 (중앙 정렬) - 실제 DOM 크기 사용
+    const buttonWidth = userButton.offsetWidth || 80 // 실제 DOM 크기 사용
+    const buttonHeight = userButton.offsetHeight || 40 // 실제 DOM 크기 사용
+    const spacing = BUTTON_CONSTANTS.VERTICAL_SPACING
+    
+    let targetCenterX: number
+    let startY: number
+    
+    if (this.isVerticalAlignment) {
+      // 세로 정렬일 때: 첫 번째 버튼은 숫자 버튼 아래, 나머지는 오른쪽으로 가로 정렬
+      if (userOrder === 0) {
+        // 첫 번째 버튼: 숫자 버튼 아래 중앙 정렬
+        const numberButtonWidth = targetRect.width
+        const userButtonWidth = buttonWidth
+        const numberButtonCenterX = targetRect.left + numberButtonWidth / 2
+        targetCenterX = numberButtonCenterX - pageRect.left - userButtonWidth / 2
+        
+        // 숫자 버튼의 실제 높이를 계산하여 겹치지 않도록 함
+        const numberButtonHeight = targetRect.height
+        startY = targetRect.bottom - pageRect.top + 35 // 숫자 버튼 아래에서 35px 간격
+      } else {
+        // 나머지 버튼: 숫자 버튼 오른쪽으로 가로 정렬
+        targetCenterX = targetRect.right - pageRect.left + 10 // 숫자 버튼 오른쪽에서 10px 간격
+        startY = targetRect.top - pageRect.top + targetRect.height / 2 - buttonHeight / 2 // 숫자 버튼 세로 중앙
+      }
+    } else {
+      // 가로 정렬일 때: 숫자 버튼 아래로 세로 정렬
+      // 숫자 버튼과 사용자 버튼의 실제 크기를 감안한 정확한 가운데 정렬
+      const numberButtonWidth = targetRect.width
+      const userButtonWidth = buttonWidth
+      const numberButtonCenterX = targetRect.left + numberButtonWidth / 2
+      // 사용자 버튼의 중앙이 숫자 버튼의 중앙과 정확히 일치하도록 계산
+      // pageRect.left를 빼서 페이지 기준 좌표로 변환
+      targetCenterX = numberButtonCenterX - pageRect.left - userButtonWidth / 2
+      
+      // 숫자 버튼의 실제 높이를 계산하여 겹치지 않도록 함
+      const numberButtonHeight = targetRect.height
+      startY = targetRect.bottom - pageRect.top + 35 // 숫자 버튼 아래에서 35px 간격으로 겹치지 않도록
+    }
 
     // 순서대로 배치
     let targetX: number
@@ -258,7 +274,6 @@ export class UserAnimationManager {
       duration: ANIMATION_CONSTANTS.MOVE_DURATION / 1000,
       ease: 'power2.out',
       onComplete: () => {
-        console.log('UserAnimationManager - moveSingleUserToNumber 완료')
         delete this.activeAnimations[userIndex]
         // 이동 완료 후 자동으로 rearrange 실행
         this.rearrangeUsersAfterMove(users)
@@ -292,7 +307,6 @@ export class UserAnimationManager {
       duration: ANIMATION_CONSTANTS.MOVE_DURATION / 1000,
       ease: 'power2.out',
       onComplete: () => {
-        console.log('UserAnimationManager - moveSingleUserToOriginal 완료')
         delete this.activeAnimations[userIndex]
         this.rearrangeUsersAfterMove(users)
       },
@@ -303,7 +317,6 @@ export class UserAnimationManager {
   }
 
   rearrangeUsersAfterMove(users: User[]) {
-    console.log('UserAnimationManager - rearrangeUsersAfterMove 호출됨')
     if (!this.isReady()) return
 
     const numberButtons = document.querySelectorAll('.number-button')
@@ -336,27 +349,42 @@ export class UserAnimationManager {
         if (!userButton) return
 
         // 실제 버튼 높이와 간격 계산 (실제 DOM 크기 사용)
-        const buttonHeight =
-          (userButton.offsetHeight || 40) * 0.75 // scale 0.75 적용된 크기로 계산
+        const buttonHeight = userButton.offsetHeight || 40 // 실제 DOM 크기 사용
         const spacing = BUTTON_CONSTANTS.VERTICAL_SPACING
-        const buttonWidth =
-          (userButton.offsetWidth || 80) * 0.75 // scale 0.75 적용된 크기로 계산
+        const buttonWidth = userButton.offsetWidth || 80 // 실제 DOM 크기 사용
 
         let targetX: number
         let targetY: number
 
         if (this.isVerticalAlignment) {
-          // 세로 정렬일 때: 숫자 버튼 오른쪽으로 가로 정렬
-          const startX = targetRect.right - pageRect.left + 10 // 숫자 버튼 오른쪽에서 10px 간격
-          const centerY = targetRect.top - pageRect.top + targetRect.height / 2 - buttonHeight / 2 // 숫자 버튼 세로 중앙
-          targetX = startX + index * (buttonWidth + spacing)
-          targetY = centerY
+          // 세로 정렬일 때: 첫 번째 버튼은 숫자 버튼 아래, 나머지는 오른쪽으로 가로 정렬
+          if (index === 0) {
+            // 첫 번째 버튼: 숫자 버튼 아래 중앙 정렬
+            const numberButtonWidth = targetRect.width
+            const userButtonWidth = buttonWidth
+            const numberButtonCenterX = targetRect.left + numberButtonWidth / 2
+            const targetCenterX = numberButtonCenterX - pageRect.left - userButtonWidth / 2
+            
+            // 숫자 버튼의 실제 높이를 계산하여 겹치지 않도록 함
+            const numberButtonHeight = targetRect.height
+            const startY = targetRect.bottom - pageRect.top + 35 // 숫자 버튼 아래에서 35px 간격
+            targetX = targetCenterX
+            targetY = startY
+          } else {
+            // 나머지 버튼: 숫자 버튼 오른쪽으로 가로 정렬
+            const startX = targetRect.right - pageRect.left + 10 // 숫자 버튼 오른쪽에서 10px 간격
+            const centerY = targetRect.top - pageRect.top + targetRect.height / 2 - buttonHeight / 2 // 숫자 버튼 세로 중앙
+            targetX = startX + (index - 1) * (buttonWidth + spacing) // 첫 번째 버튼을 제외하고 계산
+            targetY = centerY
+          }
         } else {
           // 가로 정렬일 때: 숫자 버튼 아래로 세로 정렬
           // 숫자 버튼과 사용자 버튼의 실제 크기를 감안한 정확한 가운데 정렬
           const numberButtonWidth = targetRect.width
           const userButtonWidth = buttonWidth
           const numberButtonCenterX = targetRect.left + numberButtonWidth / 2
+          // 사용자 버튼의 중앙이 숫자 버튼의 중앙과 정확히 일치하도록 계산
+          // pageRect.left를 빼서 페이지 기준 좌표로 변환
           const targetCenterX = numberButtonCenterX - pageRect.left - userButtonWidth / 2
           
           // 숫자 버튼의 실제 높이를 계산하여 겹치지 않도록 함
