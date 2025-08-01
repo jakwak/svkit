@@ -165,7 +165,8 @@
 
   // 애니메이션 함수
   function animateButtonPositions(
-    targetPositions: Record<number, { x: number; y: number }>
+    targetPositions: Record<number, { x: number; y: number }>,
+    onComplete?: () => void
   ) {
     console.log('애니메이션 시작 - 현재 위치:', buttonPositions)
     console.log('애니메이션 시작 - 목표 위치:', targetPositions)
@@ -231,6 +232,11 @@
 
       if (progress < 1) {
         requestAnimationFrame(animate)
+      } else {
+        // 애니메이션 완료 후 콜백 실행
+        if (onComplete) {
+          onComplete()
+        }
       }
     }
 
@@ -409,10 +415,18 @@
     draggedTextId = null
     isDragging = false
     containerRect = null
+    
     // 드래그가 끝나면 hasDragged를 false로 리셋하여 클릭 이벤트가 정상 작동하도록 함
     setTimeout(() => {
       hasDragged = false
     }, 200) // 시간을 더 늘려서 드래그 후 클릭 이벤트 방지
+    
+    // 드래그가 완료되면 자동으로 전송
+    if (wasDragging && !isStudentMode) {
+      setTimeout(() => {
+        sendButtonPositions()
+      }, 100) // 약간의 지연을 두어 애니메이션이 완료된 후 전송
+    }
   }
 
   function handleTextMouseDown(event: MouseEvent, textId: string) {
@@ -612,7 +626,14 @@
       }
 
       // 애니메이션으로 부드럽게 이동
-      animateButtonPositions(positions)
+      animateButtonPositions(positions, () => {
+        // 가로 정렬 완료 후 자동으로 전송
+        if (!isStudentMode) {
+          setTimeout(() => {
+            sendButtonPositions()
+          }, 100)
+        }
+      })
       buttonSize = 48 // 원래 크기로 복원
       isVerticalAlignment = false
       onAlignmentChange(false) // 부모에게 가로 정렬 상태 알림
@@ -659,7 +680,14 @@
       }
 
       // 애니메이션으로 부드럽게 이동
-      animateButtonPositions(verticalPositions)
+      animateButtonPositions(verticalPositions, () => {
+        // 세로 정렬 완료 후 자동으로 전송
+        if (!isStudentMode) {
+          setTimeout(() => {
+            sendButtonPositions()
+          }, 100)
+        }
+      })
       onAlignmentChange(true) // 부모에게 세로 정렬 상태 알림
     }
   }
@@ -692,11 +720,9 @@
     // 정렬 이벤트 리스너 추가
     const handleHorizontalAlign = () => resetToInitialPositions()
     const handleVerticalAlign = () => alignVertically()
-    const handleSendButtonPositions = () => sendButtonPositions()
 
     containerElement?.addEventListener('horizontalAlign', handleHorizontalAlign)
     containerElement?.addEventListener('verticalAlign', handleVerticalAlign)
-    containerElement?.addEventListener('sendButtonPositions', handleSendButtonPositions)
 
     return () => {
       document.removeEventListener('mousemove', handleMouseMove)
@@ -708,10 +734,6 @@
       containerElement?.removeEventListener(
         'verticalAlign',
         handleVerticalAlign
-      )
-      containerElement?.removeEventListener(
-        'sendButtonPositions',
-        handleSendButtonPositions
       )
     }
   })
@@ -809,6 +831,13 @@
                     clickPosition = null
                   }
                   editingNumber = null
+                  
+                  // 텍스트 입력 완료 후 자동으로 전송
+                  if (!isStudentMode) {
+                    setTimeout(() => {
+                      sendButtonPositions()
+                    }, 100)
+                  }
                 } else if (e.key === 'Escape') {
                   editingNumber = null
                   editingText[num] = ''
@@ -858,6 +887,13 @@
                   editingText[textElement.numberId] = ''
                 }
                 editingTextId = null
+                
+                // 텍스트 수정 완료 후 자동으로 전송
+                if (!isStudentMode) {
+                  setTimeout(() => {
+                    sendButtonPositions()
+                  }, 100)
+                }
               } else if (e.key === 'Escape') {
                 editingTextId = null
                 editingText[textElement.numberId] = ''
@@ -905,6 +941,13 @@
           onclick={(e) => {
             e.stopPropagation()
             textElements = textElements.filter((t) => t.id !== textElement.id)
+            
+            // 텍스트 삭제 후 자동으로 전송
+            if (!isStudentMode) {
+              setTimeout(() => {
+                sendButtonPositions()
+              }, 100)
+            }
           }}
         >
           <svg width="10" height="10" viewBox="0 0 12 12" fill="currentColor">

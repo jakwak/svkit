@@ -125,13 +125,19 @@ export class UserAnimationManager {
 
       // 숫자 버튼 바로 아래 세로 일렬 가운데 정렬 (실제 DOM 크기 사용)
       const buttonWidth =
-        (element.offsetWidth || 80) * BUTTON_CONSTANTS.SCALE_FACTOR
-      const targetCenterX =
-        targetRect.left + targetRect.width / 2 - pageRect.left - buttonWidth / 2
+        (element.offsetWidth || 80) * 0.75 // scale 0.75 적용된 크기로 계산
+      // 숫자 버튼과 사용자 버튼의 실제 크기를 감안한 정확한 가운데 정렬
+      const numberButtonWidth = targetRect.width
+      const userButtonWidth = buttonWidth
+      const numberButtonCenterX = targetRect.left + numberButtonWidth / 2
+      const targetCenterX = numberButtonCenterX - pageRect.left - userButtonWidth / 2
       const buttonHeight =
-        (element.offsetHeight || 40) * BUTTON_CONSTANTS.SCALE_FACTOR
+        (element.offsetHeight || 40) * 0.75 // scale 0.75 적용된 크기로 계산
       const spacing = BUTTON_CONSTANTS.VERTICAL_SPACING
-      const startY = targetRect.bottom - pageRect.top + 5 // 숫자 버튼 바로 아래 5px
+      
+      // 숫자 버튼의 실제 높이를 계산하여 겹치지 않도록 함
+      const numberButtonHeight = targetRect.height
+      const startY = targetRect.bottom - pageRect.top + 35 // 숫자 버튼 아래에서 35px 간격으로 겹치지 않도록
 
       // 단순히 순서대로 세로로 배치 (scale 적용된 크기로 계산)
       const targetY = startY + userOrder * (buttonHeight + spacing)
@@ -144,7 +150,7 @@ export class UserAnimationManager {
       gsap.to(element, {
         x: moveX,
         y: moveY,
-        scale: BUTTON_CONSTANTS.SCALE_FACTOR,
+        scale: 0.75, // 크기를 0.75배로 줄임
         opacity: 0.9,
         zIndex: this.currentZIndex++,
         duration: ANIMATION_CONSTANTS.MOVE_DURATION / 1000,
@@ -185,9 +191,9 @@ export class UserAnimationManager {
 
     // 숫자 버튼 바로 아래로 이동 (중앙 정렬) - 실제 DOM 크기 사용
     const buttonWidth =
-      (userButton.offsetWidth || 80) * BUTTON_CONSTANTS.SCALE_FACTOR
+      (userButton.offsetWidth || 80) * 0.75 // scale 0.75 적용된 크기로 계산
     const buttonHeight =
-      (userButton.offsetHeight || 40) * BUTTON_CONSTANTS.SCALE_FACTOR
+      (userButton.offsetHeight || 40) * 0.75 // scale 0.75 적용된 크기로 계산
     const spacing = BUTTON_CONSTANTS.VERTICAL_SPACING
     
     let targetCenterX: number
@@ -199,8 +205,15 @@ export class UserAnimationManager {
       startY = targetRect.top - pageRect.top + targetRect.height / 2 - buttonHeight / 2 // 숫자 버튼 세로 중앙
     } else {
       // 가로 정렬일 때: 숫자 버튼 아래로 세로 정렬
-      targetCenterX = targetRect.left + targetRect.width / 2 - pageRect.left - buttonWidth / 2
-      startY = targetRect.bottom - pageRect.top + 5
+      // 숫자 버튼과 사용자 버튼의 실제 크기를 감안한 정확한 가운데 정렬
+      const numberButtonWidth = targetRect.width
+      const userButtonWidth = buttonWidth
+      const numberButtonCenterX = targetRect.left + numberButtonWidth / 2
+      targetCenterX = numberButtonCenterX - pageRect.left - userButtonWidth / 2
+      
+      // 숫자 버튼의 실제 높이를 계산하여 겹치지 않도록 함
+      const numberButtonHeight = targetRect.height
+      startY = targetRect.bottom - pageRect.top + 35 // 숫자 버튼 아래에서 35px 간격으로 겹치지 않도록
     }
 
     // 도착 순서대로 정렬
@@ -239,7 +252,7 @@ export class UserAnimationManager {
     const animation = gsap.to(userButton, {
       x: moveX,
       y: moveY,
-      scale: BUTTON_CONSTANTS.SCALE_FACTOR,
+      scale: 0.75, // 크기를 0.75배로 줄임
       opacity: 0.9,
       zIndex: this.currentZIndex++,
       duration: ANIMATION_CONSTANTS.MOVE_DURATION / 1000,
@@ -324,10 +337,10 @@ export class UserAnimationManager {
 
         // 실제 버튼 높이와 간격 계산 (실제 DOM 크기 사용)
         const buttonHeight =
-          (userButton.offsetHeight || 40) * BUTTON_CONSTANTS.SCALE_FACTOR
+          (userButton.offsetHeight || 40) * 0.75 // scale 0.75 적용된 크기로 계산
         const spacing = BUTTON_CONSTANTS.VERTICAL_SPACING
         const buttonWidth =
-          (userButton.offsetWidth || 80) * BUTTON_CONSTANTS.SCALE_FACTOR // 실제 DOM 너비 사용
+          (userButton.offsetWidth || 80) * 0.75 // scale 0.75 적용된 크기로 계산
 
         let targetX: number
         let targetY: number
@@ -340,12 +353,15 @@ export class UserAnimationManager {
           targetY = centerY
         } else {
           // 가로 정렬일 때: 숫자 버튼 아래로 세로 정렬
-          const targetCenterX =
-            targetRect.left +
-            targetRect.width / 2 -
-            pageRect.left -
-            buttonWidth / 2
-          const startY = targetRect.bottom - pageRect.top + 5
+          // 숫자 버튼과 사용자 버튼의 실제 크기를 감안한 정확한 가운데 정렬
+          const numberButtonWidth = targetRect.width
+          const userButtonWidth = buttonWidth
+          const numberButtonCenterX = targetRect.left + numberButtonWidth / 2
+          const targetCenterX = numberButtonCenterX - pageRect.left - userButtonWidth / 2
+          
+          // 숫자 버튼의 실제 높이를 계산하여 겹치지 않도록 함
+          const numberButtonHeight = targetRect.height
+          const startY = targetRect.bottom - pageRect.top + 35 // 숫자 버튼 아래에서 35px 간격으로 겹치지 않도록
           targetX = targetCenterX
           targetY = startY + index * (buttonHeight + spacing)
         }
@@ -358,7 +374,7 @@ export class UserAnimationManager {
         gsap.to(userButton, {
           x: moveX,
           y: moveY,
-          scale: BUTTON_CONSTANTS.SCALE_FACTOR,
+          scale: 0.75, // 크기를 0.75배로 줄임
           opacity: 0.9,
           zIndex: this.currentZIndex++,
           duration: ANIMATION_CONSTANTS.MOVE_DURATION / 1000,

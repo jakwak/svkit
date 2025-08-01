@@ -221,33 +221,6 @@
           }
         }}
       />
-      
-      <!-- 전송 버튼 -->
-      <button
-        class="send-button"
-        class:disabled={currentCorrectNumber === 0}
-        title="버튼 위치 전송"
-        aria-label="버튼 위치 전송"
-        disabled={currentCorrectNumber === 0}
-        onclick={() => {
-          console.log('전송 버튼 클릭됨')
-          // DraggableNumberButtons에서 현재 버튼 위치 정보를 가져와서 전송
-          const draggableComponent = document.querySelector('.number-buttons-section')?.querySelector('.buttons-container')
-          console.log('draggableComponent 찾음:', draggableComponent)
-          if (draggableComponent) {
-            // 전송 이벤트를 발생시켜서 DraggableNumberButtons의 전송 기능을 호출
-            const event = new CustomEvent('sendButtonPositions')
-            console.log('sendButtonPositions 이벤트 발생')
-            draggableComponent.dispatchEvent(event)
-          } else {
-            console.log('draggableComponent를 찾을 수 없음')
-          }
-        }}
-      >
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
-        </svg>
-      </button>
     </div>
   </div>
 {:else}
@@ -294,54 +267,6 @@
     justify-content: center;
     text-align: center;
     padding: 2rem;
-  }
-
-  .send-button {
-    position: absolute;
-    bottom: 20px;
-    right: 20px;
-    width: 56px;
-    height: 56px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    border: none;
-    border-radius: 50%;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-    transition: all 0.3s ease;
-    z-index: 1000;
-  }
-
-  .send-button:hover {
-    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
-  }
-
-  .send-button:active {
-    box-shadow: 0 2px 10px rgba(102, 126, 234, 0.4);
-  }
-
-  .send-button svg {
-    width: 24px;
-    height: 24px;
-    stroke: currentColor;
-    stroke-width: 2;
-    fill: none;
-  }
-
-  .send-button.disabled {
-    background: linear-gradient(135deg, #9ca3af 0%, #6b7280 100%);
-    cursor: not-allowed;
-    opacity: 0.6;
-    transform: none;
-    box-shadow: 0 2px 8px rgba(156, 163, 175, 0.3);
-  }
-
-  .send-button.disabled:hover {
-    transform: none;
-    box-shadow: 0 2px 8px rgba(156, 163, 175, 0.3);
   }
 
 </style>

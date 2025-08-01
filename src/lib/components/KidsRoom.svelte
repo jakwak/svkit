@@ -431,9 +431,10 @@
 
 <style>
   .kids-room-container {
-    padding: 10px;
-    margin: 10px;
-    height: calc(100vh - 120px);
+    padding: 0;
+    margin: 0;
+    height: 100vh;
+    width: 100vw;
     background-color: #0e1218;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
     display: flex;
@@ -443,23 +444,28 @@
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
+    position: fixed;
+    top: 0;
+    left: 0;
   }
 
   .user-buttons-section {
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-top: 1rem;
+    margin-top: 0;
     flex-shrink: 0;
+    padding: 10px;
   }
 
   .component-container {
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-top: 2rem;
-    height: calc(100vh - 300px);
+    margin-top: 0;
+    height: calc(100vh - 80px);
     min-height: 400px;
+    flex: 1;
   }
 
   .modal-overlay {
