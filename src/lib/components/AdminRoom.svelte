@@ -193,6 +193,11 @@
             })
           }
         }}
+        onSendButtonPositions={(positions) => {
+          // 버튼 위치 정보를 서버로 전송
+          room?.send('buttonPositions', positions)
+          console.log('버튼 위치 전송:', positions)
+        }}
       />
       
       <AdminToolSet
@@ -219,11 +224,18 @@
       <!-- 전송 버튼 -->
       <button
         class="send-button"
-        title="전송"
-        aria-label="전송"
+        class:disabled={currentCorrectNumber === 0}
+        title="버튼 위치 전송"
+        aria-label="버튼 위치 전송"
+        disabled={currentCorrectNumber === 0}
         onclick={() => {
-          // 전송 로직 구현
-          console.log('전송 버튼 클릭됨')
+          // DraggableNumberButtons에서 현재 버튼 위치 정보를 가져와서 전송
+          const draggableComponent = document.querySelector('.number-buttons-section')?.querySelector('.buttons-container')
+          if (draggableComponent) {
+            // 전송 이벤트를 발생시켜서 DraggableNumberButtons의 전송 기능을 호출
+            const event = new CustomEvent('sendButtonPositions')
+            draggableComponent.dispatchEvent(event)
+          }
         }}
       >
         <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
@@ -314,4 +326,18 @@
     stroke-width: 2;
     fill: none;
   }
+
+  .send-button.disabled {
+    background: linear-gradient(135deg, #9ca3af 0%, #6b7280 100%);
+    cursor: not-allowed;
+    opacity: 0.6;
+    transform: none;
+    box-shadow: 0 2px 8px rgba(156, 163, 175, 0.3);
+  }
+
+  .send-button.disabled:hover {
+    transform: none;
+    box-shadow: 0 2px 8px rgba(156, 163, 175, 0.3);
+  }
+
 </style>

@@ -52,6 +52,7 @@
   let confirmModalData = $state<{ userIndex: number; targetNumber: number } | null>(null)
   let isAnswerConfirmed = $state(false)
   let pendingUserMoves = $state<Array<{ userIndex: number; answerNumber: number }>>([])
+  let buttonPositions = $state<Record<number, { x: number; y: number; size: number }>>({})
 
   const cleanupRoom = () => {
     if (room) {
@@ -108,6 +109,17 @@
             animationManager.resetAnimation()
           }
         }
+      })
+
+      // 버튼 위치 정보 감지
+      stateCb(room!.state).buttonPositions.onAdd((buttonPos, buttonNumber) => {
+        console.log('Button position received:', buttonNumber, buttonPos)
+        buttonPositions[Number(buttonNumber)] = {
+          x: buttonPos.x,
+          y: buttonPos.y,
+          size: buttonPos.size
+        }
+        buttonPositions = { ...buttonPositions }
       })
 
       stateCb(room!.state).users.onAdd((user) => {
@@ -258,6 +270,7 @@
       <div class="component-container" data-component="number-buttons">
         <NumberButtons
           disabled={isAnswerConfirmed}
+          {buttonPositions}
           onNumberClick={async (number) => {
             if (isAnswerConfirmed) return
             

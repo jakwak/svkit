@@ -5,10 +5,12 @@
     onNumberClick,
     disabled = false,
     onAlignmentChange = () => {},
+    onSendButtonPositions = () => {},
   } = $props<{
     onNumberClick: (number: number) => void
     disabled?: boolean
     onAlignmentChange?: (isVertical: boolean) => void
+    onSendButtonPositions?: (positions: Record<number, { x: number; y: number; size: number }>) => void
   }>()
 
   let selected = $state<number | null>(null)
@@ -318,6 +320,41 @@
     event.preventDefault()
   }
 
+  function sendButtonPositions() {
+    const positions: Record<number, { x: number; y: number; size: number }> = {}
+    
+    if (containerElement) {
+      const containerRect = containerElement.getBoundingClientRect()
+      const containerWidth = containerRect.width
+      const containerHeight = containerRect.height
+      
+      for (let i = 1; i <= 4; i++) {
+        // 컨테이너 중앙 기준 상대 좌표로 변환
+        const centerX = containerWidth / 2
+        const centerY = containerHeight / 2
+        const relativeX = (buttonPositions[i].x - centerX) / centerX // -1 ~ 1 범위
+        const relativeY = (buttonPositions[i].y - centerY) / centerY // -1 ~ 1 범위
+        
+        positions[i] = {
+          x: relativeX,
+          y: relativeY,
+          size: buttonSize
+        }
+      }
+    } else {
+      // 컨테이너가 없으면 절대 좌표 사용
+      for (let i = 1; i <= 4; i++) {
+        positions[i] = {
+          x: buttonPositions[i].x,
+          y: buttonPositions[i].y,
+          size: buttonSize
+        }
+      }
+    }
+    
+    onSendButtonPositions(positions)
+  }
+
   function resetToInitialPositions() {
     if (containerElement) {
       const buttonWidth = 48
@@ -515,9 +552,11 @@
     // 정렬 이벤트 리스너 추가
     const handleHorizontalAlign = () => resetToInitialPositions()
     const handleVerticalAlign = () => alignVertically()
+    const handleSendButtonPositions = () => sendButtonPositions()
 
     containerElement?.addEventListener('horizontalAlign', handleHorizontalAlign)
     containerElement?.addEventListener('verticalAlign', handleVerticalAlign)
+    containerElement?.addEventListener('sendButtonPositions', handleSendButtonPositions)
 
     return () => {
       document.removeEventListener('mousemove', handleMouseMove)
@@ -529,6 +568,10 @@
       containerElement?.removeEventListener(
         'verticalAlign',
         handleVerticalAlign
+      )
+      containerElement?.removeEventListener(
+        'sendButtonPositions',
+        handleSendButtonPositions
       )
     }
   })
@@ -1039,6 +1082,8 @@
     cursor: not-allowed;
     pointer-events: none;
   }
+
+
 
   @media (max-width: 768px) {
     .buttons-container {

@@ -23,6 +23,12 @@ export class Question extends Schema {
   @type('string') wrongAnswer3: string = ''
 }
 
+export class ButtonPosition extends Schema {
+  @type('number') x: number = 0
+  @type('number') y: number = 0
+  @type('number') size: number = 48
+}
+
 export class QuestionSet extends Schema {
   @type('string') id: string = ''
   @type('string') name: string = ''
@@ -35,5 +41,6 @@ export class MyState extends Schema {
   @type({ map: User }) users = new MapSchema<User>()
   @type({ map: QuestionSet }) questionSets = new MapSchema<QuestionSet>()
   @type(Question) currentQuestion: Question = new Question()
+  @type({ map: ButtonPosition }) buttonPositions = new MapSchema<ButtonPosition>()
 }
 
