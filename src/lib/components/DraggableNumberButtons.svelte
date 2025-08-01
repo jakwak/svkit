@@ -12,9 +12,9 @@
     onNumberClick: (number: number) => void
     disabled?: boolean
     onAlignmentChange?: (isVertical: boolean) => void
-    onSendButtonPositions?: (positions: Record<number, { x: number; y: number; size: number }>) => void
+    onSendButtonPositions?: (positions: Record<number, { x: number; y: number; size: number; text?: string }>) => void
     isStudentMode?: boolean
-    receivedButtonPositions?: Record<number, { x: number; y: number; size: number }>
+    receivedButtonPositions?: Record<number, { x: number; y: number; size: number; text?: string }>
   }>()
 
   let selected = $state<number | null>(null)
@@ -48,7 +48,7 @@
   let isVerticalAlignment = $state(false)
 
   // 학생 모드에서 받은 위치 정보 처리
-  let lastReceivedPositions = $state<Record<number, { x: number; y: number; size: number }>>({})
+  let lastReceivedPositions = $state<Record<number, { x: number; y: number; size: number; text?: string }>>({})
   
   $effect(() => {
     if (isStudentMode && Object.keys(receivedButtonPositions).length > 0) {
@@ -63,7 +63,8 @@
         if (current && (!previous || 
             current.x !== previous.x || 
             current.y !== previous.y || 
-            current.size !== previous.size)) {
+            current.size !== previous.size ||
+            current.text !== previous.text)) {
           hasChanges = true
           break
         }
@@ -89,6 +90,9 @@
         
         // 상대 좌표를 절대 좌표로 변환
         const newPositions: Record<number, { x: number; y: number }> = {}
+        
+        // 학생 모드에서 텍스트 요소 업데이트
+        const newTextElements: Array<{ id: string; text: string; x: number; y: number; numberId: number }> = []
         
         for (let i = 1; i <= 4; i++) {
           if (receivedButtonPositions[i]) {
@@ -118,9 +122,17 @@
             
             console.log(`버튼 ${i} - 절대 좌표:`, { x: absoluteX, y: absoluteY })
             
-            newPositions[i] = {
-              x: absoluteX,
-              y: absoluteY
+            // 텍스트가 있으면 텍스트 요소 생성
+            if (receivedButtonPositions[i].text) {
+              const textId = `received-text-${i}-${Date.now()}`
+              newTextElements.push({
+                id: textId,
+                text: receivedButtonPositions[i].text!,
+                x: absoluteX + buttonSize + 10, // 버튼 오른쪽에 10px 간격
+                y: absoluteY + buttonSize / 2 - 15, // 버튼 중앙 높이에 맞춤
+                numberId: i
+              })
+              console.log(`버튼 ${i} - 텍스트 요소 생성:`, receivedButtonPositions[i].text)
             }
             
             // 버튼 크기도 업데이트
@@ -129,6 +141,12 @@
         }
         
         console.log('변환된 절대 좌표:', newPositions)
+        console.log('새로운 텍스트 요소들:', newTextElements)
+        
+        // 학생 모드에서 텍스트 요소 업데이트
+        if (isStudentMode) {
+          textElements = newTextElements
+        }
         
         // 애니메이션으로 부드럽게 이동
         animateButtonPositions(newPositions)
@@ -425,7 +443,7 @@
 
   function sendButtonPositions() {
     console.log('sendButtonPositions 함수 호출됨')
-    const positions: Record<number, { x: number; y: number; size: number }> = {}
+    const positions: Record<number, { x: number; y: number; size: number; text?: string }> = {}
     
     if (containerElement) {
       const containerRect = containerElement.getBoundingClientRect()
@@ -434,6 +452,7 @@
       
       console.log('컨테이너 크기:', { width: containerWidth, height: containerHeight })
       console.log('현재 버튼 위치:', buttonPositions)
+      console.log('텍스트 요소들:', textElements)
       
       for (let i = 1; i <= 4; i++) {
         // 컨테이너 중앙 기준 상대 좌표로 변환
@@ -442,28 +461,35 @@
         const relativeX = (buttonPositions[i].x - centerX) / centerX // -1 ~ 1 범위
         const relativeY = (buttonPositions[i].y - centerY) / centerY // -1 ~ 1 범위
         
+        // 해당 버튼에 연결된 텍스트 찾기
+        const textElement = textElements.find(text => text.numberId === i)
+        
         console.log(`버튼 ${i} 전송 - 절대 좌표:`, buttonPositions[i])
         console.log(`버튼 ${i} 전송 - 컨테이너 중앙:`, { centerX, centerY })
         console.log(`버튼 ${i} 전송 - 상대 좌표:`, { x: relativeX, y: relativeY })
+        console.log(`버튼 ${i} 전송 - 연결된 텍스트:`, textElement?.text || '없음')
         
         positions[i] = {
           x: relativeX,
           y: relativeY,
-          size: buttonSize
+          size: buttonSize,
+          text: textElement?.text || undefined
         }
       }
     } else {
       // 컨테이너가 없으면 절대 좌표 사용
       for (let i = 1; i <= 4; i++) {
+        const textElement = textElements.find(text => text.numberId === i)
         positions[i] = {
           x: buttonPositions[i].x,
           y: buttonPositions[i].y,
-          size: buttonSize
+          size: buttonSize,
+          text: textElement?.text || undefined
         }
       }
     }
     
-    console.log('전송할 버튼 위치:', positions)
+    console.log('전송할 버튼 위치와 텍스트:', positions)
     
     // 부모 컴포넌트에 전송 (AdminRoom에서 서버로 전송)
     onSendButtonPositions(positions)
@@ -889,6 +915,18 @@
     </div>
   {/each}
   {/if}
+
+  <!-- 텍스트 요소들 (학생 모드에서도 표시, 읽기 전용) -->
+  {#if isStudentMode}
+    {#each textElements as textElement (textElement.id)}
+      <div
+        class="text-element student-text"
+        style="position: absolute; left: {textElement.x}px; top: {textElement.y}px;"
+      >
+        {textElement.text}
+      </div>
+    {/each}
+  {/if}
 </div>
 
 <style>
@@ -1038,8 +1076,19 @@
     border: none;
   }
 
+  .text-element.student-text {
+    cursor: default;
+    color: #6b7280;
+    font-weight: 500;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+  }
+
   .text-element:active {
     cursor: grabbing;
+  }
+
+  .text-element.student-text:active {
+    cursor: default;
   }
 
   .text-element.dragging {

@@ -53,7 +53,7 @@
   let confirmModalData = $state<{ userIndex: number; targetNumber: number } | null>(null)
   let isAnswerConfirmed = $state(false)
   let pendingUserMoves = $state<Array<{ userIndex: number; answerNumber: number }>>([])
-  let buttonPositions = $state<Record<number, { x: number; y: number; size: number }>>({})
+  let buttonPositions = $state<Record<number, { x: number; y: number; size: number; text?: string }>>({})
 
   // buttonPositions 변경 감지
   $effect(() => {
@@ -118,7 +118,7 @@
       })
 
       // 버튼 위치 정보 감지 - 배치 처리로 최적화
-      let pendingButtonUpdates = new Map<number, { x: number; y: number; size: number }>()
+      let pendingButtonUpdates = new Map<number, { x: number; y: number; size: number; text?: string }>()
       let updateTimeout: NodeJS.Timeout | null = null
 
       stateCb(room!.state).buttonPositions.onAdd((buttonPos, buttonNumber) => {
@@ -128,7 +128,8 @@
         pendingButtonUpdates.set(Number(buttonNumber), {
           x: buttonPos.x,
           y: buttonPos.y,
-          size: buttonPos.size
+          size: buttonPos.size,
+          text: buttonPos.text || undefined
         })
         
         // 기존 타이머가 있다면 취소
