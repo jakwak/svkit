@@ -35,7 +35,7 @@ export class UserAnimationManager {
       transformOrigin: 'center center'
     })
 
-    // 리사이즈 이벤트 리스너 추가 (디바운싱 적용)
+    // 리사이즈 이벤트 리스너 추가
     this.resizeListener = () => {
       if (this.resizeTimeout) {
         clearTimeout(this.resizeTimeout)
@@ -55,14 +55,12 @@ export class UserAnimationManager {
     this.isVerticalAlignment = isVertical
   }
 
-  // 도착 순서를 정확히 추적하는 헬퍼 메서드
   private updateArrivalOrder(username: string) {
     if (!this.arrivalOrder[username]) {
       this.arrivalOrder[username] = this.nextArrivalIndex++
     }
   }
 
-  // 같은 답변을 선택한 사용자들을 도착 순서대로 정렬하는 헬퍼 메서드
   private getSortedUsersByAnswer(users: User[], answerNumber: number): Array<{ user: User; originalIndex: number }> {
     return users
       .map((user, index) => ({ user, originalIndex: index }))
@@ -79,24 +77,13 @@ export class UserAnimationManager {
   }
 
   moveUsersToAnswerNumbers(users: User[]) {
-    if (!this.isReady()) {
-      console.warn('UserAnimationManager is not ready')
-      return
-    }
+    if (!this.isReady()) return
 
     // GSAP으로 DOM 요소들을 가져오기
     const numberButtons = gsap.utils.toArray('.number-button') as HTMLElement[]
     const userButtons = gsap.utils.toArray('.user-button-container') as HTMLElement[]
     
-    if (numberButtons.length === 0) {
-      console.warn('No number buttons found')
-      return
-    }
-    
-    if (userButtons.length === 0) {
-      console.warn('No user buttons found')
-      return
-    }
+    if (numberButtons.length === 0 || userButtons.length === 0) return
 
     const pageRect = document.body.getBoundingClientRect()
 
@@ -110,16 +97,10 @@ export class UserAnimationManager {
     })
 
     userButtons.forEach((element, index) => {
-      if (!element) {
-        console.warn(`User button element not found at index ${index}`)
-        return
-      }
+      if (!element) return
 
       const user = users[index]
-      if (!user) {
-        console.warn(`User not found at index ${index}`)
-        return
-      }
+      if (!user) return
 
       // answer_number 또는 answerNumber 속성 확인
       const answerNumber = (user as any).answer_number ?? (user as any).answerNumber ?? 0
@@ -142,27 +123,17 @@ export class UserAnimationManager {
           opacity: 1,
           duration: 0.8,
           ease: 'power2.out',
-          delay: index * 0.05,
-          onStart: () => {
-          },
-          onComplete: () => {
-          }
+          delay: index * 0.05
         })
         return
       }
 
       // answer_number에 해당하는 숫자 버튼 찾기 (1-4)
       const targetNumberIndex = answerNumber - 1
-      if (targetNumberIndex < 0 || targetNumberIndex >= numberButtons.length) {
-        console.warn(`Invalid target number index: ${targetNumberIndex}`)
-        return
-      }
+      if (targetNumberIndex < 0 || targetNumberIndex >= numberButtons.length) return
 
       const targetButton = numberButtons[targetNumberIndex]
-      if (!targetButton) {
-        console.warn(`Target button not found for number ${answerNumber}`)
-        return
-      }
+      if (!targetButton) return
 
       const targetRect = targetButton.getBoundingClientRect()
 
@@ -172,66 +143,37 @@ export class UserAnimationManager {
         (item) => item.user.username === user.username
       )
 
-      if (userOrder === -1) {
-        console.warn(`User order not found for ${user.username}`)
-        return
-      }
+      if (userOrder === -1) return
 
-      // 숫자 버튼 바로 아래 세로 일렬 가운데 정렬 (실제 DOM 크기 사용)
-      const buttonWidth = element.offsetWidth || 80 // 실제 DOM 크기 사용
-      const buttonHeight = element.offsetHeight || 40 // 실제 DOM 크기 사용
+      const buttonWidth = element.offsetWidth || 80
+      const buttonHeight = element.offsetHeight || 40
       const spacing = BUTTON_CONSTANTS.VERTICAL_SPACING
       
-      // 숫자 버튼과 사용자 버튼의 실제 크기를 감안한 정확한 가운데 정렬
       const numberButtonWidth = targetRect.width
       const userButtonWidth = buttonWidth
       const numberButtonCenterX = targetRect.left + numberButtonWidth / 2
       const targetCenterX = numberButtonCenterX - pageRect.left - userButtonWidth / 2
       
-      // 숫자 버튼의 실제 높이를 계산하여 겹치지 않도록 함
       const numberButtonHeight = targetRect.height
-      const startY = targetRect.bottom - pageRect.top + 5 // 숫자 버튼 아래에서 5px 간격으로 겹치지 않도록
+      const startY = targetRect.bottom - pageRect.top + 5
 
-      // 단순히 순서대로 세로로 배치 (scale 적용된 크기로 계산)
-      const targetY = startY + userOrder * (buttonHeight + spacing)
+      const scaledButtonHeight = buttonHeight * BUTTON_CONSTANTS.SCALE_FACTOR
+      const targetY = startY + userOrder * (scaledButtonHeight + spacing)
 
-      // 원래 위치에서 목표 위치까지의 이동 거리 계산
       const originalPos = this.originalPositions[index]
-      if (!originalPos) {
-        console.warn(`Original position not found for index ${index}`)
-        return
-      }
+      if (!originalPos) return
 
       const moveX = targetCenterX - originalPos.x
       const moveY = targetY - originalPos.y
 
-      // 현재 위치 확인
-      const currentTransform = gsap.getProperty(element, "x") || 0
-      const currentY = gsap.getProperty(element, "y") || 0
-
-      // 먼저 현재 상태를 설정
-      gsap.set(element, {
-        scale: 0.75,
-        opacity: 0.9,
-        zIndex: this.currentZIndex++
-      })
-
-      // 애니메이션 실행
       gsap.to(element, {
         x: moveX,
         y: moveY,
-        scale: 0.75,
+        scale: BUTTON_CONSTANTS.SCALE_FACTOR,
         opacity: 0.9,
-        duration: 1.0, // 더 긴 duration으로 확실히 보이게
+        duration: ANIMATION_CONSTANTS.MOVE_DURATION / 1000,
         ease: 'power2.out',
-        delay: 0,
-        onStart: () => {
-        },
-        onComplete: () => {
-        },
-        onError: (error: any) => {
-          console.error(`Animation error for user ${user.username}:`, error)
-        }
+        delay: 0
       })
     })
   }
@@ -241,11 +183,7 @@ export class UserAnimationManager {
     userIndex: number,
     targetNumber: number
   ) {
-    
-    if (!this.isReady()) {
-      console.warn('UserAnimationManager is not ready')
-      return
-    }
+    if (!this.isReady()) return
 
     // GSAP으로 DOM 요소들을 가져오기
     const numberButtons = gsap.utils.toArray('.number-button') as HTMLElement[]
@@ -253,17 +191,11 @@ export class UserAnimationManager {
     const pageRect = document.body.getBoundingClientRect()
 
     const targetButton = numberButtons[targetNumber - 1]
-    if (!targetButton) {
-      console.warn(`Target button not found for number ${targetNumber}`)
-      return
-    }
+    if (!targetButton) return
 
     const targetRect = targetButton.getBoundingClientRect()
     const userButton = userButtons[userIndex]
-    if (!userButton) {
-      console.warn(`User button not found at index ${userIndex}`)
-      return
-    }
+    if (!userButton) return
 
     // 현재 진행 중인 애니메이션이 있다면 취소
     const existingAnimation = this.activeAnimations[userIndex]
@@ -282,61 +214,49 @@ export class UserAnimationManager {
       (item) => item.user.username === currentUser.username
     )
 
-    if (userOrder === -1) {
-      console.warn('User order not found')
-      return
-    }
+    if (userOrder === -1) return
 
-    // 숫자 버튼 바로 아래로 이동 (중앙 정렬) - 실제 DOM 크기 사용
-    const buttonWidth = userButton.offsetWidth || 80 // 실제 DOM 크기 사용
-    const buttonHeight = userButton.offsetHeight || 40 // 실제 DOM 크기 사용
+    const buttonWidth = userButton.offsetWidth || 80
+    const buttonHeight = userButton.offsetHeight || 40
     const spacing = BUTTON_CONSTANTS.VERTICAL_SPACING
     
     let targetCenterX: number
     let startY: number
     
     if (this.isVerticalAlignment) {
-      // 세로 정렬일 때: 첫 번째 버튼은 숫자 버튼 아래, 나머지는 오른쪽으로 가로 정렬
       if (userOrder === 0) {
-        // 첫 번째 버튼: 숫자 버튼 아래 중앙 정렬
         const numberButtonWidth = targetRect.width
         const userButtonWidth = buttonWidth
         const numberButtonCenterX = targetRect.left + numberButtonWidth / 2
         targetCenterX = numberButtonCenterX - pageRect.left - userButtonWidth / 2
         
-        // 숫자 버튼의 실제 높이를 계산하여 겹치지 않도록 함
         const numberButtonHeight = targetRect.height
-        startY = targetRect.bottom - pageRect.top + 5 // 숫자 버튼 아래에서 5px 간격
+        startY = targetRect.bottom - pageRect.top + 5
       } else {
-        // 나머지 버튼: 숫자 버튼 오른쪽으로 가로 정렬
-        targetCenterX = targetRect.right - pageRect.left + 10 // 숫자 버튼 오른쪽에서 10px 간격
-        startY = targetRect.top - pageRect.top + targetRect.height / 2 - buttonHeight / 2 // 숫자 버튼 세로 중앙
+        targetCenterX = targetRect.right - pageRect.left + 10
+        startY = targetRect.top - pageRect.top + targetRect.height / 2 - buttonHeight / 2
       }
     } else {
-      // 가로 정렬일 때: 숫자 버튼 아래로 세로 정렬
-      // 숫자 버튼과 사용자 버튼의 실제 크기를 감안한 정확한 가운데 정렬
       const numberButtonWidth = targetRect.width
       const userButtonWidth = buttonWidth
       const numberButtonCenterX = targetRect.left + numberButtonWidth / 2
       targetCenterX = numberButtonCenterX - pageRect.left - userButtonWidth / 2
       
-      // 숫자 버튼의 실제 높이를 계산하여 겹치지 않도록 함
       const numberButtonHeight = targetRect.height
-      startY = targetRect.bottom - pageRect.top + 5 // 숫자 버튼 아래에서 5px 간격으로 겹치지 않도록
+      startY = targetRect.bottom - pageRect.top + 5
     }
 
-    // 순서대로 배치
     let targetX: number
     let targetY: number
     
     if (this.isVerticalAlignment) {
-      // 세로 정렬일 때: 가로로 배치
-      targetX = targetCenterX + userOrder * (buttonWidth + spacing)
+      const scaledButtonWidth = buttonWidth * BUTTON_CONSTANTS.SCALE_FACTOR
+      targetX = targetCenterX + userOrder * (scaledButtonWidth + spacing)
       targetY = startY
     } else {
-      // 가로 정렬일 때: 세로로 배치
+      const scaledButtonHeight = buttonHeight * BUTTON_CONSTANTS.SCALE_FACTOR
       targetX = targetCenterX
-      targetY = startY + userOrder * (buttonHeight + spacing)
+      targetY = startY + userOrder * (scaledButtonHeight + spacing)
     }
 
     // 원래 위치에서 목표 위치까지의 이동 거리 계산
@@ -347,16 +267,13 @@ export class UserAnimationManager {
     const animation = gsap.to(userButton, {
       x: moveX,
       y: moveY,
-      scale: 0.75, // 크기를 0.75배로 줄임
+      scale: BUTTON_CONSTANTS.SCALE_FACTOR,
       opacity: 0.9,
       zIndex: this.currentZIndex++,
       duration: ANIMATION_CONSTANTS.MOVE_DURATION / 1000,
       ease: 'power2.out',
-      onStart: () => {
-      },
       onComplete: () => {
         delete this.activeAnimations[userIndex]
-        // 이동 완료 후 자동으로 rearrange 실행
         this.rearrangeUsersAfterMove(users)
       },
     })
@@ -424,48 +341,42 @@ export class UserAnimationManager {
         const userButton = userButtons[userIndex]
         if (!userButton) return
 
-        // 실제 버튼 높이와 간격 계산 (실제 DOM 크기 사용)
-        const buttonHeight = userButton.offsetHeight || 40 // 실제 DOM 크기 사용
+        const buttonHeight = userButton.offsetHeight || 40
         const spacing = BUTTON_CONSTANTS.VERTICAL_SPACING
-        const buttonWidth = userButton.offsetWidth || 80 // 실제 DOM 크기 사용
+        const buttonWidth = userButton.offsetWidth || 80
 
         let targetX: number
         let targetY: number
 
         if (this.isVerticalAlignment) {
-          // 세로 정렬일 때: 첫 번째 버튼은 숫자 버튼 아래, 나머지는 오른쪽으로 가로 정렬
           if (index === 0) {
-            // 첫 번째 버튼: 숫자 버튼 아래 중앙 정렬
             const numberButtonWidth = targetRect.width
             const userButtonWidth = buttonWidth
             const numberButtonCenterX = targetRect.left + numberButtonWidth / 2
             const targetCenterX = numberButtonCenterX - pageRect.left - userButtonWidth / 2
             
-            // 숫자 버튼의 실제 높이를 계산하여 겹치지 않도록 함
             const numberButtonHeight = targetRect.height
-            const startY = targetRect.bottom - pageRect.top + 5 // 숫자 버튼 아래에서 5px 간격
+            const startY = targetRect.bottom - pageRect.top + 5
             targetX = targetCenterX
             targetY = startY
           } else {
-            // 나머지 버튼: 숫자 버튼 오른쪽으로 가로 정렬
-            const startX = targetRect.right - pageRect.left + 10 // 숫자 버튼 오른쪽에서 10px 간격
-            const centerY = targetRect.top - pageRect.top + targetRect.height / 2 - buttonHeight / 2 // 숫자 버튼 세로 중앙
-            targetX = startX + (index - 1) * (buttonWidth + spacing) // 첫 번째 버튼을 제외하고 계산
+            const startX = targetRect.right - pageRect.left + 10
+            const centerY = targetRect.top - pageRect.top + targetRect.height / 2 - buttonHeight / 2
+            const scaledButtonWidth = buttonWidth * BUTTON_CONSTANTS.SCALE_FACTOR
+            targetX = startX + (index - 1) * (scaledButtonWidth + spacing)
             targetY = centerY
           }
         } else {
-          // 가로 정렬일 때: 숫자 버튼 아래로 세로 정렬
-          // 숫자 버튼과 사용자 버튼의 실제 크기를 감안한 정확한 가운데 정렬
           const numberButtonWidth = targetRect.width
           const userButtonWidth = buttonWidth
           const numberButtonCenterX = targetRect.left + numberButtonWidth / 2
           const targetCenterX = numberButtonCenterX - pageRect.left - userButtonWidth / 2
           
-          // 숫자 버튼의 실제 높이를 계산하여 겹치지 않도록 함
           const numberButtonHeight = targetRect.height
-          const startY = targetRect.bottom - pageRect.top + 5 // 숫자 버튼 아래에서 5px 간격으로 겹치지 않도록
+          const startY = targetRect.bottom - pageRect.top + 5
           targetX = targetCenterX
-          targetY = startY + index * (buttonHeight + spacing)
+          const scaledButtonHeight = buttonHeight * BUTTON_CONSTANTS.SCALE_FACTOR
+          targetY = startY + index * (scaledButtonHeight + spacing)
         }
 
         // 원래 위치에서 목표 위치까지의 이동 거리 계산
@@ -476,12 +387,12 @@ export class UserAnimationManager {
         gsap.to(userButton, {
           x: moveX,
           y: moveY,
-          scale: 0.75, // 크기를 0.75배로 줄임
+          scale: BUTTON_CONSTANTS.SCALE_FACTOR,
           opacity: 0.9,
           zIndex: this.currentZIndex++,
           duration: ANIMATION_CONSTANTS.MOVE_DURATION / 1000,
           ease: 'power2.out',
-          delay: 0, // delay 제거하여 동시 애니메이션
+          delay: 0
         })
       })
     }
@@ -552,7 +463,6 @@ export class UserAnimationManager {
     return positions
   }
 
-  // 리사이즈 후 완전히 새로운 상태로 시작하는 메서드
   resetAfterResize() {
     // 모든 상태 초기화
     this.arrivalOrder = {}

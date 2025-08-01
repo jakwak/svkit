@@ -61,7 +61,7 @@ export const BUTTON_CONSTANTS = {
   LARGE_SIZE: 'large',
   VERTICAL_SPACING: 4,
   HORIZONTAL_SPACING: 2,
-  SCALE_FACTOR: 0.9, // 애니메이션 시 버튼 크기 축소 비율
+  SCALE_FACTOR: 0.75, // 애니메이션 시 버튼 크기 축소 비율
 } as const
 
 // 세션 상태 타입 정의
