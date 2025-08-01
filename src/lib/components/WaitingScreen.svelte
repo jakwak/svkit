@@ -28,7 +28,7 @@
     display: flex;
     gap: 2px;
     font-size: 120px;
-    font-weight: bold;
+    font-weight: normal;
     color: #333;
     position: relative;
     overflow: hidden;

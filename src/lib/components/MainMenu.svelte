@@ -39,7 +39,7 @@
     border: none;
     border-radius: 25px;
     font-size: 48px;
-    font-weight: bold;
+    font-weight: normal;
     cursor: pointer;
     transition: all 0.3s ease;
     position: relative;
@@ -53,7 +53,6 @@
   }
 
   .game-button:hover {
-    transform: translateY(-5px);
     box-shadow: 0 15px 40px rgba(255, 107, 107, 0.4);
   }
 
@@ -63,7 +62,6 @@
   }
 
   .class-button:hover {
-    transform: translateY(-5px);
     box-shadow: 0 15px 40px rgba(78, 205, 196, 0.4);
   }
 

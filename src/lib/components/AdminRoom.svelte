@@ -194,9 +194,10 @@
           }
         }}
         onSendButtonPositions={(positions) => {
+          console.log('AdminRoom에서 버튼 위치 수신:', positions)
           // 버튼 위치 정보를 서버로 전송
           room?.send('buttonPositions', positions)
-          console.log('버튼 위치 전송:', positions)
+          console.log('서버로 버튼 위치 전송 완료:', positions)
         }}
       />
       
@@ -229,12 +230,17 @@
         aria-label="버튼 위치 전송"
         disabled={currentCorrectNumber === 0}
         onclick={() => {
+          console.log('전송 버튼 클릭됨')
           // DraggableNumberButtons에서 현재 버튼 위치 정보를 가져와서 전송
           const draggableComponent = document.querySelector('.number-buttons-section')?.querySelector('.buttons-container')
+          console.log('draggableComponent 찾음:', draggableComponent)
           if (draggableComponent) {
             // 전송 이벤트를 발생시켜서 DraggableNumberButtons의 전송 기능을 호출
             const event = new CustomEvent('sendButtonPositions')
+            console.log('sendButtonPositions 이벤트 발생')
             draggableComponent.dispatchEvent(event)
+          } else {
+            console.log('draggableComponent를 찾을 수 없음')
           }
         }}
       >
@@ -310,12 +316,10 @@
   }
 
   .send-button:hover {
-    transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
   }
 
   .send-button:active {
-    transform: translateY(0);
     box-shadow: 0 2px 10px rgba(102, 126, 234, 0.4);
   }
 

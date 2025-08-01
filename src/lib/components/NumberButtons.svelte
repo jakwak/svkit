@@ -9,9 +9,86 @@
   let selected = $state<number | null>(null)
   let containerElement = $state<HTMLDivElement | null>(null)
 
+  // buttonPositions 변경 감지
+  $effect(() => {
+    console.log('NumberButtons에서 buttonPositions 변경됨:', $inspect(buttonPositions))
+    // buttonPositions가 변경되면 강제로 리렌더링을 트리거
+    if (Object.keys(buttonPositions).length > 0) {
+      console.log('buttonPositions 변경으로 인한 리렌더링 트리거')
+      // DOM 직접 조작으로 버튼 위치 변경
+      setTimeout(() => {
+        updateButtonPositions()
+      }, 100)
+    }
+  })
+
+  // containerElement가 바인딩되면 버튼 위치 업데이트
+  $effect(() => {
+    if (containerElement && Object.keys(buttonPositions).length > 0) {
+      console.log('containerElement 바인딩됨, 버튼 위치 업데이트')
+      setTimeout(() => {
+        updateButtonPositions()
+      }, 50)
+    }
+  })
+
+  // DOM 직접 조작으로 버튼 위치 업데이트
+  function updateButtonPositions() {
+    console.log('updateButtonPositions 호출됨')
+    if (!containerElement) {
+      console.log('컨테이너가 없음')
+      return
+    }
+
+    const buttons = containerElement.querySelectorAll('.number-button')
+    console.log(`찾은 버튼 개수: ${buttons.length}`)
+    
+    buttons.forEach((button, index) => {
+      const buttonNum = index + 1
+      console.log(`Button ${buttonNum} 처리 중...`)
+      
+      if (buttonPositions[buttonNum]) {
+        const adjusted = adjustPosition(buttonPositions[buttonNum].x, buttonPositions[buttonNum].y, buttonPositions[buttonNum].size, buttonNum)
+        console.log(`Button ${buttonNum} DOM 업데이트:`, adjusted)
+        
+        // 실제 위치로 이동 (테스트용 오프셋 제거)
+        const finalX = adjusted.x
+        const finalY = adjusted.y
+        
+        const buttonElement = button as HTMLElement
+        buttonElement.style.position = 'absolute'
+        buttonElement.style.left = `${finalX}px`
+        buttonElement.style.top = `${finalY}px`
+        buttonElement.style.width = `${adjusted.size}px`
+        buttonElement.style.height = `${adjusted.size}px`
+        buttonElement.style.fontSize = `${adjusted.size * 0.6}px`
+        buttonElement.style.margin = '0'
+        buttonElement.style.padding = '0'
+        buttonElement.style.zIndex = '10'
+        
+        console.log(`Button ${buttonNum} 스타일 적용 완료: left=${finalX}px, top=${finalY}px`)
+      } else {
+        console.log(`Button ${buttonNum}에 대한 위치 정보 없음`)
+      }
+    })
+  }
+
+  // containerElement 바인딩 확인
+  $effect(() => {
+    console.log('containerElement 상태:', containerElement)
+    if (containerElement) {
+      console.log('containerElement 크기:', containerElement.getBoundingClientRect())
+    }
+  })
+
   // 좌표 조정 함수
   function adjustPosition(x: number, y: number, size: number, buttonNum?: number) {
-    if (!containerElement) return { x, y, size }
+    console.log('adjustPosition 호출됨:', { x, y, size, buttonNum })
+    
+    if (!containerElement) {
+      console.log('컨테이너가 없음')
+      return { x, y, size }
+    }
     
     const containerRect = containerElement.getBoundingClientRect()
     const containerWidth = containerRect.width
@@ -22,6 +99,7 @@
     
     // 좌표가 너무 작거나 상대 좌표가 아닌 경우 기본 배치 사용
     if ((x < 10 && y < 10) || (x >= -1 && x <= 1 && y >= -1 && y <= 1)) {
+      console.log('기본 배치 사용')
       // 일정한 간격으로 가운데 배치
       const buttonSpacing = 60 // 버튼 간격
       const totalWidth = 4 * size + 3 * buttonSpacing
@@ -36,7 +114,9 @@
       }
       
       if (buttonNum) {
-        return { ...defaultPositions[buttonNum as keyof typeof defaultPositions], size }
+        const result = { ...defaultPositions[buttonNum as keyof typeof defaultPositions], size }
+        console.log('기본 배치 결과:', result)
+        return result
       }
     }
     
@@ -54,6 +134,7 @@
     
     // x, y가 -1 ~ 1 범위이면 상대 좌표로 간주
     if (x >= -1 && x <= 1 && adjustedY >= -1 && adjustedY <= 1) {
+      console.log('상대 좌표를 절대 좌표로 변환')
       absoluteX = centerX + (x * centerX)
       absoluteY = centerY + (adjustedY * centerY)
     }
@@ -81,39 +162,20 @@
   }
 </script>
 
-<div class="buttons-container">
-  <div class="number-buttons" bind:this={containerElement}>
-    {#each [1,2,3,4] as num}
-      <button
-        class="number-button btn-{num}"
-        class:selected={selected === num}
-        class:disabled={disabled}
-        onclick={() => handleClick(num)}
-        style={buttonPositions[num] ? (() => {
-          const adjusted = adjustPosition(buttonPositions[num].x, buttonPositions[num].y, buttonPositions[num].size, num)
-          console.log(`Button ${num} position:`, {
-            original: buttonPositions[num],
-            adjusted: adjusted,
-            container: containerElement?.getBoundingClientRect()
-          })
-          return `
-            position: absolute !important;
-            left: ${adjusted.x}px !important;
-            top: ${adjusted.y}px !important;
-            width: ${adjusted.size}px !important;
-            height: ${adjusted.size}px !important;
-            font-size: ${adjusted.size * 0.6}px !important;
-            transform: none !important;
-            margin: 0 !important;
-            padding: 0 !important;
-          `
-        })() : ''}
-      >
-        {num}
-      </button>
-    {/each}
+  <div class="buttons-container">
+    <div class="number-buttons" bind:this={containerElement}>
+      {#each [1,2,3,4] as num}
+        <button
+          class="number-button btn-{num}"
+          class:selected={selected === num}
+          class:disabled={disabled}
+          onclick={() => handleClick(num)}
+        >
+          {num}
+        </button>
+      {/each}
+    </div>
   </div>
-</div>
 
 <style>
   .buttons-container {
@@ -126,27 +188,27 @@
   }
 
   .number-buttons {
-    display: flex;
-    gap: 60px;
-    align-items: center;
-    width: 100%;
-    justify-content: center;
     position: relative;
+    width: 100%;
     height: 400px;
+    overflow: visible;
+  }
+
+  .button-wrapper {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .number-button {
-    width: 200px;
-    height: 200px;
-    border-radius: 25px;
-    font-size: 120px;
-    font-weight: bold;
+    border-radius: 50%;
+    font-weight: normal;
     cursor: pointer;
     transition: all 0.3s ease;
     box-shadow: none;
     text-shadow: none;
     background: none;
-    border-radius: 50%;
   }
 
   .btn-1 {
@@ -187,7 +249,6 @@
   }
 
   .number-button:hover {
-    /* transform: translateY(-5px); */
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
   }
 
@@ -195,12 +256,10 @@
     border-color: #ff0000 !important;
     border-width: 6px !important;
     color: white !important;
-    /* transform: translateY(-3px); */
     box-shadow: 0 6px 15px rgba(255, 0, 0, 0.3);
   }
 
   .number-button.selected:hover {
-    /* transform: translateY(-8px); */
     box-shadow: 0 10px 25px rgba(255, 0, 0, 0.4);
   }
 

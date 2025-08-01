@@ -6,11 +6,15 @@
     disabled = false,
     onAlignmentChange = () => {},
     onSendButtonPositions = () => {},
+    isStudentMode = false,
+    receivedButtonPositions = {},
   } = $props<{
     onNumberClick: (number: number) => void
     disabled?: boolean
     onAlignmentChange?: (isVertical: boolean) => void
     onSendButtonPositions?: (positions: Record<number, { x: number; y: number; size: number }>) => void
+    isStudentMode?: boolean
+    receivedButtonPositions?: Record<number, { x: number; y: number; size: number }>
   }>()
 
   let selected = $state<number | null>(null)
@@ -43,6 +47,98 @@
   let buttonSize = $state(48)
   let isVerticalAlignment = $state(false)
 
+  // 학생 모드에서 받은 위치 정보 처리
+  let lastReceivedPositions = $state<Record<number, { x: number; y: number; size: number }>>({})
+  
+  $effect(() => {
+    if (isStudentMode && Object.keys(receivedButtonPositions).length > 0) {
+      console.log('DraggableNumberButtons에서 받은 위치 정보:', receivedButtonPositions)
+      
+      // 이전 위치와 비교하여 실제 변경이 있는지 확인
+      let hasChanges = false
+      for (let i = 1; i <= 4; i++) {
+        const current = receivedButtonPositions[i]
+        const previous = lastReceivedPositions[i]
+        
+        if (current && (!previous || 
+            current.x !== previous.x || 
+            current.y !== previous.y || 
+            current.size !== previous.size)) {
+          hasChanges = true
+          break
+        }
+      }
+      
+      if (!hasChanges) {
+        console.log('위치 변경 없음, 애니메이션 건너뜀')
+        return
+      }
+      
+      if (containerElement) {
+        const containerRect = containerElement.getBoundingClientRect()
+        const containerWidth = containerRect.width
+        const containerHeight = containerRect.height
+        
+        console.log('컨테이너 크기:', { width: containerWidth, height: containerHeight })
+        console.log('컨테이너 위치:', { left: containerRect.left, top: containerRect.top })
+        
+        // 컨테이너 높이가 0이거나 매우 작은 경우 경고
+        if (containerHeight < 10) {
+          console.warn('컨테이너 높이가 매우 작습니다:', containerHeight)
+        }
+        
+        // 상대 좌표를 절대 좌표로 변환
+        const newPositions: Record<number, { x: number; y: number }> = {}
+        
+        for (let i = 1; i <= 4; i++) {
+          if (receivedButtonPositions[i]) {
+            const centerX = containerWidth / 2
+            const centerY = containerHeight / 2
+            const relativeX = receivedButtonPositions[i].x
+            const relativeY = receivedButtonPositions[i].y
+            
+            console.log(`버튼 ${i} - 상대 좌표:`, { x: relativeX, y: relativeY })
+            console.log(`버튼 ${i} - 컨테이너 중앙:`, { centerX, centerY })
+            
+            // 상대 좌표(-1 ~ 1)를 절대 좌표로 변환
+            const absoluteX = centerX + (relativeX * centerX)
+            const absoluteY = centerY + (relativeY * centerY)
+            
+            newPositions[i] = {
+              x: absoluteX,
+              y: absoluteY
+            }
+            
+            // 디버깅: 좌표 변환 검증
+            console.log(`버튼 ${i} - 좌표 변환 검증:`)
+            console.log(`  relativeY: ${relativeY}`)
+            console.log(`  centerY: ${centerY}`)
+            console.log(`  relativeY * centerY: ${relativeY * centerY}`)
+            console.log(`  absoluteY: ${absoluteY}`)
+            
+            console.log(`버튼 ${i} - 절대 좌표:`, { x: absoluteX, y: absoluteY })
+            
+            newPositions[i] = {
+              x: absoluteX,
+              y: absoluteY
+            }
+            
+            // 버튼 크기도 업데이트
+            buttonSize = receivedButtonPositions[i].size
+          }
+        }
+        
+        console.log('변환된 절대 좌표:', newPositions)
+        
+        // 애니메이션으로 부드럽게 이동
+        animateButtonPositions(newPositions)
+        
+        // 현재 위치를 마지막 위치로 저장
+        lastReceivedPositions = { ...receivedButtonPositions }
+      }
+    }
+  })
+
   // 성능 최적화를 위한 캐시 변수들
   let containerRect = $state<DOMRect | null>(null)
   let lastMouseX = $state(0)
@@ -53,6 +149,9 @@
   function animateButtonPositions(
     targetPositions: Record<number, { x: number; y: number }>
   ) {
+    console.log('애니메이션 시작 - 현재 위치:', buttonPositions)
+    console.log('애니메이션 시작 - 목표 위치:', targetPositions)
+    
     const duration = 500 // 0.5초
     const startTime = performance.now()
     const startPositions = { ...buttonPositions }
@@ -75,6 +174,10 @@
         newPositions[i] = {
           x: start.x + (target.x - start.x) * easeProgress,
           y: start.y + (target.y - start.y) * easeProgress,
+        }
+        
+        if (progress === 1) {
+          console.log(`버튼 ${i} - 최종 위치:`, newPositions[i])
         }
       }
 
@@ -138,7 +241,7 @@
   }
 
   function handleMouseDown(event: MouseEvent, num: number) {
-    if (disabled) return
+    if (disabled || isStudentMode) return
 
     // 클릭 시작 시 드래그 상태 초기화
     hasDragged = false
@@ -166,7 +269,7 @@
   }
 
   function handleContainerMouseDown(event: MouseEvent, num: number) {
-    if (disabled) return
+    if (disabled || isStudentMode) return
 
     // 클릭 시작 시 드래그 상태 초기화
     hasDragged = false
@@ -321,6 +424,7 @@
   }
 
   function sendButtonPositions() {
+    console.log('sendButtonPositions 함수 호출됨')
     const positions: Record<number, { x: number; y: number; size: number }> = {}
     
     if (containerElement) {
@@ -328,12 +432,19 @@
       const containerWidth = containerRect.width
       const containerHeight = containerRect.height
       
+      console.log('컨테이너 크기:', { width: containerWidth, height: containerHeight })
+      console.log('현재 버튼 위치:', buttonPositions)
+      
       for (let i = 1; i <= 4; i++) {
         // 컨테이너 중앙 기준 상대 좌표로 변환
         const centerX = containerWidth / 2
         const centerY = containerHeight / 2
         const relativeX = (buttonPositions[i].x - centerX) / centerX // -1 ~ 1 범위
         const relativeY = (buttonPositions[i].y - centerY) / centerY // -1 ~ 1 범위
+        
+        console.log(`버튼 ${i} 전송 - 절대 좌표:`, buttonPositions[i])
+        console.log(`버튼 ${i} 전송 - 컨테이너 중앙:`, { centerX, centerY })
+        console.log(`버튼 ${i} 전송 - 상대 좌표:`, { x: relativeX, y: relativeY })
         
         positions[i] = {
           x: relativeX,
@@ -352,6 +463,9 @@
       }
     }
     
+    console.log('전송할 버튼 위치:', positions)
+    
+    // 부모 컴포넌트에 전송 (AdminRoom에서 서버로 전송)
     onSendButtonPositions(positions)
   }
 
@@ -608,8 +722,8 @@
           {num}
         </button>
 
-        <!-- 편집 버튼 -->
-        {#if !textElements.some((text) => text.numberId === num)}
+        <!-- 편집 버튼 (관리자 모드에서만 표시) -->
+        {#if !isStudentMode && !textElements.some((text) => text.numberId === num)}
           <button
             class="action-button edit-button"
             title="편집"
@@ -642,8 +756,8 @@
           </button>
         {/if}
 
-        <!-- 편집 입력상자 -->
-        {#if editingNumber === num}
+        <!-- 편집 입력상자 (관리자 모드에서만 표시) -->
+        {#if !isStudentMode && editingNumber === num}
           <div class="edit-input-container">
             <input
               bind:this={inputElement}
@@ -687,16 +801,17 @@
     {/each}
   </div>
 
-  <!-- 텍스트 요소들 -->
-  {#each textElements as textElement (textElement.id)}
-    <div
-      class="text-element"
-      class:dragging={draggedTextId === textElement.id}
-      style="position: absolute; left: {textElement.x}px; top: {textElement.y}px;"
-      onmousedown={(e) => handleTextMouseDown(e, textElement.id)}
-      role="button"
-      tabindex="0"
-    >
+  <!-- 텍스트 요소들 (관리자 모드에서만 표시) -->
+  {#if !isStudentMode}
+    {#each textElements as textElement (textElement.id)}
+      <div
+        class="text-element"
+        class:dragging={draggedTextId === textElement.id}
+        style="position: absolute; left: {textElement.x}px; top: {textElement.y}px;"
+        onmousedown={(e) => handleTextMouseDown(e, textElement.id)}
+        role="button"
+        tabindex="0"
+      >
       <!-- 텍스트 수정 입력상자 -->
       {#if editingTextId === textElement.id}
         <div class="text-edit-input-container">
@@ -773,6 +888,7 @@
       </div>
     </div>
   {/each}
+  {/if}
 </div>
 
 <style>
@@ -782,6 +898,7 @@
     align-items: center;
     height: 100%;
     width: 100%;
+    min-height: 300px;
     padding: 5px;
     position: relative;
     border: none;
@@ -793,6 +910,7 @@
     position: relative;
     width: 100%;
     height: 100%;
+    min-height: 300px;
   }
 
   .button-container {
@@ -803,7 +921,7 @@
   .number-button {
     position: relative;
     border-radius: 50%;
-    font-weight: bold;
+    font-weight: normal;
     cursor: grab;
     transition: all 0.3s ease;
     box-shadow: none;

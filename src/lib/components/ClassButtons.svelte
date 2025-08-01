@@ -66,13 +66,11 @@
     background: transparent;
     border-color: #ff6348;
     color: #ff6348;
-    transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(255, 99, 72, 0.2);
   }
 
   .number-btn.plain:active {
     background: transparent;
-    transform: translateY(0);
   }
 
   /* 컬러풀한 버튼 스타일 */
@@ -85,12 +83,10 @@
   }
 
   .number-btn.colorful:hover {
-    transform: translateY(-8px) scale(1.05);
     box-shadow: 0 8px 20px rgba(78, 205, 196, 0.3);
   }
 
   .number-btn.colorful:active {
-    transform: translateY(-6px) scale(1.02);
     transition: all 0.1s ease;
   }
 
@@ -120,7 +116,7 @@
 
   .number-text {
     font-size: 108px;
-    font-weight: bold;
+    font-weight: normal;
     position: relative;
     z-index: 2;
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);

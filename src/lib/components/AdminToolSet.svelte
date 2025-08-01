@@ -69,11 +69,9 @@
 
   .alignment-button:hover {
     color: rgba(255, 255, 255, 0.9);
-    transform: scale(1.05);
   }
 
   .alignment-button:active {
-    transform: scale(0.95);
   }
 
   .alignment-button.active {

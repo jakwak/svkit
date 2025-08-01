@@ -415,7 +415,7 @@
 
   .letter {
     font-size: 4.5rem;
-    font-weight: bold;
+    font-weight: normal;
     margin: 0 15px;
     display: inline-block;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
@@ -438,7 +438,7 @@
     font-size: 2rem;
     color: #60a5fa;
     opacity: 0.3;
-    font-weight: bold;
+    font-weight: normal;
   }
 
   .message-container {

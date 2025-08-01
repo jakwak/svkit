@@ -316,7 +316,7 @@
     position: absolute;
     font-size: 28px;
     color: #6b7280;
-    font-weight: bold;
+    font-weight: normal;
     pointer-events: auto;
     z-index: 5;
     transform: translate(0, -50%);
@@ -350,7 +350,7 @@
     border: none;
     border-radius: 50%;
     font-size: 16px;
-    font-weight: bold;
+    font-weight: normal;
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -381,7 +381,7 @@
     border: none;
     border-radius: 50%;
     font-size: 12px;
-    font-weight: bold;
+    font-weight: normal;
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -410,7 +410,7 @@
     border-radius: 0;
     padding: 8px 0;
     color: #6b7280;
-    font-weight: bold;
+    font-weight: normal;
     outline: none;
     z-index: 10;
     transform: translate(0, -50%);

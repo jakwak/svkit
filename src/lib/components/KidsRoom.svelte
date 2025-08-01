@@ -3,6 +3,7 @@
   import { Room, Client, getStateCallbacks } from 'colyseus.js'
   import type { MyState } from '$lib/MyState'
   import { ADMIN_NAME, USER_CONSTANTS, UserButtons, NumberButtons, WaitingAnimation, ConfirmModal } from '$lib'
+  import DraggableNumberButtons from './DraggableNumberButtons.svelte'
   import { page } from '$app/state'
 
   interface ProcessedUser {
@@ -53,6 +54,11 @@
   let isAnswerConfirmed = $state(false)
   let pendingUserMoves = $state<Array<{ userIndex: number; answerNumber: number }>>([])
   let buttonPositions = $state<Record<number, { x: number; y: number; size: number }>>({})
+
+  // buttonPositions 변경 감지
+  $effect(() => {
+    console.log('KidsRoom에서 buttonPositions 변경됨:', $inspect(buttonPositions))
+  })
 
   const cleanupRoom = () => {
     if (room) {
@@ -111,15 +117,40 @@
         }
       })
 
-      // 버튼 위치 정보 감지
+      // 버튼 위치 정보 감지 - 배치 처리로 최적화
+      let pendingButtonUpdates = new Map<number, { x: number; y: number; size: number }>()
+      let updateTimeout: NodeJS.Timeout | null = null
+
       stateCb(room!.state).buttonPositions.onAdd((buttonPos, buttonNumber) => {
-        console.log('Button position received:', buttonNumber, buttonPos)
-        buttonPositions[Number(buttonNumber)] = {
+        console.log('서버로부터 버튼 위치 수신:', buttonNumber, buttonPos)
+        
+        // 업데이트를 Map에 저장
+        pendingButtonUpdates.set(Number(buttonNumber), {
           x: buttonPos.x,
           y: buttonPos.y,
           size: buttonPos.size
+        })
+        
+        // 기존 타이머가 있다면 취소
+        if (updateTimeout) {
+          clearTimeout(updateTimeout)
         }
-        buttonPositions = { ...buttonPositions }
+        
+        // 50ms 후에 배치 업데이트 실행
+        updateTimeout = setTimeout(() => {
+          // 모든 pending 업데이트를 buttonPositions에 적용
+          for (const [buttonNumber, position] of pendingButtonUpdates) {
+            buttonPositions[buttonNumber] = position
+          }
+          
+          // 새로운 객체 참조로 업데이트 트리거
+          buttonPositions = { ...buttonPositions }
+          console.log('배치 업데이트된 buttonPositions:', buttonPositions)
+          
+          // pending 업데이트 초기화
+          pendingButtonUpdates.clear()
+          updateTimeout = null
+        }, 50)
       })
 
       stateCb(room!.state).users.onAdd((user) => {
@@ -268,10 +299,11 @@
     </div>
     {#if correctNumber !== 0}
       <div class="component-container" data-component="number-buttons">
-        <NumberButtons
+        <DraggableNumberButtons
           disabled={isAnswerConfirmed}
-          {buttonPositions}
-          onNumberClick={async (number) => {
+          isStudentMode={true}
+          receivedButtonPositions={buttonPositions}
+          onNumberClick={async (number: number) => {
             if (isAnswerConfirmed) return
             
             if (currentUserAnswerNumber === number) {
@@ -329,7 +361,7 @@
   <ConfirmModal
     show={!!(showConfirmModal && confirmModalData && confirmModalData.targetNumber !== 0)}
     title="답안 확인"
-    message={confirmModalData ? `<span style="font-size: 2rem; color: #ef4444; font-weight: bold;">${confirmModalData.targetNumber}</span>번을 선택하셨습니다.` : ''}
+    message={confirmModalData ? `<span style="font-size: 2rem; color: #ef4444; font-weight: normal;">${confirmModalData.targetNumber}</span>번을 선택하셨습니다.` : ''}
     subtitle="이 답안으로 제출하시겠습니까?"
     onCancel={() => {
       showConfirmModal = false
@@ -425,6 +457,8 @@
     align-items: center;
     justify-content: center;
     margin-top: 2rem;
+    height: calc(100vh - 300px);
+    min-height: 400px;
   }
 
   .modal-overlay {

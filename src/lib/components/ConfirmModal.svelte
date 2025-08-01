@@ -99,7 +99,7 @@
 
   .confirm-title {
     font-size: 1.5rem;
-    font-weight: bold;
+    font-weight: normal;
     color: #f3f4f6;
     margin: 0;
   }
