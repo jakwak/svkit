@@ -126,5 +126,14 @@
 <style>
   .user-button-container {
     z-index: 1;
+    transform: translate3d(0, 0, 0); /* GSAP 애니메이션을 위한 transform 설정 */
+    will-change: transform; /* 성능 최적화 */
+    position: relative; /* position 설정 추가 */
+    display: inline-block; /* display 설정 추가 */
+  }
+  
+  /* GSAP 애니메이션을 위한 추가 스타일 */
+  .user-button-container.animated {
+    transition: none; /* CSS transition 비활성화 */
   }
 </style>

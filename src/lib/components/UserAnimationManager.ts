@@ -26,6 +26,15 @@ export class UserAnimationManager {
     this.isInitialized = true
     this.currentZIndex = 10 // z-index 초기화
 
+    // 모든 사용자 버튼의 초기 transform 설정
+    gsap.set('.user-button-container', {
+      x: 0,
+      y: 0,
+      scale: 1,
+      opacity: 1,
+      transformOrigin: 'center center'
+    })
+
     // 리사이즈 이벤트 리스너 추가 (디바운싱 적용)
     this.resizeListener = () => {
       if (this.resizeTimeout) {
@@ -46,48 +55,86 @@ export class UserAnimationManager {
     this.isVerticalAlignment = isVertical
   }
 
-  moveUsersToAnswerNumbers(users: User[]) {
-    if (!this.isReady()) return
+  // 도착 순서를 정확히 추적하는 헬퍼 메서드
+  private updateArrivalOrder(username: string) {
+    if (!this.arrivalOrder[username]) {
+      this.arrivalOrder[username] = this.nextArrivalIndex++
+    }
+  }
 
-    const numberButtons = document.querySelectorAll('.number-button')
-    const userButtons = document.querySelectorAll('.user-button-container')
+  // 같은 답변을 선택한 사용자들을 도착 순서대로 정렬하는 헬퍼 메서드
+  private getSortedUsersByAnswer(users: User[], answerNumber: number): Array<{ user: User; originalIndex: number }> {
+    return users
+      .map((user, index) => ({ user, originalIndex: index }))
+      .filter(({ user }) => {
+        // answer_number 또는 answerNumber 속성 확인
+        const userAnswer = (user as any).answer_number ?? (user as any).answerNumber ?? 0
+        return userAnswer === answerNumber
+      })
+      .sort((a, b) => {
+        const orderA = this.arrivalOrder[a.user.username] || 0
+        const orderB = this.arrivalOrder[b.user.username] || 0
+        return orderA - orderB // 먼저 도착한 것이 위에
+      })
+  }
+
+  moveUsersToAnswerNumbers(users: User[]) {
+    if (!this.isReady()) {
+      console.warn('UserAnimationManager is not ready')
+      return
+    }
+
+    // GSAP으로 DOM 요소들을 가져오기
+    const numberButtons = gsap.utils.toArray('.number-button') as HTMLElement[]
+    const userButtons = gsap.utils.toArray('.user-button-container') as HTMLElement[]
+    
+    if (numberButtons.length === 0) {
+      console.warn('No number buttons found')
+      return
+    }
+    
+    if (userButtons.length === 0) {
+      console.warn('No user buttons found')
+      return
+    }
+
     const pageRect = document.body.getBoundingClientRect()
 
     // 각 사용자의 도착 순서 기록
     users.forEach((user) => {
-      const answerNumber = user.answer_number ?? 0
-      if (
-        answerNumber > 0 &&
-        answerNumber <= 4 &&
-        !this.arrivalOrder[user.username]
-      ) {
-        this.arrivalOrder[user.username] = this.nextArrivalIndex++
-      }
-    })
-
-    // 각 숫자 버튼별로 사용자들을 그룹화
-    const usersByAnswer: {
-      [key: number]: Array<{ user: User; originalIndex: number }>
-    } = {}
-
-    users.forEach((user, index) => {
-      const answerNumber = user.answer_number ?? 0
+      // answer_number 또는 answerNumber 속성 확인
+      const answerNumber = (user as any).answer_number ?? (user as any).answerNumber ?? 0
       if (answerNumber > 0 && answerNumber <= 4) {
-        if (!usersByAnswer[answerNumber]) {
-          usersByAnswer[answerNumber] = []
-        }
-        usersByAnswer[answerNumber].push({ user, originalIndex: index })
+        this.updateArrivalOrder(user.username)
       }
     })
 
-    userButtons.forEach((button, index) => {
-      const element = button as HTMLElement
-      if (!element) return
+    userButtons.forEach((element, index) => {
+      if (!element) {
+        console.warn(`User button element not found at index ${index}`)
+        return
+      }
 
       const user = users[index]
-      const answerNumber = user?.answer_number ?? 0
-      if (!user || answerNumber === 0) {
+      if (!user) {
+        console.warn(`User not found at index ${index}`)
+        return
+      }
+
+      // answer_number 또는 answerNumber 속성 확인
+      const answerNumber = (user as any).answer_number ?? (user as any).answerNumber ?? 0
+      if (answerNumber === 0) {
         // answer_number가 0이면 원래 위치로
+        
+        // 즉시 원래 위치로 설정
+        gsap.set(element, {
+          x: 0,
+          y: 0,
+          scale: 1,
+          opacity: 1
+        })
+        
+        // 부드러운 애니메이션으로 이동
         gsap.to(element, {
           x: 0,
           y: 0,
@@ -96,69 +143,95 @@ export class UserAnimationManager {
           duration: 0.8,
           ease: 'power2.out',
           delay: index * 0.05,
+          onStart: () => {
+          },
+          onComplete: () => {
+          }
         })
         return
       }
 
       // answer_number에 해당하는 숫자 버튼 찾기 (1-4)
       const targetNumberIndex = answerNumber - 1
-      if (targetNumberIndex < 0 || targetNumberIndex >= numberButtons.length)
+      if (targetNumberIndex < 0 || targetNumberIndex >= numberButtons.length) {
+        console.warn(`Invalid target number index: ${targetNumberIndex}`)
         return
+      }
 
-      const targetButton = numberButtons[targetNumberIndex] as HTMLElement
-      if (!targetButton) return
+      const targetButton = numberButtons[targetNumberIndex]
+      if (!targetButton) {
+        console.warn(`Target button not found for number ${answerNumber}`)
+        return
+      }
 
       const targetRect = targetButton.getBoundingClientRect()
 
       // 같은 답변을 선택한 사용자들을 도착 순서대로 정렬
-      const sameAnswerUsers = users
-        .filter((u) => (u.answer_number ?? 0) === answerNumber)
-        .sort((a, b) => {
-          const orderA = this.arrivalOrder[a.username] || 0
-          const orderB = this.arrivalOrder[b.username] || 0
-          return orderA - orderB // 먼저 도착한 것이 위에
-        })
-
+      const sameAnswerUsers = this.getSortedUsersByAnswer(users, answerNumber)
       const userOrder = sameAnswerUsers.findIndex(
-        (u) => u.username === user.username
+        (item) => item.user.username === user.username
       )
+
+      if (userOrder === -1) {
+        console.warn(`User order not found for ${user.username}`)
+        return
+      }
 
       // 숫자 버튼 바로 아래 세로 일렬 가운데 정렬 (실제 DOM 크기 사용)
       const buttonWidth = element.offsetWidth || 80 // 실제 DOM 크기 사용
+      const buttonHeight = element.offsetHeight || 40 // 실제 DOM 크기 사용
+      const spacing = BUTTON_CONSTANTS.VERTICAL_SPACING
+      
       // 숫자 버튼과 사용자 버튼의 실제 크기를 감안한 정확한 가운데 정렬
       const numberButtonWidth = targetRect.width
       const userButtonWidth = buttonWidth
       const numberButtonCenterX = targetRect.left + numberButtonWidth / 2
-      // 사용자 버튼의 중앙이 숫자 버튼의 중앙과 정확히 일치하도록 계산
-      // pageRect.left를 빼서 페이지 기준 좌표로 변환
-      // targetCenterX는 사용자 버튼의 왼쪽 가장자리 위치
-      // 실제 DOM 크기를 사용하여 정확한 중앙 정렬 계산
-      // 숫자 버튼 중앙에서 사용자 버튼의 절반 크기를 빼서 왼쪽 가장자리 위치 계산
       const targetCenterX = numberButtonCenterX - pageRect.left - userButtonWidth / 2
-      const buttonHeight = element.offsetHeight || 40 // 실제 DOM 크기 사용
-      const spacing = BUTTON_CONSTANTS.VERTICAL_SPACING
       
       // 숫자 버튼의 실제 높이를 계산하여 겹치지 않도록 함
       const numberButtonHeight = targetRect.height
-      const startY = targetRect.bottom - pageRect.top + 35 // 숫자 버튼 아래에서 35px 간격으로 겹치지 않도록
+      const startY = targetRect.bottom - pageRect.top + 5 // 숫자 버튼 아래에서 5px 간격으로 겹치지 않도록
 
       // 단순히 순서대로 세로로 배치 (scale 적용된 크기로 계산)
       const targetY = startY + userOrder * (buttonHeight + spacing)
 
       // 원래 위치에서 목표 위치까지의 이동 거리 계산
       const originalPos = this.originalPositions[index]
+      if (!originalPos) {
+        console.warn(`Original position not found for index ${index}`)
+        return
+      }
+
       const moveX = targetCenterX - originalPos.x
       const moveY = targetY - originalPos.y
 
+      // 현재 위치 확인
+      const currentTransform = gsap.getProperty(element, "x") || 0
+      const currentY = gsap.getProperty(element, "y") || 0
+
+      // 먼저 현재 상태를 설정
+      gsap.set(element, {
+        scale: 0.75,
+        opacity: 0.9,
+        zIndex: this.currentZIndex++
+      })
+
+      // 애니메이션 실행
       gsap.to(element, {
         x: moveX,
         y: moveY,
-        scale: 0.75, // 크기를 0.75배로 줄임
+        scale: 0.75,
         opacity: 0.9,
-        zIndex: this.currentZIndex++,
-        duration: ANIMATION_CONSTANTS.MOVE_DURATION / 1000,
+        duration: 1.0, // 더 긴 duration으로 확실히 보이게
         ease: 'power2.out',
-        delay: 0, // delay 제거하여 동시 애니메이션
+        delay: 0,
+        onStart: () => {
+        },
+        onComplete: () => {
+        },
+        onError: (error: any) => {
+          console.error(`Animation error for user ${user.username}:`, error)
+        }
       })
     })
   }
@@ -168,18 +241,29 @@ export class UserAnimationManager {
     userIndex: number,
     targetNumber: number
   ) {
-    if (!this.isReady()) return
+    
+    if (!this.isReady()) {
+      console.warn('UserAnimationManager is not ready')
+      return
+    }
 
-    const numberButtons = document.querySelectorAll('.number-button')
-    const userButtons = document.querySelectorAll('.user-button-container')
+    // GSAP으로 DOM 요소들을 가져오기
+    const numberButtons = gsap.utils.toArray('.number-button') as HTMLElement[]
+    const userButtons = gsap.utils.toArray('.user-button-container') as HTMLElement[]
     const pageRect = document.body.getBoundingClientRect()
 
-    const targetButton = numberButtons[targetNumber - 1] as HTMLElement
-    if (!targetButton) return
+    const targetButton = numberButtons[targetNumber - 1]
+    if (!targetButton) {
+      console.warn(`Target button not found for number ${targetNumber}`)
+      return
+    }
 
     const targetRect = targetButton.getBoundingClientRect()
-    const userButton = userButtons[userIndex] as HTMLElement
-    if (!userButton) return
+    const userButton = userButtons[userIndex]
+    if (!userButton) {
+      console.warn(`User button not found at index ${userIndex}`)
+      return
+    }
 
     // 현재 진행 중인 애니메이션이 있다면 취소
     const existingAnimation = this.activeAnimations[userIndex]
@@ -190,21 +274,18 @@ export class UserAnimationManager {
 
     // 현재 사용자의 도착 순서 기록 (항상 새로운 순서로 업데이트)
     const currentUser = users[userIndex]
-    this.arrivalOrder[currentUser.username] = this.nextArrivalIndex++
+    this.updateArrivalOrder(currentUser.username)
 
     // 도착 순서대로 정렬
-    const sameAnswerUsers = users
-      .filter((user) => (user.answer_number ?? 0) === targetNumber)
-      .sort((a, b) => {
-        const orderA = this.arrivalOrder[a.username] || 0
-        const orderB = this.arrivalOrder[b.username] || 0
-        return orderA - orderB // 먼저 도착한 것이 위에
-      })
-
-    // 현재 사용자의 순서 찾기
+    const sameAnswerUsers = this.getSortedUsersByAnswer(users, targetNumber)
     const userOrder = sameAnswerUsers.findIndex(
-      (user) => user.username === currentUser.username
+      (item) => item.user.username === currentUser.username
     )
+
+    if (userOrder === -1) {
+      console.warn('User order not found')
+      return
+    }
 
     // 숫자 버튼 바로 아래로 이동 (중앙 정렬) - 실제 DOM 크기 사용
     const buttonWidth = userButton.offsetWidth || 80 // 실제 DOM 크기 사용
@@ -225,7 +306,7 @@ export class UserAnimationManager {
         
         // 숫자 버튼의 실제 높이를 계산하여 겹치지 않도록 함
         const numberButtonHeight = targetRect.height
-        startY = targetRect.bottom - pageRect.top + 35 // 숫자 버튼 아래에서 35px 간격
+        startY = targetRect.bottom - pageRect.top + 5 // 숫자 버튼 아래에서 5px 간격
       } else {
         // 나머지 버튼: 숫자 버튼 오른쪽으로 가로 정렬
         targetCenterX = targetRect.right - pageRect.left + 10 // 숫자 버튼 오른쪽에서 10px 간격
@@ -237,13 +318,11 @@ export class UserAnimationManager {
       const numberButtonWidth = targetRect.width
       const userButtonWidth = buttonWidth
       const numberButtonCenterX = targetRect.left + numberButtonWidth / 2
-      // 사용자 버튼의 중앙이 숫자 버튼의 중앙과 정확히 일치하도록 계산
-      // pageRect.left를 빼서 페이지 기준 좌표로 변환
       targetCenterX = numberButtonCenterX - pageRect.left - userButtonWidth / 2
       
       // 숫자 버튼의 실제 높이를 계산하여 겹치지 않도록 함
       const numberButtonHeight = targetRect.height
-      startY = targetRect.bottom - pageRect.top + 35 // 숫자 버튼 아래에서 35px 간격으로 겹치지 않도록
+      startY = targetRect.bottom - pageRect.top + 5 // 숫자 버튼 아래에서 5px 간격으로 겹치지 않도록
     }
 
     // 순서대로 배치
@@ -273,6 +352,8 @@ export class UserAnimationManager {
       zIndex: this.currentZIndex++,
       duration: ANIMATION_CONSTANTS.MOVE_DURATION / 1000,
       ease: 'power2.out',
+      onStart: () => {
+      },
       onComplete: () => {
         delete this.activeAnimations[userIndex]
         // 이동 완료 후 자동으로 rearrange 실행
@@ -287,8 +368,9 @@ export class UserAnimationManager {
   moveSingleUserToOriginal(users: User[], userIndex: number) {
     if (!this.isReady()) return
 
-    const userButtons = document.querySelectorAll('.user-button-container')
-    const userButton = userButtons[userIndex] as HTMLElement
+    // GSAP으로 DOM 요소들을 가져오기
+    const userButtons = gsap.utils.toArray('.user-button-container') as HTMLElement[]
+    const userButton = userButtons[userIndex]
     if (!userButton) return
 
     // 현재 진행 중인 애니메이션이 있다면 취소
@@ -319,33 +401,27 @@ export class UserAnimationManager {
   rearrangeUsersAfterMove(users: User[]) {
     if (!this.isReady()) return
 
-    const numberButtons = document.querySelectorAll('.number-button')
-    const userButtons = document.querySelectorAll('.user-button-container')
+    // GSAP으로 DOM 요소들을 가져오기
+    const numberButtons = gsap.utils.toArray('.number-button') as HTMLElement[]
+    const userButtons = gsap.utils.toArray('.user-button-container') as HTMLElement[]
     const pageRect = document.body.getBoundingClientRect()
 
     // 각 숫자 버튼별로 사용자들을 재배치
     for (let numberIndex = 1; numberIndex <= 4; numberIndex++) {
-      const targetButton = numberButtons[numberIndex - 1] as HTMLElement
+      const targetButton = numberButtons[numberIndex - 1]
       if (!targetButton) continue
 
       const targetRect = targetButton.getBoundingClientRect()
+      
       // 도착 순서대로 정렬
-      const sameAnswerUsers = users
-        .filter((user) => (user.answer_number ?? 0) === numberIndex)
-        .sort((a, b) => {
-          const orderA = this.arrivalOrder[a.username] || 0
-          const orderB = this.arrivalOrder[b.username] || 0
-          return orderA - orderB // 먼저 도착한 것이 위에
-        })
+      const sameAnswerUsers = this.getSortedUsersByAnswer(users, numberIndex)
 
       if (sameAnswerUsers.length === 0) continue
 
-      // 도착 순서대로 배치 (username 기준 정렬 제거)
-      sameAnswerUsers.forEach((user, index) => {
-        const userIndex = users.findIndex((u) => u.username === user.username)
-        if (userIndex === -1) return
-
-        const userButton = userButtons[userIndex] as HTMLElement
+      // 도착 순서대로 배치
+      sameAnswerUsers.forEach((item, index) => {
+        const userIndex = item.originalIndex
+        const userButton = userButtons[userIndex]
         if (!userButton) return
 
         // 실제 버튼 높이와 간격 계산 (실제 DOM 크기 사용)
@@ -367,7 +443,7 @@ export class UserAnimationManager {
             
             // 숫자 버튼의 실제 높이를 계산하여 겹치지 않도록 함
             const numberButtonHeight = targetRect.height
-            const startY = targetRect.bottom - pageRect.top + 35 // 숫자 버튼 아래에서 35px 간격
+            const startY = targetRect.bottom - pageRect.top + 5 // 숫자 버튼 아래에서 5px 간격
             targetX = targetCenterX
             targetY = startY
           } else {
@@ -383,13 +459,11 @@ export class UserAnimationManager {
           const numberButtonWidth = targetRect.width
           const userButtonWidth = buttonWidth
           const numberButtonCenterX = targetRect.left + numberButtonWidth / 2
-          // 사용자 버튼의 중앙이 숫자 버튼의 중앙과 정확히 일치하도록 계산
-          // pageRect.left를 빼서 페이지 기준 좌표로 변환
           const targetCenterX = numberButtonCenterX - pageRect.left - userButtonWidth / 2
           
           // 숫자 버튼의 실제 높이를 계산하여 겹치지 않도록 함
           const numberButtonHeight = targetRect.height
-          const startY = targetRect.bottom - pageRect.top + 35 // 숫자 버튼 아래에서 35px 간격으로 겹치지 않도록
+          const startY = targetRect.bottom - pageRect.top + 5 // 숫자 버튼 아래에서 5px 간격으로 겹치지 않도록
           targetX = targetCenterX
           targetY = startY + index * (buttonHeight + spacing)
         }
@@ -415,7 +489,7 @@ export class UserAnimationManager {
 
   resetAnimation() {
     // 모든 버튼을 원래 위치로
-    const elements = document.querySelectorAll('.user-button-container')
+    const elements = gsap.utils.toArray('.user-button-container')
     if (elements.length === 0) {
       return
     }
@@ -463,12 +537,11 @@ export class UserAnimationManager {
   }
 
   saveOriginalPositions(): OriginalPosition[] {
-    const userButtons = document.querySelectorAll('.user-button-container')
+    const userButtons = gsap.utils.toArray('.user-button-container') as HTMLElement[]
     const pageRect = document.body.getBoundingClientRect()
     const positions: OriginalPosition[] = []
 
-    userButtons.forEach((button) => {
-      const element = button as HTMLElement
+    userButtons.forEach((element) => {
       const rect = element.getBoundingClientRect()
       positions.push({
         x: rect.left - pageRect.left,
