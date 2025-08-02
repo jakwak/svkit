@@ -59,8 +59,8 @@ export const BUTTON_CONSTANTS = {
   DEFAULT_SIZE: 'medium',
   SMALL_SIZE: 'small',
   LARGE_SIZE: 'large',
-  VERTICAL_SPACING: 4,
-  HORIZONTAL_SPACING: 2,
+  VERTICAL_SPACING: 2,
+  HORIZONTAL_SPACING: 1,
   SCALE_FACTOR: 0.75, // 애니메이션 시 버튼 크기 축소 비율
 } as const
 
