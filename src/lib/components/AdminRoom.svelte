@@ -220,6 +220,9 @@
         onAlignmentChange={(isVertical: boolean) => {
           isVerticalAlignment = isVertical
           
+          // 서버에 세로 정렬 상태 전송
+          room?.send('setVerticalAlign', isVertical)
+          
           // 애니메이션 매니저에 세로 정렬 상태 전달
           const animationManager = (window as any).userAnimationManager
           if (animationManager && animationManager.isReady()) {

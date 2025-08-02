@@ -92,7 +92,7 @@
 </script>
 
 <div>
-  <div class="flex flex-wrap gap-2 justify-center user-buttons-wrapper">
+  <div class="flex flex-wrap gap-0 justify-center user-buttons-wrapper">
     {#each users.filter((user: User) => user.username !== '') as user, index}
       {@const currentVariant =
         userVariants[user.username] || user.variant || 'gray'}
@@ -130,6 +130,8 @@
     will-change: transform; /* 성능 최적화 */
     position: relative; /* position 설정 추가 */
     display: inline-block; /* display 설정 추가 */
+    margin: 0; /* 마진 제거 */
+    padding: 0; /* 패딩 제거 */
   }
   
   /* GSAP 애니메이션을 위한 추가 스타일 */

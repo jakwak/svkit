@@ -52,6 +52,9 @@
   let isAnswerConfirmed = $state(false)
   let pendingUserMoves = $state<Array<{ userIndex: number; answerNumber: number }>>([])
   let answers = $state<Array<{ x: number; y: number; size: number; text?: string; isCorrect: boolean }>>([])
+  
+  // 세로 정렬 상태 추적 (교사용과 동일하게)
+  let isVerticalAlignment = $state(false)
 
 
 
@@ -112,17 +115,37 @@
         }
       })
 
+      stateCb(room!.state).listen('isVerticalAlign', async (_isVerticalAlign) => {
+        isVerticalAlignment = _isVerticalAlign
+        
+        // 애니메이션 매니저에 세로 정렬 상태 전달
+        const animationManager = (window as any).userAnimationManager
+        if (animationManager && animationManager.isReady()) {
+          animationManager.setVerticalAlignment(isVerticalAlignment)
+          
+          // 현재 사용자들의 위치를 새로운 정렬에 맞게 재조정
+          processedUsers.forEach((user, index) => {
+            const answerNumber = user.answerNumber ?? 0
+            if (answerNumber > 0 && answerNumber <= 4) {
+              animationManager.moveSingleUserToNumber(processedUsers, index, answerNumber)
+            }
+          })
+        }
+      })
+
       let pendingAnswerUpdates = new Map<number, { x: number; y: number; size: number; text?: string; isCorrect: boolean }>()
       let updateTimeout: NodeJS.Timeout | null = null
 
       stateCb(room!.state).currentQuestion.answers.onAdd((answer, index) => {
-        pendingAnswerUpdates.set(index, {
-          x: answer.x,
-          y: answer.y,
-          size: answer.size,
-          text: answer.text || undefined,
-          isCorrect: answer.isCorrect
-        })
+        if (answer) {
+          pendingAnswerUpdates.set(index, {
+            x: answer.x,
+            y: answer.y,
+            size: answer.size,
+            text: answer.text || undefined,
+            isCorrect: answer.isCorrect
+          })
+        }
         
         if (updateTimeout) {
           clearTimeout(updateTimeout)
@@ -131,24 +154,73 @@
         updateTimeout = setTimeout(() => {
           answers = Array.from(pendingAnswerUpdates.values())
           
-          // 답안 위치가 변경되면 사용자버튼들 rearrange
-          const animationManager = (window as any).userAnimationManager
-          if (animationManager && animationManager.isReady()) {
-            // 현재 답안을 선택한 사용자들이 있는지 확인
-            const usersWithAnswers = processedUsers.filter(user => 
-              user.answerNumber > 0 && user.answerNumber <= 4
-            )
-            
-            if (usersWithAnswers.length > 0) {
-              // 모든 사용자버튼을 새로운 위치로 rearrange
-              processedUsers.forEach((user, index) => {
-                const answerNumber = user.answerNumber
-                if (answerNumber > 0 && answerNumber <= 4) {
-                  animationManager.moveSingleUserToNumber(processedUsers, index, answerNumber)
-                }
-              })
+          // 답안 위치가 변경되면 사용자버튼들 rearrange (AdminRoom과 동일한 방식)
+          // 숫자 버튼 이동이 완전히 끝난 후에 재배치 수행
+          setTimeout(() => {
+            const animationManager = (window as any).userAnimationManager
+            if (animationManager && animationManager.isReady()) {
+              // 현재 답안을 선택한 사용자들이 있는지 확인
+              const usersWithAnswers = processedUsers.filter(user => 
+                user.answerNumber > 0 && user.answerNumber <= 4
+              )
+              
+              if (usersWithAnswers.length > 0) {
+                // 모든 사용자버튼을 새로운 위치로 rearrange
+                processedUsers.forEach((user, index) => {
+                  const answerNumber = user.answerNumber
+                  if (answerNumber > 0 && answerNumber <= 4) {
+                    animationManager.moveSingleUserToNumber(processedUsers, index, answerNumber)
+                  }
+                })
+              }
             }
-          }
+          }, 800) // 숫자 버튼 이동 완료 후 재배치 (AdminRoom보다 더 긴 지연)
+          
+          pendingAnswerUpdates.clear()
+          updateTimeout = null
+        }, 50)
+      })
+
+      // 답안 위치 변경 시에도 rearrange 수행 (AdminRoom과 동일)
+      stateCb(room!.state).currentQuestion.answers.onChange((answer, index) => {
+        if (answer) {
+          pendingAnswerUpdates.set(index, {
+            x: answer.x,
+            y: answer.y,
+            size: answer.size,
+            text: answer.text || undefined,
+            isCorrect: answer.isCorrect
+          })
+        }
+        
+        if (updateTimeout) {
+          clearTimeout(updateTimeout)
+        }
+        
+        updateTimeout = setTimeout(() => {
+          answers = Array.from(pendingAnswerUpdates.values())
+          
+          // 답안 위치가 변경되면 사용자버튼들 rearrange (AdminRoom과 동일한 방식)
+          // 숫자 버튼 이동이 완전히 끝난 후에 재배치 수행
+          setTimeout(() => {
+            const animationManager = (window as any).userAnimationManager
+            if (animationManager && animationManager.isReady()) {
+              // 현재 답안을 선택한 사용자들이 있는지 확인
+              const usersWithAnswers = processedUsers.filter(user => 
+                user.answerNumber > 0 && user.answerNumber <= 4
+              )
+              
+              if (usersWithAnswers.length > 0) {
+                // 모든 사용자버튼을 새로운 위치로 rearrange
+                processedUsers.forEach((user, index) => {
+                  const answerNumber = user.answerNumber
+                  if (answerNumber > 0 && answerNumber <= 4) {
+                    animationManager.moveSingleUserToNumber(processedUsers, index, answerNumber)
+                  }
+                })
+              }
+            }
+          }, 800) // 숫자 버튼 이동 완료 후 재배치 (AdminRoom보다 더 긴 지연)
           
           pendingAnswerUpdates.clear()
           updateTimeout = null
@@ -157,13 +229,15 @@
 
       // 기존 답안들도 처리
       if (room!.state.currentQuestion.answers.length > 0) {
-        const existingAnswers = room!.state.currentQuestion.answers.map((answer, index) => ({
-          x: answer.x,
-          y: answer.y,
-          size: answer.size,
-          text: answer.text || undefined,
-          isCorrect: answer.isCorrect
-        }))
+        const existingAnswers = room!.state.currentQuestion.answers
+          .filter(answer => answer) // undefined 답안 필터링
+          .map((answer, index) => ({
+            x: answer.x,
+            y: answer.y,
+            size: answer.size,
+            text: answer.text || undefined,
+            isCorrect: answer.isCorrect
+          }))
         answers = existingAnswers
       }
 
@@ -320,6 +394,7 @@
             size: answer.size,
             text: answer.text
           }]))}
+
           onNumberClick={async (number: number) => {
             if (isAnswerConfirmed) return
             

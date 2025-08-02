@@ -249,51 +249,65 @@ export class UserAnimationManager {
     let targetX: number
     let targetY: number
     
-    if (this.isVerticalAlignment) {
-      if (userOrder === 0) {
-        // 첫 번째 사용자: 숫자버튼 아래 중앙 정렬
-        targetX = targetCenterX
-        targetY = startY
-      } else {
-        // 나머지 사용자: 첫 번째 사용자버튼의 오른쪽으로 정렬
-        const firstUserButton = userButtons[sameAnswerUsers[0].originalIndex]
-        if (firstUserButton) {
-          const firstUserRect = firstUserButton.getBoundingClientRect()
-          const firstUserRight = firstUserRect.right - pageRect.left
-          const scaledButtonWidth = buttonWidth * BUTTON_CONSTANTS.SCALE_FACTOR
-          targetX = firstUserRight + (userOrder - 1) * (scaledButtonWidth + BUTTON_CONSTANTS.HORIZONTAL_SPACING)
-          targetY = startY // 첫 번째 사용자와 같은 Y좌표 사용
-        } else {
-          // 첫 번째 사용자버튼이 없는 경우 기본 위치
-          const scaledButtonWidth = buttonWidth * BUTTON_CONSTANTS.SCALE_FACTOR
-          targetX = targetCenterX + userOrder * (scaledButtonWidth + BUTTON_CONSTANTS.HORIZONTAL_SPACING)
-          targetY = startY
-        }
-      }
-    } else {
-      const scaledButtonHeight = buttonHeight * BUTTON_CONSTANTS.SCALE_FACTOR
-      targetX = targetCenterX
-      targetY = startY + userOrder * (scaledButtonHeight + spacing)
-    }
+         if (this.isVerticalAlignment) {
+               console.log('세로 정렬 모드 활성화됨, 간격: 30px, userOrder:', userOrder)
+       if (userOrder === 0) {
+         // 첫 번째 사용자: 숫자버튼 아래 중앙 정렬
+         targetX = targetCenterX
+         targetY = startY
+                  } else {
+              // 나머지 사용자: 첫 번째 사용자의 목표 위치를 기준으로 오른쪽에 배치
+              const scaledButtonWidth = buttonWidth * BUTTON_CONSTANTS.SCALE_FACTOR
+              // 첫 번째 사용자의 목표 위치 (targetCenterX)를 기준으로 계산
+              targetX = targetCenterX + userOrder * (scaledButtonWidth + 7.5) // 첫 번째 사용자 다음부터 간격 적용
+              targetY = startY // 첫 번째 사용자와 같은 Y좌표 사용
+              console.log('세로 정렬 - targetX:', targetX, 'userOrder:', userOrder, 'targetCenterX:', targetCenterX)
+            }
+                } else {
+         // 가로 정렬: 세로 정렬과 동일한 패턴으로 첫 번째 사용자는 중앙, 나머지는 아래로 배치
+         if (userOrder === 0) {
+           // 첫 번째 사용자: 숫자버튼 아래 중앙 정렬
+           targetX = targetCenterX
+           targetY = startY
+         } else {
+           // 나머지 사용자: 첫 번째 사용자버튼의 아래로 정렬 (세로 정렬의 x,y를 바꿔서 적용)
+           const firstUserButton = userButtons[sameAnswerUsers[0].originalIndex]
+           if (firstUserButton) {
+             const firstUserRect = firstUserButton.getBoundingClientRect()
+             const firstUserBottom = firstUserRect.bottom - pageRect.top // Y좌표는 pageRect.top을 사용
+             const scaledButtonHeight = buttonHeight * BUTTON_CONSTANTS.SCALE_FACTOR
+             // 첫 번째 사용자 버튼의 아래쪽에서 간격을 더해서 배치 (세로 정렬의 오른쪽 배치와 동일한 패턴)
+             targetX = targetCenterX
+             targetY = firstUserBottom + (userOrder - 1) * (scaledButtonHeight + spacing)
+           } else {
+             // 첫 번째 사용자버튼이 없는 경우 기본 위치
+             const scaledButtonHeight = buttonHeight * BUTTON_CONSTANTS.SCALE_FACTOR
+             targetX = targetCenterX
+             targetY = startY + (userOrder - 1) * (scaledButtonHeight + spacing)
+           }
+         }
+       }
 
     // 원래 위치에서 목표 위치까지의 이동 거리 계산
     const originalPos = this.originalPositions[userIndex]
     const moveX = targetX - originalPos.x
     const moveY = targetY - originalPos.y
 
-    const animation = gsap.to(userButton, {
-      x: moveX,
-      y: moveY,
-      scale: BUTTON_CONSTANTS.SCALE_FACTOR,
-      opacity: 0.9,
-      zIndex: this.currentZIndex++,
-      duration: ANIMATION_CONSTANTS.MOVE_DURATION / 1000,
-      ease: 'power2.out',
-      onComplete: () => {
-        delete this.activeAnimations[userIndex]
-        this.rearrangeUsersAfterMove(users)
-      },
-    })
+         console.log('애니메이션 실행 - moveX:', moveX, 'moveY:', moveY, 'scale:', BUTTON_CONSTANTS.SCALE_FACTOR)
+     const animation = gsap.to(userButton, {
+       x: moveX,
+       y: moveY,
+       scale: BUTTON_CONSTANTS.SCALE_FACTOR,
+       opacity: 0.9,
+       zIndex: this.currentZIndex++,
+       duration: ANIMATION_CONSTANTS.MOVE_DURATION / 1000,
+       ease: 'power2.out',
+       onComplete: () => {
+         console.log('애니메이션 완료 - userIndex:', userIndex)
+         delete this.activeAnimations[userIndex]
+         this.rearrangeUsersAfterMove(users)
+       },
+     })
 
     // 진행 중인 애니메이션 추적
     this.activeAnimations[userIndex] = animation
@@ -379,35 +393,59 @@ export class UserAnimationManager {
             
             targetX = targetCenterX
             targetY = startY
-          } else {
-            // 나머지 사용자: 첫 번째 사용자버튼의 오른쪽으로 정렬
-            const firstUserButton = userButtons[sameAnswerUsers[0].originalIndex]
-            if (firstUserButton) {
-              const firstUserRect = firstUserButton.getBoundingClientRect()
-              const firstUserRight = firstUserRect.right - pageRect.left
-              const scaledButtonWidth = buttonWidth * BUTTON_CONSTANTS.SCALE_FACTOR
-              targetX = firstUserRight + (index - 1) * (scaledButtonWidth + BUTTON_CONSTANTS.HORIZONTAL_SPACING)
-              targetY = startY // 첫 번째 사용자와 같은 Y좌표 사용
-            } else {
-              // 첫 번째 사용자버튼이 없는 경우 기본 위치
-              const startX = targetRect.right - pageRect.left + 10
-              const scaledButtonWidth = buttonWidth * BUTTON_CONSTANTS.SCALE_FACTOR
-              targetX = startX + (index - 1) * (scaledButtonWidth + BUTTON_CONSTANTS.HORIZONTAL_SPACING)
-              targetY = startY // 첫 번째 사용자와 같은 Y좌표 사용
-            }
-          }
-        } else {
-          const numberButtonWidth = targetRect.width
-          const userButtonWidth = buttonWidth
-          const numberButtonCenterX = targetRect.left + numberButtonWidth / 2
-          const targetCenterX = numberButtonCenterX - pageRect.left - userButtonWidth / 2
-          
-          const numberButtonHeight = targetRect.height
-          const startY = targetRect.bottom - pageRect.top + 5
-          targetX = targetCenterX
-          const scaledButtonHeight = buttonHeight * BUTTON_CONSTANTS.SCALE_FACTOR
-          targetY = startY + index * (scaledButtonHeight + spacing)
-        }
+                     } else {
+             // 나머지 사용자: 첫 번째 사용자의 목표 위치를 기준으로 오른쪽에 배치
+             const numberButtonWidth = targetRect.width
+             const userButtonWidth = buttonWidth
+             const numberButtonCenterX = targetRect.left + numberButtonWidth / 2
+             const targetCenterX = numberButtonCenterX - pageRect.left - userButtonWidth / 2
+             const scaledButtonWidth = buttonWidth * BUTTON_CONSTANTS.SCALE_FACTOR
+             // 첫 번째 사용자의 목표 위치 (targetCenterX)를 기준으로 계산
+             targetX = targetCenterX + index * (scaledButtonWidth + 7.5) // rearrange 시 첫 번째 사용자 다음부터 간격 적용
+             targetY = startY // 첫 번째 사용자와 같은 Y좌표 사용
+           }
+                 } else {
+           // 가로 정렬: 세로 정렬과 동일한 패턴으로 첫 번째 사용자는 중앙, 나머지는 아래로 배치
+           if (index === 0) {
+             // 첫 번째 사용자: 숫자버튼 아래 중앙 정렬
+             const numberButtonWidth = targetRect.width
+             const userButtonWidth = buttonWidth
+             const numberButtonCenterX = targetRect.left + numberButtonWidth / 2
+             const targetCenterX = numberButtonCenterX - pageRect.left - userButtonWidth / 2
+             
+             const numberButtonHeight = targetRect.height
+             const startY = targetRect.bottom - pageRect.top + 5
+             targetX = targetCenterX
+             targetY = startY
+           } else {
+             // 나머지 사용자: 첫 번째 사용자버튼의 아래로 정렬 (세로 정렬의 x,y를 바꿔서 적용)
+             const firstUserButton = userButtons[sameAnswerUsers[0].originalIndex]
+             if (firstUserButton) {
+               const firstUserRect = firstUserButton.getBoundingClientRect()
+               const firstUserBottom = firstUserRect.bottom - pageRect.top // Y좌표는 pageRect.top을 사용
+               const scaledButtonHeight = buttonHeight * BUTTON_CONSTANTS.SCALE_FACTOR
+               // 첫 번째 사용자 버튼의 아래쪽에서 간격을 더해서 배치 (세로 정렬의 오른쪽 배치와 동일한 패턴)
+               const numberButtonWidth = targetRect.width
+               const userButtonWidth = buttonWidth
+               const numberButtonCenterX = targetRect.left + numberButtonWidth / 2
+               const targetCenterX = numberButtonCenterX - pageRect.left - userButtonWidth / 2
+               targetX = targetCenterX
+               targetY = firstUserBottom + (index - 1) * (scaledButtonHeight + spacing)
+             } else {
+               // 첫 번째 사용자버튼이 없는 경우 기본 위치
+               const numberButtonWidth = targetRect.width
+               const userButtonWidth = buttonWidth
+               const numberButtonCenterX = targetRect.left + numberButtonWidth / 2
+               const targetCenterX = numberButtonCenterX - pageRect.left - userButtonWidth / 2
+               
+               const numberButtonHeight = targetRect.height
+               const startY = targetRect.bottom - pageRect.top + 5
+               const scaledButtonHeight = buttonHeight * BUTTON_CONSTANTS.SCALE_FACTOR
+               targetX = targetCenterX
+               targetY = startY + (index - 1) * (scaledButtonHeight + spacing)
+             }
+           }
+         }
 
         // 원래 위치에서 목표 위치까지의 이동 거리 계산
         const originalPos = this.originalPositions[userIndex]
