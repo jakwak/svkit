@@ -685,9 +685,11 @@
     // 정렬 이벤트 리스너 추가
     const handleHorizontalAlign = () => resetToInitialPositions()
     const handleVerticalAlign = () => alignVertically()
+    const handleSendInitialPositions = () => sendButtonPositions()
 
     containerElement?.addEventListener('horizontalAlign', handleHorizontalAlign)
     containerElement?.addEventListener('verticalAlign', handleVerticalAlign)
+    containerElement?.addEventListener('sendInitialPositions', handleSendInitialPositions)
 
     return () => {
       document.removeEventListener('mousemove', handleMouseMove)
@@ -699,6 +701,10 @@
       containerElement?.removeEventListener(
         'verticalAlign',
         handleVerticalAlign
+      )
+      containerElement?.removeEventListener(
+        'sendInitialPositions',
+        handleSendInitialPositions
       )
     }
   })

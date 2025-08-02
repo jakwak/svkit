@@ -31,6 +31,16 @@
 
   onMount(async () => {
     await connectToServer()
+    
+    // 연결 완료 후 숫자버튼 위치 자동 전송
+    setTimeout(() => {
+      const draggableComponent = document.querySelector('.number-buttons-section')?.querySelector('.buttons-container')
+      if (draggableComponent) {
+        // DraggableNumberButtons 컴포넌트의 sendButtonPositions 함수 호출
+        const event = new CustomEvent('sendInitialPositions')
+        draggableComponent.dispatchEvent(event)
+      }
+    }, 1000) // 1초 후 실행하여 컴포넌트가 완전히 로드된 후 실행
   })
 
   async function connectToServer() {
@@ -69,13 +79,13 @@
 
         stateCb(user).listen(
           'answerNumber',
-          (answerNumber, previousAnswerNumber) => {
+          (answerNumber, _previousAnswerNumber) => {
             // 사용자의 answerNumber 업데이트
             const userIndex = users.findIndex(
               (u) => u.username === user.username
             )
             if (userIndex !== -1) {
-              const previousAnswerNumber = users[userIndex].answerNumber ?? 0
+              const previousAnswerNumber = _previousAnswerNumber ?? users[userIndex].answerNumber ?? 0
 
               // 사용자 정보 업데이트
               users[userIndex] = { ...users[userIndex], answerNumber }
@@ -108,6 +118,37 @@
     stateCb(room!.state).users.onRemove((user) => {
       userVariants = { ...userVariants, [user.username]: 'gray' }
     })
+
+    // 답안 위치 변경 감지 및 사용자버튼 rearrange
+    // if (room!.state.currentQuestion && room!.state.currentQuestion.answers) {
+    //   stateCb(room!.state).currentQuestion.answers.onAdd((answer, index) => {
+    //     rearrangeUsersAfterAnswerUpdate()
+    //   })
+
+    //   stateCb(room!.state).currentQuestion.answers.onChange((answer, index) => {
+    //     rearrangeUsersAfterAnswerUpdate()
+    //   })
+    // }
+
+    function rearrangeUsersAfterAnswerUpdate() {
+      const animationManager = (window as any).userAnimationManager
+      if (animationManager && animationManager.isReady()) {
+        // 현재 답안을 선택한 사용자들이 있는지 확인
+        const usersWithAnswers = users.filter(user => 
+          user.answerNumber > 0 && user.answerNumber <= 4
+        )
+        
+        if (usersWithAnswers.length > 0) {
+          // 모든 사용자버튼을 새로운 위치로 rearrange
+          users.forEach((user, index) => {
+            const answerNumber = user.answerNumber
+            if (answerNumber > 0 && answerNumber <= 4) {
+              animationManager.moveSingleUserToNumber(users, index, answerNumber)
+            }
+          })
+        }
+      }
+    }
 
     room!.onMessage('__playground_message_types', (message) => {
       // 메시지 처리
@@ -194,8 +235,36 @@
           }
         }}
         onSendButtonPositions={(positions) => {
-          // 버튼 위치 정보를 서버로 전송
-          room?.send('buttonPositions', positions)
+          // 답안 정보를 서버로 전송
+          const answers = Object.entries(positions).map(([number, position]) => ({
+            x: position.x,
+            y: position.y,
+            size: position.size,
+            text: position.text || '',
+            isCorrect: false
+          }))
+          room?.send('updateAnswers', answers)
+          
+          // 답안 위치 변경 후 사용자버튼 rearrange
+          setTimeout(() => {
+            const animationManager = (window as any).userAnimationManager
+            if (animationManager && animationManager.isReady()) {
+              // 현재 답안을 선택한 사용자들이 있는지 확인
+              const usersWithAnswers = users.filter(user => 
+                user.answerNumber > 0 && user.answerNumber <= 4
+              )
+              
+              if (usersWithAnswers.length > 0) {
+                // 모든 사용자버튼을 새로운 위치로 rearrange
+                users.forEach((user, index) => {
+                  const answerNumber = user.answerNumber
+                  if (answerNumber > 0 && answerNumber <= 4) {
+                    animationManager.moveSingleUserToNumber(users, index, answerNumber)
+                  }
+                })
+              }
+            }
+          }, 300) // 서버 전송 후 약간의 지연을 두고 실행
         }}
       />
       

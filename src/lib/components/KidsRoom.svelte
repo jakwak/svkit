@@ -51,7 +51,7 @@
   let confirmModalData = $state<{ userIndex: number; targetNumber: number } | null>(null)
   let isAnswerConfirmed = $state(false)
   let pendingUserMoves = $state<Array<{ userIndex: number; answerNumber: number }>>([])
-  let buttonPositions = $state<Record<number, { x: number; y: number; size: number; text?: string }>>({})
+  let answers = $state<Array<{ x: number; y: number; size: number; text?: string; isCorrect: boolean }>>([])
 
 
 
@@ -112,15 +112,16 @@
         }
       })
 
-      let pendingButtonUpdates = new Map<number, { x: number; y: number; size: number; text?: string }>()
+      let pendingAnswerUpdates = new Map<number, { x: number; y: number; size: number; text?: string; isCorrect: boolean }>()
       let updateTimeout: NodeJS.Timeout | null = null
 
-      stateCb(room!.state).buttonPositions.onAdd((buttonPos, buttonNumber) => {
-        pendingButtonUpdates.set(Number(buttonNumber), {
-          x: buttonPos.x,
-          y: buttonPos.y,
-          size: buttonPos.size,
-          text: buttonPos.text || undefined
+      stateCb(room!.state).currentQuestion.answers.onAdd((answer, index) => {
+        pendingAnswerUpdates.set(index, {
+          x: answer.x,
+          y: answer.y,
+          size: answer.size,
+          text: answer.text || undefined,
+          isCorrect: answer.isCorrect
         })
         
         if (updateTimeout) {
@@ -128,16 +129,43 @@
         }
         
         updateTimeout = setTimeout(() => {
-          for (const [buttonNumber, position] of pendingButtonUpdates) {
-            buttonPositions[buttonNumber] = position
+          answers = Array.from(pendingAnswerUpdates.values())
+          
+          // 답안 위치가 변경되면 사용자버튼들 rearrange
+          const animationManager = (window as any).userAnimationManager
+          if (animationManager && animationManager.isReady()) {
+            // 현재 답안을 선택한 사용자들이 있는지 확인
+            const usersWithAnswers = processedUsers.filter(user => 
+              user.answerNumber > 0 && user.answerNumber <= 4
+            )
+            
+            if (usersWithAnswers.length > 0) {
+              // 모든 사용자버튼을 새로운 위치로 rearrange
+              processedUsers.forEach((user, index) => {
+                const answerNumber = user.answerNumber
+                if (answerNumber > 0 && answerNumber <= 4) {
+                  animationManager.moveSingleUserToNumber(processedUsers, index, answerNumber)
+                }
+              })
+            }
           }
           
-          buttonPositions = { ...buttonPositions }
-          
-          pendingButtonUpdates.clear()
+          pendingAnswerUpdates.clear()
           updateTimeout = null
         }, 50)
       })
+
+      // 기존 답안들도 처리
+      if (room!.state.currentQuestion.answers.length > 0) {
+        const existingAnswers = room!.state.currentQuestion.answers.map((answer, index) => ({
+          x: answer.x,
+          y: answer.y,
+          size: answer.size,
+          text: answer.text || undefined,
+          isCorrect: answer.isCorrect
+        }))
+        answers = existingAnswers
+      }
 
       stateCb(room!.state).users.onAdd((user) => {
         const existingUser = processedUsers.find((u) => u.username === user.username)
@@ -286,7 +314,12 @@
         <DraggableNumberButtons
           disabled={isAnswerConfirmed}
           isStudentMode={true}
-          receivedButtonPositions={buttonPositions}
+          receivedButtonPositions={Object.fromEntries(answers.map((answer, index) => [index + 1, {
+            x: answer.x,
+            y: answer.y,
+            size: answer.size,
+            text: answer.text
+          }]))}
           onNumberClick={async (number: number) => {
             if (isAnswerConfirmed) return
             
