@@ -250,7 +250,6 @@ export class UserAnimationManager {
     let targetY: number
     
          if (this.isVerticalAlignment) {
-               console.log('세로 정렬 모드 활성화됨, 간격: 30px, userOrder:', userOrder)
        if (userOrder === 0) {
          // 첫 번째 사용자: 숫자버튼 아래 중앙 정렬
          targetX = targetCenterX
@@ -261,7 +260,6 @@ export class UserAnimationManager {
               // 첫 번째 사용자의 목표 위치 (targetCenterX)를 기준으로 계산
               targetX = targetCenterX + userOrder * (scaledButtonWidth + 7.5) // 첫 번째 사용자 다음부터 간격 적용
               targetY = startY // 첫 번째 사용자와 같은 Y좌표 사용
-              console.log('세로 정렬 - targetX:', targetX, 'userOrder:', userOrder, 'targetCenterX:', targetCenterX)
             }
                 } else {
          // 가로 정렬: 세로 정렬과 동일한 패턴으로 첫 번째 사용자는 중앙, 나머지는 아래로 배치
@@ -293,7 +291,7 @@ export class UserAnimationManager {
     const moveX = targetX - originalPos.x
     const moveY = targetY - originalPos.y
 
-         console.log('애니메이션 실행 - moveX:', moveX, 'moveY:', moveY, 'scale:', BUTTON_CONSTANTS.SCALE_FACTOR)
+
      const animation = gsap.to(userButton, {
        x: moveX,
        y: moveY,
@@ -302,11 +300,10 @@ export class UserAnimationManager {
        zIndex: this.currentZIndex++,
        duration: ANIMATION_CONSTANTS.MOVE_DURATION / 1000,
        ease: 'power2.out',
-       onComplete: () => {
-         console.log('애니메이션 완료 - userIndex:', userIndex)
-         delete this.activeAnimations[userIndex]
-         this.rearrangeUsersAfterMove(users)
-       },
+               onComplete: () => {
+          delete this.activeAnimations[userIndex]
+          this.rearrangeUsersAfterMove(users)
+        },
      })
 
     // 진행 중인 애니메이션 추적

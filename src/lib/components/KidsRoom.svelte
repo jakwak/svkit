@@ -89,7 +89,7 @@
       ])) as Room<MyState>
 
       room!.onMessage('__playground_message_types', (message) => {
-        console.log('서버 메세지--->', message)
+        // 서버 메시지 처리
       })
 
       await new Promise((resolve) => setTimeout(resolve, 500))

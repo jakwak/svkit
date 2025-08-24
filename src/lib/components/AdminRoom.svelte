@@ -54,22 +54,16 @@
       username: appStore.username,
     })
 
-    // room!.onStateChange((state) => {
-    //   console.log('correct_number 1--->', state.correct_number)
-    // })
+    room.onMessage('__playground_message_types', (message) => {
+      // 메시지 처리
+    })
+    room.onMessage('error', (message) => {
+      // 에러 처리
+    })
 
     const stateCb = getStateCallbacks(room!)
 
-    // stateCb(room!.state).listen(
-    //   'correct_number',
-    //   (correct_number, previous_correct_number) => {
-    //     console.log(
-    //       'Listen correct_number--->',
-    //       correct_number,
-    //       previous_correct_number
-    //     )
-    //   }
-    // )
+
 
     stateCb(room!.state).users.onAdd((user) => {
       // 기존 users에서 username이 일치하는 사용자 찾기
@@ -119,16 +113,7 @@
       userVariants = { ...userVariants, [user.username]: 'gray' }
     })
 
-    // 답안 위치 변경 감지 및 사용자버튼 rearrange
-    // if (room!.state.currentQuestion && room!.state.currentQuestion.answers) {
-    //   stateCb(room!.state).currentQuestion.answers.onAdd((answer, index) => {
-    //     rearrangeUsersAfterAnswerUpdate()
-    //   })
 
-    //   stateCb(room!.state).currentQuestion.answers.onChange((answer, index) => {
-    //     rearrangeUsersAfterAnswerUpdate()
-    //   })
-    // }
 
     function rearrangeUsersAfterAnswerUpdate() {
       const animationManager = (window as any).userAnimationManager
@@ -156,28 +141,7 @@
     room!.onMessage('error', (message) => {
       // 에러 처리
     })
-    // room!.onStateChange(({ correct_number, teacher_ready, all_ready }) => {
-    //   // 상태 변경 처리
-    //   currentCorrectNumber = correct_number
 
-    //   // correct_number가 0이 되면 모든 사용자를 원위치로 이동
-    //   if (correct_number === 0) {
-    //     // 모든 사용자의 answer_number를 0으로 초기화
-    //     users = users.map((user) => ({
-    //       ...user,
-    //       answer_number: 0,
-    //     }))
-
-    //     // 애니메이션 매니저가 준비되었는지 확인
-    //     const animationManager = (window as any).userAnimationManager
-    //     if (animationManager && animationManager.isReady()) {
-    //       // 모든 사용자를 원래 위치로 이동
-    //       users.forEach((user, index) => {
-    //         animationManager.moveSingleUserToOriginal(users, index)
-    //       })
-    //     }
-    //   }
-    // })
   }
 
   onDestroy(() => {
